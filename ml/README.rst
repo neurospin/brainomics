@@ -1,8 +1,8 @@
 Machine Learning algorithms
 ===========================
 
-Dependances
------------
+Dependencies
+------------
 
 scikitlearn
 
