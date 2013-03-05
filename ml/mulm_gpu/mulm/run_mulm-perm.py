@@ -1,3 +1,5 @@
+#! /usr/bin/env python
+
 #from __future__ import division
 import swig.linear_model as lm
 import os.path
@@ -26,14 +28,14 @@ VectorSize = 500
 num_vector_X = 85772
 num_vector_Y = 34
 num_vector_Z = 3
-num_permut = 16
-TRESHOLD = 5
+num_permut = 2048
+TRESHOLD = 10
 
-cut = 10
+cut = 90
 divide = 4 * (int(num_permut*((100.0-cut)/100.0))+1)
-Beta_Size=num_vector_X*num_vector_Y*divide
-
-
+print divide
+Beta_Size=long(num_vector_X*num_vector_Y*divide)
+print Beta_Size
 X=(X.T).reshape(num_vector_X*VectorSize)
 X=X.astype('float32')
 
@@ -50,11 +52,14 @@ for i in range(num_permut-1):
 	np.random.shuffle(indx)
 	P=np.append(P,indx)
 P=P.astype('int32')
+#Beta = lm.create_array(Beta_Size)
+values , Beta = lm.MULMRegression(X, Y, Z, P,Beta_Size, VectorSize, divide, TRESHOLD, dev)
 
-[values , Beta] = lm.MULMRegression(X, Y, Z, P,VectorSize, divide, TRESHOLD, Beta_Size, dev)
+print values
+Beta=np.resize(Beta,values*4)
+Beta=np.reshape(Beta,(values,4))
+print Beta
 
 #print values
-#shape = (values, 4)
-#Beta.resize (shape)
 #np.savetxt('beta.txt', Beta)
 
