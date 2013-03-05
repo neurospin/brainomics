@@ -29,54 +29,69 @@ __global__ void Kernel_DotProd(const flottant* d_X,
 	flottant *X = &shared[TILE_WIDTH*blockDim.y];
 	__shared__ int P[TILE_WIDTH*BLOCK_SIZEY];
 	__shared__ flottant A[BLOCK_SIZEY];
-	flottant results=0;
-	flottant dot=0;
+	double results=0;
+	double dot=0;
 	int x_id = blockIdx.x;
 	int y_id = blockIdx.y*blockDim.y + threadIdx.y;
 	int z_id = blockIdx.z*blockDim.z + threadIdx.z;
 	int intVectorSize = (VectorSize/TILE_WIDTH)*TILE_WIDTH;
 	int restVectorSize = VectorSize%TILE_WIDTH;
-	int ii, ind;
+	int ii, ind,j,k;
 	int indx;
 	CudaAssert( ( (*cmpt) < max_size ) );
-	for(int k=0; k<VectorSize; k++)
-		X[k]=d_X[x_id*VectorSize+k];
+	for(int k=0; k<VectorSize; k+=blockDim.z*blockDim.y)
+		X[k+threadIdx.y+threadIdx.z*blockDim.y]=d_X[x_id*VectorSize+k+threadIdx.y+threadIdx.z*blockDim.y];
 	X[VectorSize]=0;
-
-	A[threadIdx.z]=dalpha[x_id*num_permut+z_id];
+	
+    A[threadIdx.z]=dalpha[x_id*num_permut+z_id];
 
 	for(ii=0;ii<intVectorSize;ii+=TILE_WIDTH)
 	{
-		for(int k=0; k<blockDim.y; k++)
-			for(int j=0; j<TILE_WIDTH; j+=blockDim.y)
-				Y[k*TILE_WIDTH + j + threadIdx.y]=d_Y[(blockIdx.y*blockDim.y + k)*VectorSize + ii + j + threadIdx.y];
-		for(int k=0; k<blockDim.z; k++)
-			for(int j=0; j<TILE_WIDTH; j+=blockDim.z)
-				P[k*TILE_WIDTH + j + threadIdx.z]=d_P[(blockIdx.z*blockDim.z + k)*VectorSize + ii + j + threadIdx.z];
+		//for(k=0; k<blockDim.z; k++)
+	//		for(j=0; j<TILE_WIDTH; j+=blockDim.y)
+				Y[threadIdx.z+TILE_WIDTH *(  threadIdx.y)]=d_Y[(blockIdx.y*blockDim.y + threadIdx.z)*VectorSize + ii + threadIdx.y];
+		//for(k=0; k<blockDim.z; k++)
+		//	for(j=0; j<TILE_WIDTH; j+=blockDim.z)
+				P[threadIdx.z+TILE_WIDTH *(  threadIdx.y)]=d_P[(blockIdx.z*blockDim.z + threadIdx.z)*VectorSize + ii +  threadIdx.y];
 		__syncthreads();
 
 	
-		for(int j=0;j<TILE_WIDTH;j++)
+		for(j=0;j<TILE_WIDTH;j++)
 		{
-			ind=P[j+threadIdx.z*TILE_WIDTH];
-			dot+= X[ind]*Y[j+threadIdx.y*TILE_WIDTH];
+			ind=P[threadIdx.z+j*TILE_WIDTH];
+			dot+= X[ind]*Y[threadIdx.y+j*TILE_WIDTH];
 		}
 		__syncthreads();
 	}
-	int j=0;
+	j=0;
 	ii=intVectorSize;
 	if(restVectorSize)
 	{
-		for(int k=0; k<blockDim.y; k++)
+/*		for(k=0; k<blockDim.y; k++)
 				Y[k*restVectorSize+j+(threadIdx.y%restVectorSize)]=d_Y[(blockIdx.y*blockDim.y+k)*VectorSize+ii+j+(threadIdx.y%restVectorSize)];
-		for(int k=0; k<blockDim.z; k++)
+		for(k=0; k<blockDim.z; k++)
 				P[k*restVectorSize+j+(threadIdx.z%restVectorSize)]=d_P[(blockIdx.z*blockDim.z+k)*VectorSize+ii+j+(threadIdx.z%restVectorSize)];
 		__syncthreads();
-		for(int j=0;j<restVectorSize;j++)
+		for(j=0;j<restVectorSize;j++)
 		{
 			ind=P[j+threadIdx.z*restVectorSize];
 			dot+= X[ind]*Y[j+threadIdx.y*restVectorSize];
 		}
+*/
+             Y[threadIdx.z+TILE_WIDTH *(  threadIdx.y)]=d_Y[(blockIdx.y*blockDim.y + threadIdx.z)*VectorSize + ii + threadIdx.y];
+        //for(k=0; k<blockDim.z; k++)
+        //  for(j=0; j<TILE_WIDTH; j+=blockDim.z)
+                P[threadIdx.z+TILE_WIDTH *(  threadIdx.y)]=d_P[(blockIdx.z*blockDim.z + threadIdx.z)*VectorSize + ii +  threadIdx.y];
+        __syncthreads();
+
+        for(j=0;j<restVectorSize;j++)
+        {
+            ind=P[threadIdx.z+j*restVectorSize];
+            dot+= X[ind]*Y[threadIdx.y+j*restVectorSize];
+        }
+
+        __syncthreads();
+
 	}
 	
 	results = (dof*dot*dot)/(1-A[threadIdx.z]-dot*dot);
@@ -157,10 +172,10 @@ int  dotProdDevice(const flottant *x_in,
 	else
 		globalLeft-=(XSize + YSize + PSize + ASize);
 		
-    	printf("Total size of X, Y and P	=	%lu MB\n",(XSize + YSize + PSize)/1048576);
-	printf("Global memory left after allocating X and Y	=	%lu MB\n",globalLeft/1048576);
-	printf("Total global memory	 =	%lu MB\n",total/1048576);
-	printf("Size needed for result array	=	 %lu MB\n",TotalSize/1048576);
+//    	printf("Total size of X, Y and P	=	%lu MB\n",(XSize + YSize + PSize)/1048576);
+//	printf("Global memory left after allocating X and Y	=	%lu MB\n",globalLeft/1048576);
+//	printf("Total global memory	 =	%lu MB\n",total/1048576);
+	printf("Total size needed for result array	=	 %lu MB\n",TotalSize/1048576);
  	
 	int BlockSizeY = BLOCK_SIZEY;
 	int BlockSizeP = BLOCK_SIZEY;
@@ -237,16 +252,16 @@ int  dotProdDevice(const flottant *x_in,
 
 	if(size>globalLeft)
 	{
-		printf("Exceeding Memory Capacity \n");
-		printf("current nb_blocks=%d, size=%lu B\n",nb_block_y,size);
+		printf("Exceeding GPU Memory Capacity \n");
+	  //printf("current nb_blocks=%d, size=%lu B\n",nb_block_y,size);
 		nb_block_y = nb_block_y/(size/globalLeft+1)+1;
-		printf("size/globalLeft+1=%lu, new nb_block=%d\n",size/globalLeft+1,nb_block_y);
+		//printf("size/globalLeft+1=%lu, new nb_block=%d\n",size/globalLeft+1,nb_block_y);
+		printf("Number of GPU iterations needed =  %lu\n",size/globalLeft+1);
 	}
 
 	int XVectPerCall=nb_block_x*BlockSizeX;
 	int YVectPerCall=nb_block_y*BlockSizeY;
-	printf("number of Xvectors per call = %d\nnumber of Yvectors per call = %d\n",XVectPerCall,YVectPerCall);
-	int nbXVect,nbYVect;
+//	printf("number of Xvectors per call = %d\nnumber of Yvectors per call = %d\n",XVectPerCall,YVectPerCall);
 
 	SubTotalMem = (XVectPerCall*YVectPerCall)*(divide)*sizeof(flottant);
 	//printf("d_out memory allocated = %lu\n", SubTotalMem);
@@ -257,6 +272,8 @@ int  dotProdDevice(const flottant *x_in,
 	dim3 dimGrid(nb_block_x, nb_block_y, nb_block_p);
 	
 /********************kernel launches**************************/
+    int loop_it=1;
+	int nbXVect=0,nbYVect=0;
 	while (pt_vector_X<num_vector_X){
 		nbXVect = XVectPerCall;
 		if ( pt_vector_X + XVectPerCall > num_vector_X)
@@ -267,24 +284,24 @@ int  dotProdDevice(const flottant *x_in,
 			nbYVect = YVectPerCall;
 			if ( pt_vector_Y + YVectPerCall > New_num_vector_Y)
 				nbYVect = New_num_vector_Y - pt_vector_Y;
-			printf("Number of vectors treated in this loop = %dx%d\n", nbXVect,nbYVect);
-			printf("##############\n");
-			printf("Number of threads	=	%dx%dx%d \n"\
+//			printf("Number of vectors treated in this loop = %dx%d\n", nbXVect,nbYVect);
+			printf("####### Iteration No %d #######\n",loop_it);
+//			printf("Number of threads	=	%dx%dx%d \n"\
 				 "Number of blocks	=	%dx%dx%d \n"\
 				 ,dimBlock.x, dimBlock.y, dimBlock.z, dimGrid.x, dimGrid.y, dimGrid.z);
-			printf("##############\n");
+//			printf("##############\n");
 
 			cutilSafeCall(cudaMemset(d_out, 0 , SubTotalMem));
 			cutilSafeCall(cudaMemset( cmpt, 0 , sizeof(int)));
 			cutilSafeCall(cudaMemset( flag, 0 , sizeof(int)));
 			size_t max_size = (XVectPerCall*YVectPerCall)*(divide/4);
-			printf("Maximum number of values allowed = %G\n", (double)max_size);
+			printf("Maximum number of values allowed in this loop = %G\n", (double)max_size);
 			size_t sharedMem = (VectorSize + 1 + TILE_WIDTH*BlockSizeY)*sizeof(flottant);
 			Kernel_DotProd<<< dimGrid , dimBlock, sharedMem>>>(&dx_in[pt_vector_X*VectorSize], &dy_in[pt_vector_Y*VectorSize], dp_in, d_out,dalpha, pt_vector_Y, VectorSize, num_vector_X, New_num_vector_Y,New_num_permut,cmpt,dof,threshold, max_size, flag); 
 			cutilSafeCall(cudaGetLastError());
 			cutilSafeCall(cudaMemcpy(&hcmpt, cmpt, sizeof(int), cudaMemcpyDeviceToHost));
 			cutilSafeCall(cudaMemcpy(&hflag, flag, sizeof(int), cudaMemcpyDeviceToHost));
-			printf("flag = %d\n", hflag);
+			//printf("flag = %d\n", hflag);
 			if(hflag!=0){
 				 printf("############\nWARNING");
 				 printf(" : Beta size limit was reached. Some values were not calculated.\nTry tuning the output size with the \"divide\" parameter.\n");
@@ -294,11 +311,14 @@ int  dotProdDevice(const flottant *x_in,
 			pt_vector_Y += YVectPerCall;
 //			printf("Max number of values =  %G\nnumber of values calculated in this launch : %d\n", (double)max_size,hcmpt);
 			cutilSafeCall(cudaMemcpy(&beta[4*total_cmpt], d_out, hcmpt*4*sizeof(flottant), cudaMemcpyDeviceToHost));
+            printf("Actual number of values calculated in this loop = %G\n", (double)hcmpt);
 			total_cmpt += hcmpt;
+            loop_it++;
+			printf("#################################\n");
 		}
 		pt_vector_X += XVectPerCall;
 	}
-	printf("number of calculated values =	%G\n",(double)total_cmpt);
+	printf("Total number of calculated values =	%G\n",(double)total_cmpt);
 
 	printf("DotProd done\n");
 	// cleanup
@@ -317,10 +337,10 @@ int MULMRegression(flottant* X, int size_X,
 		   flottant* Y, int size_Y,
 		   flottant* Z, int size_Z,
 		   int* P, int size_permut,
+           flottant* beta, int size_B,
 		   int VectorSize,
 		   flottant divide,
 		   int threshold,
-		   flottant* beta, int size_B,
 		   int dev
 		   )
 {
@@ -331,7 +351,7 @@ int MULMRegression(flottant* X, int size_X,
 
 	
 	printf("Arguments : \n");
-	printf("num_vector_X/Y/Z : %d, %d, %d\n",num_vector_X,num_vector_Y,num_vector_Z);
+	printf("num_vector_X : %d\nnum_vector_Y : %d\nnum_vector_Z : %d\n",num_vector_X,num_vector_Y,num_vector_Z);
 	printf("num_permut : %d\nVectorSize : %d\nThreshold : %d\n",num_permut,VectorSize,threshold);
 		
 	int lost_dof=0;
@@ -355,13 +375,15 @@ int MULMRegression(flottant* X, int size_X,
 		printf("Error : couldn't allocate alpha\n");
 		exit(0);
 	}
-	beta=(flottant*)malloc(size_B*sizeof(flottant));
+//	beta=(flottant*)malloc(size_B*sizeof(flottant));
 	if(beta==NULL){
 		printf("Error : couldn't allocate beta\n");
-		exit(0);
+//		exit(0);
 	}
 //  step 4: original regression (3)
 	dotProdPerm(Y, Z, P, alpha, VectorSize, num_vector_Y, num_vector_Z, num_permut);
+
+    printf("start gpu computing\n");
 	values = dotProdDevice(Y,X,Z,beta,alpha,P,VectorSize,num_vector_Y, num_vector_X,num_vector_Z,num_permut,divide,threshold,dev);
 
 #ifdef DISPLAY
@@ -385,9 +407,9 @@ int MULMRegression(flottant* X, int size_X,
 		mean_scores[i*4]/=count[i];
 	SaveMat(mean_scores,4,num_permut,"mean_scores");
 #endif
-	free(alpha);	
+    free(alpha);	
 	printf("end of MulmRegression call\n");
-	free(beta);
+	//free(beta);
 	return values;
 }
 

@@ -1,0 +1,14 @@
+module mulm gpu
+
+Pour compiler sur Curie :
+
+make
+
+Le module est cree dans le repertoire "swig"
+
+Utilisation sous python :
+
+import swig.linear_model as lm
+[values , Beta] = lm.MULMRegression(X, Y, Z, P,VectorSize, divide, TRESHOLD, Beta_Size, dev)
+
+

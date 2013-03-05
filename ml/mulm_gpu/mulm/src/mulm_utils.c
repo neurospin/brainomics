@@ -21,7 +21,7 @@ int orthoNorm(flottant *x,int siV,int nbV)
 {
 	int i, j, k;
 	int lost_dof=0;
-	printf("Fonction OrthoNorm()\n");
+//	printf("Fonction OrthoNorm()\n");
 	flottant nrm = 0;
 	/* le principe est de calculer l'ensemble des produit scalaire x_i.x_j puis de faire touver l'orthonormalisation par calcul d'une matrice de transformation et d'un update des produit scalaire , les matrice etant symetrique on ne stocke que les triangles*/
 	flottant *mat=(flottant*)calloc(((nbV*(nbV+1))>>1),sizeof(flottant)); /*nombre de valeur dans le triangle =(n*n+1)/2*/
@@ -80,7 +80,7 @@ int orthoNorm(flottant *x,int siV,int nbV)
 void proj(flottant *x,flottant *bp,int siV,int nbX,int nbBp)
 {
 	int i, j, k;
-	printf("Fonction Projection()\n");
+//	printf("Fonction Projection()\n");
 	for(i=0;i<nbX;i++)
 	{
 	    for(j=0;j<nbBp;j++)
@@ -100,7 +100,7 @@ void normalize(flottant *x,int siV,int nbX)
 {
   int i, j;
   flottant nrm=0;
-  printf("Fonction Normalize\n");
+//  printf("Fonction Normalize\n");
    for(j=0;j<nbX;j++)
    {
 	  nrm=0;
@@ -119,7 +119,7 @@ void dotProdPerm(const flottant *x,const flottant *y, const int* P, flottant *al
   int i, j, k, p;
   flottant dot=0;
   int ind;
-  printf("Fonction dotProdPerm\n");
+//  printf("Fonction dotProdPerm\n");
   for(p=0; p<nbP; p++){
      for(k=0;k<nbX;k++){
 	for(j=0;j<nbY;j++){

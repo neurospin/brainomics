@@ -3,6 +3,15 @@
 %{
     #define SWIG_FILE_WITH_INIT
     #include "mulm_regression.h"
+    float* create_array( int size ){
+        float* beta = (float*)malloc((size_t) size);
+        if(beta==NULL){
+            printf("ERROR : Could not allocate Beta\n");
+            return 0;
+        }
+        return beta;
+    }
+
 %}
 
 %include "numpy.i"
@@ -11,9 +20,14 @@
     import_array();
 %}
 
-%apply (float* INPLACE_ARRAY1, int DIM1) {(flottant* X, int size_X),(flottant* Y, int size_Y),(flottant* Z, int size_Z)}
-%apply (int* IN_ARRAY1, int DIM1) {(int* P, int size_permut)}
-%apply (float* ARGOUT_ARRAY1, int DIM1) {(flottant* beta, int size_B)}
+
+%apply (float* IN_ARRAY1    , int DIM1) {(float* X , int size_X)};
+%apply (float* IN_ARRAY1    , int DIM1) {(float* Y , int size_Y)};
+%apply (float* IN_ARRAY1    , int DIM1) {(float* Z , int size_Z)};
+%apply (int* IN_ARRAY1      , int DIM1) {(int*  P  , int size_P)};
+
+%apply (float* ARGOUT_ARRAY1, int DIM1) {(float* beta, int max_beta)}
 
 %include "mulm_regression.h"
+float* create_array( int size );
 
