@@ -13,7 +13,8 @@ GRR = 'localizer-grr.txt'
 # metadata already extracted from /neurospin/acquisition
 ACQUISITION = 'localizer-acquisition.txt'
 
-import os, sys
+import os
+import sys
 import json
 import datetime
 import MySQLdb
@@ -24,7 +25,7 @@ pins_file = open(PINS, 'r')
 for line in pins_file:
     # metadata from reference list
     pin, ref_aq = line.split()
-    result[pin] = { 'orig_ref_aq': ref_aq, }
+    result[pin] = {'orig_ref_aq': ref_aq, }
     # where to find JSON files for each subject
     subject_path = os.path.join(SUBJECTS, pin)
     if not os.path.isdir(subject_path):
@@ -55,7 +56,7 @@ for line in acquisition_file:
     pin = pin.upper()
     if pin in result:
         date = datetime.datetime.strptime(date, "%Y-%m-%d").date()
-        acquisition.setdefault(pin,{})[date] = rel_path
+        acquisition.setdefault(pin, {})[date] = rel_path
 acquisition_file.close()
 
 grr = {}
@@ -67,7 +68,7 @@ for line in grr_file:
     pin = pin.upper()
     if pin in result:
         date = datetime.datetime.strptime(date, "%Y-%m-%d").date()
-        grr.setdefault(pin,{})[date] = ref_aq
+        grr.setdefault(pin, {})[date] = ref_aq
 grr_file.close()
 
 # try to match GRR inclusion dates
