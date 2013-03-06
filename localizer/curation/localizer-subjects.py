@@ -17,7 +17,6 @@ import os
 import sys
 import json
 import datetime
-import MySQLdb
 
 result = {}
 # iterate over subjects in our reference list
