@@ -1,4 +1,13 @@
+#!/usr/bin/python
 # -*- coding: utf-8 -*-
+
+#
+# This script:
+# * retrieves a list of all subjects from the Imagen XNAT database,
+# * for each of the above subjects, dump imaging and questionnaire
+#   metadata into XML files
+#
+
 import httplib2
 
 xnat_rest_url = 'https://imagen.cea.fr/imagen_database/REST'
@@ -7,19 +16,12 @@ project = 'IMAGEN'
 
 class XNATConnection( object ):
   def __init__( self, rest_url, login, password, project ):
-    if rest_url.endswith( '/' ):
-      self.url = rest_url[ :-1 ]
-    else:
-      self.url = rest_url
-    self.url = self.url + '/projects/' + project
-    self.http=httplib2.Http()
+    self.url = rest_url.rstrip('/') + '/projects/' + project
+    self.http = httplib2.Http()
     self.http.add_credentials( login, password )
-  
+
   def get_csv( self, relative_url ):
-    if relative_url.startswith( '/' ):
-      url = self.url + relative_url
-    else:
-      url = self.url + '/' + relative_url
+    url = self.url + '/' + relative_url.lstrip('/')
     resp, content = self.http.request( url + '?format=csv', 'GET' )
     result = [ [self.string_to_python(j) for j in i.split(',')] for i in content.strip().split( '\n' ) 
 ]
@@ -28,13 +30,9 @@ class XNATConnection( object ):
     return header, values
 
   def get_xml( self, relative_url ):
-    if relative_url.startswith( '/' ):
-      url = self.url + relative_url
-    else:
-      url = self.url + '/' + relative_url
+    url = self.url + '/' + relative_url.lstrip('/')
     resp, content = self.http.request( url + '?format=xml', 'GET' )
     return content
-
 
   @staticmethod
   def string_to_python( x ):
