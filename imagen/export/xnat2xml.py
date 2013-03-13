@@ -62,7 +62,7 @@ def worker(subject):
             logging.info("Subject {0}: dumped to XML file {1}".format(subject, filename))
         except IOError as e:
             status = e.errno
-            logging.error("Subject {0}: {1}: {2}".format(subject, filename, e.strerror)))
+            logging.error("Subject {0}: {1}: {2}".format(subject, filename, e.strerror))
         except httplib.HTTPException as e:
             status = e
             logging.error("Subject {0}: {1}".format(subject, str(e)))
