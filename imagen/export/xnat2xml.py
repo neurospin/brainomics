@@ -80,11 +80,9 @@ import functools
 if __name__ == '__main__':
 
     name = None
-    name = 'dp165978' ##### DELETE
     while not name:
         name = raw_input('User: ')
     password = None
-    password = 'McY7LQkS76lk' ##### DELETE
     while not password:
         password = getpass()
 
