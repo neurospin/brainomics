@@ -21,9 +21,14 @@ PROJECT = 'IMAGEN'
 # logging
 #
 import logging
-
 logging.root.setLevel(logging.INFO)
 
+#
+# connection to the XNAT server
+#
+# This class contains whatever is need for the connection, including an Http
+# instance from httplib2.
+#
 from httplib2 import Http
 
 class XNAT(object):
@@ -40,12 +45,32 @@ class XNAT(object):
         uri = '{0}/{1}?format={2}'.format(self._url, query, format)
         return self._http.request(uri, 'GET')
 
+#
+# one XNAT instance per process
+#
+# This variable is initialized once in every process by the initialize().
+#
 _xnat = None
 
+#
+# process initilization
+#
+# This function initializes whatever has to be initialized in every process,
+# including the main process. Currently only the above _xnat global variable
+# needs be initialized.
+#
 def initialize(rest_url, project, name, password):
     global _xnat
     _xnat = XNAT(rest_url, project, name, password)
 
+#
+# worker function passed to child processes
+#
+# Retrieve metadata pertaining to subject as an XML file.
+#
+# Function intialize() muse be called prior to this function. Indeed the
+# the _xnat global variable must be initialized before worker() is called.
+#
 import os
 
 def worker(subject):
@@ -72,10 +97,17 @@ def worker(subject):
                 pass
     return (subject, status)
 
+#
+# start the main process
+#
+# Notes:
+# * Call initialize() before using _xnat in this main process.
+# * Start child processes using Pool.multiprocessing. Functions initialize()
+#   and worker() will be run in these child processes.
+#
 from getpass import getpass
 import csv
 from multiprocessing import Pool
-import functools
 
 if __name__ == '__main__':
 
@@ -86,8 +118,10 @@ if __name__ == '__main__':
     while not password:
         password = getpass()
 
+    # initialize the main process (global variable _xnat)
     initialize(REST_URL, PROJECT, name, password)
 
+    # ask the XNAT server for a list of subjects as a CSV file
     response, content = _xnat.get('subjects', 'csv')
     # first row of XNAT CSV files is a header
     content = content.splitlines()[1:]
