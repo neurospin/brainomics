@@ -43,16 +43,12 @@ __global__ void Kernel_DotProd(const flottant* d_X,
 		X[k+threadIdx.y+threadIdx.z*blockDim.y]=d_X[x_id*VectorSize+k+threadIdx.y+threadIdx.z*blockDim.y];
 	X[VectorSize]=0;
 	
-    A[threadIdx.z]=dalpha[x_id*num_permut+z_id];
+    	A[threadIdx.z]=dalpha[x_id*num_permut+z_id];
 
 	for(ii=0;ii<intVectorSize;ii+=TILE_WIDTH)
 	{
-		//for(k=0; k<blockDim.z; k++)
-	//		for(j=0; j<TILE_WIDTH; j+=blockDim.y)
-				Y[threadIdx.z+TILE_WIDTH *(  threadIdx.y)]=d_Y[(blockIdx.y*blockDim.y + threadIdx.z)*VectorSize + ii + threadIdx.y];
-		//for(k=0; k<blockDim.z; k++)
-		//	for(j=0; j<TILE_WIDTH; j+=blockDim.z)
-				P[threadIdx.z+TILE_WIDTH *(  threadIdx.y)]=d_P[(blockIdx.z*blockDim.z + threadIdx.z)*VectorSize + ii +  threadIdx.y];
+		Y[threadIdx.z+TILE_WIDTH *(  threadIdx.y)]=d_Y[(blockIdx.y*blockDim.y + threadIdx.z)*VectorSize + ii + threadIdx.y];
+		P[threadIdx.z+TILE_WIDTH *(  threadIdx.y)]=d_P[(blockIdx.z*blockDim.z + threadIdx.z)*VectorSize + ii +  threadIdx.y];
 		__syncthreads();
 
 	
@@ -67,30 +63,17 @@ __global__ void Kernel_DotProd(const flottant* d_X,
 	ii=intVectorSize;
 	if(restVectorSize)
 	{
-/*		for(k=0; k<blockDim.y; k++)
-				Y[k*restVectorSize+j+(threadIdx.y%restVectorSize)]=d_Y[(blockIdx.y*blockDim.y+k)*VectorSize+ii+j+(threadIdx.y%restVectorSize)];
-		for(k=0; k<blockDim.z; k++)
-				P[k*restVectorSize+j+(threadIdx.z%restVectorSize)]=d_P[(blockIdx.z*blockDim.z+k)*VectorSize+ii+j+(threadIdx.z%restVectorSize)];
+        	Y[threadIdx.z+TILE_WIDTH *(  threadIdx.y)]=d_Y[(blockIdx.y*blockDim.y + threadIdx.z)*VectorSize + ii + threadIdx.y];
+        	P[threadIdx.z+TILE_WIDTH *(  threadIdx.y)]=d_P[(blockIdx.z*blockDim.z + threadIdx.z)*VectorSize + ii +  threadIdx.y];
+        	__syncthreads();
+
+        	for(j=0;j<restVectorSize;j++)
+        	{
+            		ind=P[threadIdx.z+j*restVectorSize];
+			dot+= X[ind]*Y[threadIdx.y+j*restVectorSize];
+        	}
+
 		__syncthreads();
-		for(j=0;j<restVectorSize;j++)
-		{
-			ind=P[j+threadIdx.z*restVectorSize];
-			dot+= X[ind]*Y[j+threadIdx.y*restVectorSize];
-		}
-*/
-             Y[threadIdx.z+TILE_WIDTH *(  threadIdx.y)]=d_Y[(blockIdx.y*blockDim.y + threadIdx.z)*VectorSize + ii + threadIdx.y];
-        //for(k=0; k<blockDim.z; k++)
-        //  for(j=0; j<TILE_WIDTH; j+=blockDim.z)
-                P[threadIdx.z+TILE_WIDTH *(  threadIdx.y)]=d_P[(blockIdx.z*blockDim.z + threadIdx.z)*VectorSize + ii +  threadIdx.y];
-        __syncthreads();
-
-        for(j=0;j<restVectorSize;j++)
-        {
-            ind=P[threadIdx.z+j*restVectorSize];
-            dot+= X[ind]*Y[threadIdx.y+j*restVectorSize];
-        }
-
-        __syncthreads();
 
 	}
 	
