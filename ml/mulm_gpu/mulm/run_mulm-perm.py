@@ -48,8 +48,8 @@ Z = Z.astype('float32')
 indx = np.arange(VectorSize)
 P = np.append([],indx)
 for i in range(num_permut-1):
-	np.random.shuffle(indx)
-	P = np.append(P,indx)
+    np.random.shuffle(indx)
+    P = np.append(P,indx)
 P = P.astype('int32')
 values, Beta = lm.MULMRegression(X, Y, Z, P, Beta_Size, VectorSize, divide, TRESHOLD, dev)
 
