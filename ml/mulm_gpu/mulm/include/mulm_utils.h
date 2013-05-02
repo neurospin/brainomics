@@ -10,5 +10,3 @@
 #define tri_ind(i,j) (((i)>(j))?(((i)*((i)+1)>>1)+(j)):(((j)*((j)+1)>>1)+(i)))
 
 typedef	float	flottant;
-	   
-
