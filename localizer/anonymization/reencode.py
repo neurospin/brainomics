@@ -3,27 +3,20 @@
 
 SOURCE_DIR = '/neurospin/brainomics/2012_brainomics_localizer/data'
 
-subjects = []
-
+# create list of subjects
 import os.path
 subjects_dir = os.path.join(SOURCE_DIR, 'subjects')
-for subject in os.listdir(subjects_dir):
-    subjects.append(subject)
+subjects = os.listdir(subjects_dir)
 
-# shuffle subjects
+# shuffle list of subjects
 import random
-shuffled = random.sample(subjects, len(subjects))
+random.shuffle(subjects)
 
-# number of digits needed to express the largest 'subjects' index
-digits = 0
-n = len(subjects)
-while n:
-    n /= 10  # base 10
-    digits += 1
+# number of digits needed to express the largest list index
+digits = len(str(len(subjects)))
 
-# print shuffled subjects and their new code
-# the new code is simply built from the shuffled index
-i = 0
-for subject in shuffled:
-    print subject + ', S' + str(i).zfill(digits)
+# the new code is built from the randomly shuffled list index
+i = 1
+for subject in subjects:
+    print subject + ',S' + str(i).zfill(digits)
     i += 1
