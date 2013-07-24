@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*- 
 
 
 DATA_DIR = '/volatile/2012_brainomics_localizer/data'
