@@ -8,6 +8,7 @@ DATA_DIR = '/volatile/2012_brainomics_localizer/data'
 import random
 from itertools import izip
 
+
 def random_conversion_table(subjects):
     """Return a random conversion table for re-encoding subject identifiers
 
@@ -24,7 +25,9 @@ def random_conversion_table(subjects):
     digits = len(str(n))
     return { subject: 'S' + str(code).zfill(digits) for subject, code in izip(subjects, array) }
 
+
 import csv
+
 
 def write_conversion_table(outfile, table):
     """Print conversion table to a CSV outfile
@@ -34,6 +37,7 @@ def write_conversion_table(outfile, table):
     writer = csv.writer(outfile, delimiter=',')
     for item in table.items():
         writer.writerow(item)
+
 
 def read_conversion_table(infile):
     """Read conversion table from infile
@@ -45,7 +49,7 @@ def read_conversion_table(infile):
     Returns a subject -> code dictionary
     """
     reader = csv.reader(infile, delimiter=',')
-    return { row[0].strip():row[1].strip() for row in reader }
+    return { row[0].strip(): row[1].strip() for row in reader }
 
 
 INFILE = '/home/dp165978/WORK_IN_PROGRESS/Localizer94/reencode.csv'
@@ -53,7 +57,7 @@ INFILE = '/home/dp165978/WORK_IN_PROGRESS/Localizer94/reencode.csv'
 if __name__ == '__main__':
 
     import os.path
- 
+
     # prepare to iterate over subject subdirectories in the subjects directory
     SUBJECTS_DIR = os.path.join(DATA_DIR, 'subjects')
     subjects = os.listdir(SUBJECTS_DIR)
@@ -112,13 +116,13 @@ if __name__ == '__main__':
             spm_json = os.path.join(SUBJECTS_DIR, subject, 'spm.json')
             with open(spm_json) as infile:
                 contents = json.load(infile)
-                contents['c_maps'] = { key : '' for key in contents['c_maps'].keys() }
-                contents['c_maps_smoothed'] = { key : '' for key in contents['c_maps_smoothed'].keys() }
+                contents['c_maps'] = { key: '' for key in contents['c_maps'].keys() }
+                contents['c_maps_smoothed'] = { key: '' for key in contents['c_maps_smoothed'].keys() }
                 contents['data'] = [ '' for x in contents['data'] ]
                 contents['mask'] = ''
                 contents['raw_data'] = [ '' for x in contents['raw_data'] ]
                 contents['subject'] = contents['subject'].replace(subject, code)
-                contents['t_maps'] = { key : '' for key in contents['t_maps'].keys() }
+                contents['t_maps'] = { key: '' for key in contents['t_maps'].keys() }
             json.dump(contents, tmpfile, sort_keys=True)
         shutil.move(tmpfile.name, infile.name)
 
