@@ -106,6 +106,7 @@ if __name__ == '__main__':
             behavioural_json = os.path.join(SUBJECTS_DIR, subject, 'behavioural.json')
             with open(behavioural_json) as infile:
                 contents = json.load(infile)
+                contents['exam'] = contents['exam'].replace(subject, code)
                 contents['nip'] = contents['nip'].replace(subject, code)
             json.dump(contents, tmpfile, sort_keys=True)
         shutil.move(tmpfile.name, infile.name)
@@ -131,6 +132,11 @@ if __name__ == '__main__':
             subject_json = os.path.join(SUBJECTS_DIR, subject, 'subject.json')
             with open(subject_json) as infile:
                 contents = json.load(infile)
+                # comments are tricky: the reference other subjects
+                comments = contents['comments']
+                for s, c in conversion_table.iteritems():
+                    comments = comments.replace(s, c)
+                contents['comments'] = comments
                 contents['exam'] = contents['exam'].replace(subject, code)
                 contents['nip'] = contents['nip'].replace(subject, code)
             json.dump(contents, tmpfile, sort_keys=True)
@@ -138,3 +144,11 @@ if __name__ == '__main__':
 
         # re-encode subject subdirectory name
         shutil.move(os.path.join(SUBJECTS_DIR, subject), os.path.join(SUBJECTS_DIR, code))
+
+        # a script in sprintBack contains subject identifiers
+        shutil.rmtree(os.path.join(GENETICS_DIR, 'sprintBack'))
+
+        # chmod -x
+        for root, dirs, files in os.walk(DATA_DIR):  
+            for name in files:
+                os.chmod(os.path.join(root, name), 0o644)
