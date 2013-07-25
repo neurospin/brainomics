@@ -1,13 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*- 
 
-
-DATA_DIR = '/volatile/2012_brainomics_localizer/data'
-
-
 import random
 from itertools import izip
-
 
 def random_conversion_table(subjects):
     """Return a random conversion table for re-encoding subject identifiers
@@ -27,7 +22,6 @@ def random_conversion_table(subjects):
 
 
 import csv
-
 
 def write_conversion_table(outfile, table):
     """Print conversion table to a CSV outfile
@@ -52,32 +46,53 @@ def read_conversion_table(infile):
     return { row[0].strip(): row[1].strip() for row in reader }
 
 
-INFILE = '/home/dp165978/WORK_IN_PROGRESS/Localizer94/reencode.csv'
-
 if __name__ == '__main__':
+
+    import getopt
+    import sys
+
+    # parse command line arguments
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], 'hi:o:',
+                                   ['help', 'input=', 'output='])
+    except getopt.GetoptError as e:
+        print >> sys.stderr, str(e)
+        # TODO: print usage
+        sys.exit(2)
+    read_conversion_file = None
+    write_conversion_file = None
+    for o, a in opts:
+        if o in ("-h", "--help"):
+            # TODO: print usage
+            sys.exit(0)
+        elif o in ("-i", "--input"):
+            read_conversion_file = a
+        elif o in ("-o", "--output"):
+            write_conversion_file = a
+    if len(args) != 1:
+        # TODO: print usage
+        sys.exit(2)
+    data_dir = args[0]
 
     import os.path
 
     # prepare to iterate over subject subdirectories in the subjects directory
-    subjects_dir = os.path.join(DATA_DIR, 'subjects')
+    subjects_dir = os.path.join(data_dir, 'subjects')
     subjects = os.listdir(subjects_dir)
 
-    genetics_dir = os.path.join(DATA_DIR, 'genetics')
-
-    import sys
+    genetics_dir = os.path.join(data_dir, 'genetics')
 
     # read or create subjects conversion table
-    if INFILE:
-        infile = open(INFILE, 'r')
-        conversion_table = read_conversion_table(infile)
-        conversion_set = set(conversion_table.keys())
-        for subject in subjects:
-            if subject not in conversion_set:
-                print >> sys.stderr, 'subject "%s" missing from conversion table' % subject
-                sys.exit()
+    if read_conversion_file:
+        with open(read_conversion_file, 'r') as infile:
+            conversion_table = read_conversion_table(infile)
+            conversion_set = set(conversion_table.keys())
+            for subject in subjects:
+                if subject not in conversion_set:
+                    print >> sys.stderr, 'subject "%s" missing from conversion table' % subject
+                    sys.exit(1)
     else:
         conversion_table = random_conversion_table(subjects)
-        write_conversion_table(sys.stdout, conversion_table)
 
     from tempfile import NamedTemporaryFile
     import shutil
@@ -161,6 +176,11 @@ if __name__ == '__main__':
 
         # chmod -x
         # this has nothing to do with anonymization but I like to beautify!
-        for root, dirs, files in os.walk(DATA_DIR):  
+        for root, dirs, files in os.walk(data_dir):  
             for name in files:
                 os.chmod(os.path.join(root, name), 0o644)
+
+    # write subjects conversion table
+    if write_conversion_file:
+        with open(write_conversion_file, 'w') as outfile:
+            write_conversion_table(outfile, conversion_table)
