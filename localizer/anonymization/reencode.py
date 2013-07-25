@@ -59,10 +59,10 @@ if __name__ == '__main__':
     import os.path
 
     # prepare to iterate over subject subdirectories in the subjects directory
-    SUBJECTS_DIR = os.path.join(DATA_DIR, 'subjects')
-    subjects = os.listdir(SUBJECTS_DIR)
+    subjects_dir = os.path.join(DATA_DIR, 'subjects')
+    subjects = os.listdir(subjects_dir)
 
-    GENETICS_DIR = os.path.join(DATA_DIR, 'genetics')
+    genetics_dir = os.path.join(DATA_DIR, 'genetics')
 
     import sys
 
@@ -83,12 +83,12 @@ if __name__ == '__main__':
     import shutil
 
    # re-encode genotypic data (FAM files only)
-    for plink in os.listdir(GENETICS_DIR):
+    for plink in os.listdir(genetics_dir):
         extension = os.path.splitext(plink)[1]
         if extension.upper() != '.FAM':
             continue
         with NamedTemporaryFile(delete=False) as tmpfile:
-            with open(os.path.join(GENETICS_DIR, plink)) as infile:
+            with open(os.path.join(genetics_dir, plink)) as infile:
                 for line in infile:
                     for subject, code in conversion_table.iteritems():
                         line = line.replace(subject, code)
@@ -96,17 +96,19 @@ if __name__ == '__main__':
         shutil.move(tmpfile.name, infile.name)
 
     import json
+    import re
 
     # re-encode subject data
     for subject in subjects:
+        subject_dir = os.path.join(subjects_dir, subject)
         code = conversion_table[subject]
+        encoded_dir = os.path.join(subjects_dir, code)
 
         # re-encode contents of behavioural.json
         with NamedTemporaryFile(delete=False) as tmpfile:
-            behavioural_json = os.path.join(SUBJECTS_DIR, subject, 'behavioural.json')
+            behavioural_json = os.path.join(subject_dir, 'behavioural.json')
             with open(behavioural_json) as infile:
                 contents = json.load(infile)
-                contents['exam'] = contents['exam'].replace(subject, code)
                 contents['nip'] = contents['nip'].replace(subject, code)
             json.dump(contents, tmpfile, sort_keys=True)
         shutil.move(tmpfile.name, infile.name)
@@ -114,7 +116,7 @@ if __name__ == '__main__':
         # re-encode contents of spm.json
         # totally erase paths starting with /neurospin/unicog
         with NamedTemporaryFile(delete=False) as tmpfile:
-            spm_json = os.path.join(SUBJECTS_DIR, subject, 'spm.json')
+            spm_json = os.path.join(subject_dir, 'spm.json')
             with open(spm_json) as infile:
                 contents = json.load(infile)
                 contents['c_maps'] = { key: '' for key in contents['c_maps'].keys() }
@@ -129,26 +131,36 @@ if __name__ == '__main__':
 
         # re-encode contents of subject.json
         with NamedTemporaryFile(delete=False) as tmpfile:
-            subject_json = os.path.join(SUBJECTS_DIR, subject, 'subject.json')
+            subject_json = os.path.join(subject_dir, 'subject.json')
             with open(subject_json) as infile:
                 contents = json.load(infile)
-                # comments are tricky: the reference other subjects
-                comments = contents['comments']
-                for s, c in conversion_table.iteritems():
-                    comments = comments.replace(s, c)
-                contents['comments'] = comments
+                # comments are tricky: they may reference other subjects
+                if 'comments' in contents:
+                    comments = contents['comments']
+                    if comments:
+                        for s, c in conversion_table.iteritems():
+                            comments = comments.replace(s, c)
+                        comments = re.sub('(bru\d{4})', '<sanitized>', comments)
+                        contents['comments'] = comments
+                # exam identifier may be different from subject identifier
+                # discard it in case it starts with 'bru'
                 contents['exam'] = contents['exam'].replace(subject, code)
+                if contents['exam'].startswith('bru'):
+                    contents['exam'] = '<sanitized>'
                 contents['nip'] = contents['nip'].replace(subject, code)
             json.dump(contents, tmpfile, sort_keys=True)
         shutil.move(tmpfile.name, infile.name)
 
         # re-encode subject subdirectory name
-        shutil.move(os.path.join(SUBJECTS_DIR, subject), os.path.join(SUBJECTS_DIR, code))
+        shutil.move(subject_dir, encoded_dir)
 
-        # a script in sprintBack contains subject identifiers
-        shutil.rmtree(os.path.join(GENETICS_DIR, 'sprintBack'))
+        # this directory may contain subject identifiers
+        sprintBack = os.path.join(genetics_dir, 'sprintBack')
+        if os.path.isdir(sprintBack):
+            shutil.rmtree(sprintBack)
 
         # chmod -x
+        # this has nothing to do with anonymization but I like to beautify!
         for root, dirs, files in os.walk(DATA_DIR):  
             for name in files:
                 os.chmod(os.path.join(root, name), 0o644)
