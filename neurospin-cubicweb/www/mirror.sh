@@ -16,4 +16,4 @@ MYSELF=`basename "$0"`
 rsync -av -e 'ssh' \
     --exclude="$MYSELF" \
     "$SOURCE" \
-    root@neurospin-cubicweb.intra.cea.fr:/var/www/brainomics.cea.fr
+    root@neurospin-cubicweb.intra.cea.fr:/var/www
