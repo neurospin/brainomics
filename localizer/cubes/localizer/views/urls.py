@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 # copyright 2013 LOGILAB S.A. (Paris, FRANCE), all rights reserved.
+# copyright 2013 CEA (Saclay, FRANCE), all rights reserved.
 # contact http://www.logilab.fr -- mailto:contact@logilab.fr
 #
 # This program is free software: you can redistribute it and/or modify it under
@@ -15,13 +16,21 @@
 # You should have received a copy of the GNU Lesser General Public License along
 # with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""cubicweb-localizer postcreate script, executed at instance creation time or when
-the cube is added to an existing instance.
+"""cubicweb-brainomics views/forms/actions/components for web ui"""
 
-You could setup site properties or a workflow here for example.
-"""
+from cubicweb.web.views.urlrewrite import SimpleReqRewriter, rgx
 
-set_property('ui.site-title', 'Brainomics/Localizer')
 
-from cubes.localizer.migration.cards import create_or_update_static_cards
-create_or_update_static_cards(session)
+class LocalizerReqRewriter(SimpleReqRewriter):
+    rules = [
+        (rgx('/brainomics'),
+         dict(rql=r'Any X WHERE X is Card, X title "brainomics"')),
+        (rgx('/localizer'),
+         dict(rql=r'Any X WHERE X is Card, X title "localizer"')),
+        (rgx('/license'),
+         dict(rql=r'Any X WHERE X is Card, X title "license"')),
+        (rgx('/legal'),
+         dict(rql=r'Any X WHERE X is Card, X title "legal"')),
+        (rgx('/dataset'),
+         dict(rql=r'Any X WHERE X is Card, X title "dataset"')),
+        ]
