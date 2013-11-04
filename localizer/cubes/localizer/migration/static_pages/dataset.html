@@ -1,5 +1,3 @@
-
-
 <div class="span12">
 <div class="row-fluid">
 <div class="span3"><h2>Subjects</h2><a href="%(subject-url)s"><img width="200" src="%(subject-image)s"/></a></div>
@@ -9,8 +7,8 @@
 </div>
 </div>
 
-
 <h2><strong>What is it?<small> And who are we?</small></strong></h2>
+
 <p>The BRAINOMICS project is one of the projects chosen by the Agence nationale de la recherche (ANR) in the bioinformatics call of the Investissements d'avenir program. This website is a demonstration of the project based on the Localizer data (courtesy of P. Pinel, S. Dehaene, T. Bourgeron and D. Lebihan) and allows complex query and various visualization of the data.
 This demo is for now only accessible on the Neurospin network.</p>
 <p>This prototype was developed by V. Michel, Y. Schwartz, D. Papadopoulos and V. Frouin</p>
@@ -30,6 +28,6 @@ This demo is for now only accessible on the Neurospin network.</p>
   <li>Query all the Cmap scans of subjects with an age greater than 25, and that have a score greater than 4.O for the "algebre" question of the Localizer questionnary (Question number 2)
   <pre>Any SA WHERE S is Subject, S age > 25, X is QuestionnaireRun, X concerns S, A is Answer,
               A questionnaire_run X, A question Q, Q text "algebre", A value > 4, SA is Scan, SA concerns S, SA type "c map"</pre></li>
-	      <li>Query all the Tmap scans for the "auditory calculation" contrast of subjects along with their Genomics data, when we have acquired data for Snps on the gene "CFB":
-	      <pre>Any S,SCF,FGEN WHERE S is Subject, SC is Scan, SC type "t map", SC label "auditory calculation", SC concerns S, SC filepath SCF, GEN is GenomicMeasure, GEN filepath FGEN, GEN concerns S, GEN platform P, P related_snps SN, G is Gene, G name "CFB", G start_position GSA, G stop_position GSO, SN position SP HAVING SP > GSA, SP &lt; GSO</pre></li>
+  <li>Query all the Tmap scans for the "auditory calculation" contrast of subjects along with their Genomics data, when we have acquired data for Snps on the gene "CFB":
+  <pre>Any S,SCF,FGEN WHERE S is Subject, SC is Scan, SC type "t map", SC label "auditory calculation", SC concerns S, SC filepath SCF, GEN is GenomicMeasure, GEN filepath FGEN, GEN concerns S, GEN platform P, P related_snps SN, G is Gene, G name "CFB", G start_position GSA, G stop_position GSO, SN position SP HAVING SP > GSA, SP &lt; GSO</pre></li>
 </ul>
