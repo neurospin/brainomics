@@ -73,47 +73,59 @@ class LocalizeCardView(PrimaryView):
 ###############################################################################
 ### ACTIONS ###################################################################
 ###############################################################################
-class LicenseAction(Action):
-    __regid__ = 'license'
+class LocalizerAction(Action):
+    __regid__ = 'localizer'
     __select__ = yes()
     category = 'footer'
-    order = 3
-    title = _('License')
-
-    def url(self):
-        return self._cw.build_url('license')
-
-
-class LegalAction(LicenseAction):
-    __regid__ = 'legal'
-    title = _('Legal')
-
-    def url(self):
-        return self._cw.build_url('legal')
-
-
-class LocalizerAction(LicenseAction):
-    __regid__ = 'localizer'
+    order = 1
     title = _('Localizer dataset')
 
     def url(self):
         return self._cw.build_url('localizer')
 
 
-class BrainomicsAction(LicenseAction):
+class DatasetAction(Action):
+    __regid__ = 'dataset'
+    __select__ = yes()
+    category = 'footer'
+    order = 1
+    title = _('Access dataset')
+
+    def url(self):
+        return self._cw.build_url('dataset')
+
+
+class BrainomicsAction(Action):
     __regid__ = 'brainomics'
+    __select__ = yes()
+    category = 'footer'
+    order = 1
     title = _('Brainomics project')
 
     def url(self):
         return self._cw.build_url('brainomics')
 
 
-class DatasetAction(LicenseAction):
-    __regid__ = 'dataset'
-    title = _('Access dataset')
+class LicenseAction(Action):
+    __regid__ = 'license'
+    __select__ = yes()
+    category = 'footer'
+    order = 2
+    title = _('License')
 
     def url(self):
-        return self._cw.build_url('dataset')
+        return self._cw.build_url('license')
+
+
+class LegalAction(Action):
+    __regid__ = 'legal'
+    __select__ = yes()
+    category = 'footer'
+    order = 2
+    title = _('Legal')
+
+    def url(self):
+        return self._cw.build_url('legal')
 
 
 def registration_callback(vreg):
