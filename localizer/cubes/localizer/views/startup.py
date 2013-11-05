@@ -136,3 +136,5 @@ def registration_callback(vreg):
     from cubicweb.web.views.wdoc import HelpAction, AboutAction
     vreg.unregister(HelpAction)
     vreg.unregister(AboutAction)
+    from cubes.brainomics.views.register import BrainomicsRegisterLink
+    vreg.unregister(BrainomicsRegisterLink)
