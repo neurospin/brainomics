@@ -18,16 +18,36 @@
 
 """cubicweb-brainomics views/forms/actions/components for web ui"""
 
-from cubicweb.predicates import is_instance, yes
+from cubicweb.predicates import is_instance, authenticated_user, anonymous_user, yes
 from cubicweb.view import EntityView
 from cubicweb.web.views.primary import PrimaryView
 from cubicweb.web.action import Action
 from cubes.brainomics.views.startup import BrainomicsIndexView
-
+from cubes.brainomics.views.download import DataZipAbstractView
+from cubes.brainomics.views.download import DataZipAuthenticatedView
+from cubes.brainomics.views.download import DataZipAnonymousView
+from cubes.brainomics.views.actions import BrainomicsAbstractDownloadAction, ScanZipFileBox
+ZIP_DOWNLOADABLE = ('Scan',)
 
 ###############################################################################
 ### CARD VIEW #################################################################
 ###############################################################################
+class LocalizerDataZipAbstractView(DataZipAbstractView):
+    __select__ = EntityView.__select__ & is_instance(*ZIP_DOWNLOADABLE)
+
+
+class LocalizerDataZipAuthenticatedView(DataZipAuthenticatedView):
+    __select__ = LocalizerDataZipAbstractView.__select__ & authenticated_user()
+
+
+class LocalizerDataZipAnonymousView(DataZipAnonymousView):
+    __select__ = LocalizerDataZipAbstractView.__select__ & anonymous_user()
+
+
+class LocalizerScanZipFileBox(ScanZipFileBox):
+    __select__ = BrainomicsAbstractDownloadAction.__select__  & is_instance(*ZIP_DOWNLOADABLE)
+
+
 class LocalizerIndexView(BrainomicsIndexView):
 
     def call(self, **kwargs):
@@ -129,10 +149,19 @@ class LegalAction(Action):
 
 
 def registration_callback(vreg):
-    vreg.register_all(globals().values(), __name__, (LocalizerIndexView,))
+    vreg.register_all(globals().values(), __name__,
+                      (LocalizerIndexView, LocalizerDataZipAbstractView,
+                       LocalizerDataZipAuthenticatedView,
+                       LocalizerDataZipAnonymousView,
+                       LocalizerScanZipFileBox))
     vreg.register_and_replace(LocalizerIndexView, BrainomicsIndexView)
     from cubicweb.web.views.actions import GotRhythmAction
     vreg.unregister(GotRhythmAction)
     from cubicweb.web.views.wdoc import HelpAction, AboutAction
     vreg.unregister(HelpAction)
     vreg.unregister(AboutAction)
+    vreg.register_and_replace(LocalizerDataZipAbstractView, DataZipAbstractView)
+    vreg.register_and_replace(LocalizerDataZipAuthenticatedView, DataZipAuthenticatedView)
+    vreg.register_and_replace(LocalizerDataZipAnonymousView, DataZipAnonymousView)
+    vreg.register_and_replace(LocalizerScanZipFileBox, ScanZipFileBox)
+
