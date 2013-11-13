@@ -160,7 +160,6 @@ def registration_callback(vreg):
     from cubicweb.web.views.wdoc import HelpAction, AboutAction
     vreg.unregister(HelpAction)
     vreg.unregister(AboutAction)
-    vreg.register_and_replace(LocalizerDataZipAbstractView, DataZipAbstractView)
     vreg.register_and_replace(LocalizerDataZipAuthenticatedView, DataZipAuthenticatedView)
     vreg.register_and_replace(LocalizerDataZipAnonymousView, DataZipAnonymousView)
     vreg.register_and_replace(LocalizerScanZipFileBox, ScanZipFileBox)
