@@ -16,3 +16,13 @@
 # with this program. If not, see <http://www.gnu.org/licenses/>.
 
 """cubicweb-localizer schema"""
+
+GENOMIC_FILEPATH_PERMISSIONS = {
+    'read': (u'managers',),
+    'update': (u'managers',),
+}
+
+def post_build_callback(schema):
+    # genomic measures must not be downloaded
+    rdef = schema['GenomicMeasure'].rdef('filepath')
+    rdef.permissions = GENOMIC_FILEPATH_PERMISSIONS
