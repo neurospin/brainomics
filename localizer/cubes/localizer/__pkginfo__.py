@@ -13,8 +13,11 @@ author_email = 'contact@logilab.fr'
 description = 'Brainomics/Localizer'
 web = 'http://www.cubicweb.org/project/%s' % distname
 
-__depends__ =  {'cubicweb': '>= 3.16.1',
-                'cubicweb-brainomics': None,
+__depends__ =  {
+    'cubicweb': '>= 3.16.1',
+    'cubicweb-brainomics': None,
+    'cubicweb-registration': None,
+    'cubicweb-forgotpwd': None,
 }
 __recommends__ = {}
 
