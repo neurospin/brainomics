@@ -8,10 +8,10 @@ numversion = (0, 1, 0)
 version = '.'.join(str(num) for num in numversion)
 
 license = 'LGPL'
-author = 'LOGILAB S.A. (Paris, FRANCE)'
-author_email = 'contact@logilab.fr'
+author = 'CEA (Saclay, FRANCE)'
+author_email = 'localizer94@cea.fr'
 description = 'Brainomics/Localizer'
-web = 'http://www.cubicweb.org/project/%s' % distname
+web = 'http://brainomics.cea.fr'
 
 __depends__ =  {
     'cubicweb': '>= 3.16.1',
