@@ -16,8 +16,6 @@ web = 'http://www.cubicweb.org/project/%s' % distname
 __depends__ =  {
     'cubicweb': '>= 3.16.1',
     'cubicweb-brainomics': None,
-    'cubicweb-registration': None,
-    'cubicweb-forgotpwd': None,
 }
 __recommends__ = {}
 
