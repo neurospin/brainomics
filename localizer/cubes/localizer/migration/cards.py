@@ -23,12 +23,6 @@ HERE = osp.abspath(osp.dirname(__file__))
 ###############################################################################
 ### CARDS AND IMAGES DEFINITIONS ##############################################
 ###############################################################################
-# fmri.jpg = http://www.dreamstime.com/stock-images-hand-pushing-mri-button-virtual-symbolizing-magnetic-resonance-imaging-being-pressed-image33211444
-# localizer.jpg = http://thumbs.dreamstime.com/z/medical-concept-28829039.jpg
-# dataset.png = http://thumbs.dreamstime.com/z/symbol-database-pushcart-white-d-rendered-32994616.jpg
-# brainomics.jpg = http://thumbs.dreamstime.com/x/business-analytics-apple-ipad-28730600.jpg
-
-
 HTMLS = {u'index': open(osp.join(HERE, 'static_pages/index.html')).read().decode('utf8'),
          u'brainomics': open(osp.join(HERE, 'static_pages/brainomics.html')).read().decode('utf8'),
          u'localizer': open(osp.join(HERE, 'static_pages/localizer.html')).read().decode('utf8'),
