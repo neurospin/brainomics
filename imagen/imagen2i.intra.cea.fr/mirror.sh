@@ -15,5 +15,9 @@ MYSELF=`basename "$0"`
 #
 rsync -rlptv -e 'ssh' \
     --exclude="$MYSELF" \
-    "$SOURCE" \
+    "$SOURCE/var/www" \
     root@neurospin-cubicweb.intra.cea.fr:/var/www
+rsync -rlptv -e 'ssh' \
+    --exclude="$MYSELF" \
+    "$SOURCE/home/imagen" \
+    imagen@neurospin-cubicweb.intra.cea.fr:/home/imagen
