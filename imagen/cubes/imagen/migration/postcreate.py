@@ -22,5 +22,17 @@ You could setup site properties or a workflow here for example.
 """
 
 # Example of site property change
-set_property('ui.site-title', "Brainomics/Imagen")
+set_property('ui.site-title', "Imagen V2")
 
+# Create CWusers from an existing list
+# Taken from the catidb sources - thank you CATI!
+users = {
+    'user': '$6$rounds=30302$dUpRDITZTsDdYoGL$tpodwig0wm/k/46V7nuvxcrQo8l5Fbwv/ih0AMgR1i0mvqTIYXyWVb/fEP21DMt6haLzQD4Z3XFnz3OhX3ZG11',
+    'demo': '$6$rounds=31866$XUlvCKS9qAmr1Fxj$NAOZcYNqhA6NkhKm.8LxTDUSZJxJT3StLIqmqE68QHDz2OqE/gwlQfUFuMTtDTKWHXocJ2wXyiTggHvKnG0HX0',
+}
+from cubicweb import Binary
+for login, upassword in users.items():
+    rset = rql("INSERT CWUser X: X login '%s', X upassword '%s'" %
+               (unicode(login), Binary(upassword)))
+    user_eid = rset[0][0]
+    rset = rql("SET U in_group G WHERE U eid %d, G name 'users'" % user_eid)
