@@ -13,7 +13,11 @@ author_email = 'antoine.grigis@cea.fr'
 description = 'ImagenFU2_File_Share'
 web = 'http://www.cubicweb.org/project/%s' % distname
 
-__depends__ =  {'cubicweb': '>= 3.17.11'}
+__depends__ =  {
+    'cubicweb': '>= 3.17.11',
+    'cubicweb-medicalexp': None
+}
+
 __recommends__ = {}
 
 classifiers = [
