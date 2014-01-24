@@ -1,0 +1,21 @@
+Source: cubicweb-file-share
+Section: web
+Priority: optional
+Maintainer: AGrigis <antoine.grigis@cea.fr>
+Build-Depends: debhelper (>= 7), python (>= 2.6), python-support
+Standards-Version: 3.9.3
+XS-Python-Version: >= 2.6
+
+Package: cubicweb-file-share
+Architecture: all
+Depends:
+ cubicweb-common (>= 3.17.11),
+ ${python:Depends},
+ ${misc:Depends},
+Description: ImagenFU2_File_Share
+ CubicWeb is a semantic web application framework.
+ .
+ ImagenFU2_File_Share
+ .
+ This package will install all the components you need to run the
+ cubicweb-file-share application (cube :)..
