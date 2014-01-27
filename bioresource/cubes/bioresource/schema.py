@@ -24,10 +24,10 @@ from yams.buildobjs import (EntityType, RelationDefinition,
 from cubes.genomics.schema import GenomicPlatform
 from cubes.genomics.schema import Snp
 from cubes.genomics.schema import Gene
-from cubes.medicalexp.schema import Assessment
-from cubes.medicalexp.schema import ProcessingRun
-from cubes.medicalexp.schema import ScoreDefinition
-from cubes.medicalexp.schema import ScoreValue
+#from cubes.medicalexp.schema import Assessment
+#from cubes.medicalexp.schema import ProcessingRun
+#from cubes.medicalexp.schema import ScoreDefinition
+#from cubes.medicalexp.schema import ScoreValue
 
 
 # Remove identifier and add name
