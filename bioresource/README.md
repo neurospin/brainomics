@@ -15,13 +15,18 @@ hg clone http://hg.logilab.org/review/cubes/neuroimaging
 
 hg clone http://hg.logilab.org/review/cubes/bootstrap
 hg clone http://hg.logilab.org/review/cubes/squareui
+```
 
-hg clone http://hg.logilab.org/review/cubes/card
-hg clone http://hg.logilab.org/review/cubes/comment
-hg clone http://hg.logilab.org/review/cubes/dataio
-hg clone http://hg.logilab.org/review/cubes/file
-hg clone http://hg.logilab.org/review/cubes/dataio
-hg clone http://hg.logilab.org/review/cubes/jqplot
+The above cubes have depencies that can be installed as system packages.
+On Ubuntu:
+
+```
+cubicweb-card
+cubicweb-comment
+cubicweb-dataio
+cubicweb-file
+cubicweb-dataio
+cubicweb-jqplot
 ```
 
 Since the newest version may be broken, you need stable version instead, for example:
@@ -40,6 +45,3 @@ user:        Katia Saurfelt <katia.saurfelt@logilab.fr>
 date:        Fri Oct 18 15:33:37 2013 +0200
 summary:     [facets] add missing DATA_URL javascript variable definition (closes #3230380)
 ```
-
-
-
