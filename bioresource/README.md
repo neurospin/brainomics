@@ -39,7 +39,8 @@ hg clone -u stable http://hg.logilab.org/review/cubes/registration
 
 squareui needs to roll back into this version
 ```
-hg clone http://hg.logilab.org/review/cubes/squareui
+$ hg clone http://hg.logilab.org/review/cubes/squareui
+$ hg up -r 16
 
 changeset:   16:e7863ce5b727
 user:        Katia Saurfelt <katia.saurfelt@logilab.fr>
