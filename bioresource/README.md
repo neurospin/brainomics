@@ -33,9 +33,9 @@ hg clone -u stable http://hg.logilab.org/review/cubes/registration
 squareui needs to roll back into this version
 ```
 $ hg clone http://hg.logilab.org/review/cubes/squareui
-$ hg up -r e912f1af89b2
+$ hg up -r 292de533fa69
 
-changeset:   26:e912f1af89b2
+changeset:   26:292de533fa69
 user:        Katia Saurfelt <katia.saurfelt@logilab.fr>
 date:        Fri Oct 18 15:33:37 2013 +0200
 summary:     [facets] add missing DATA_URL javascript variable definition (closes #3230380)
