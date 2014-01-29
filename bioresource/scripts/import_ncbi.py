@@ -186,7 +186,9 @@ def locate_genes(snp_end_pos, gene_list):
     gene_list.append(("gen1", 1, 5))
     gene_list.append(("gen4", 2, 3))
     gene_list.append(("gen3", 11, 15))
-    for pos in xrange(20):
+    size = 1000
+    test_list = range(size) - np.ones(size) * 10
+    for pos in test_list:
         res1 = locate_genes(pos, gene_list)
         res2 = locate_gene_simple(pos, gene_list)
         print "=================================="
@@ -196,27 +198,31 @@ def locate_genes(snp_end_pos, gene_list):
         print "Gen=", res1
     """
     associated_gene_eids = []
-    # sort genes and remove not usefule genes
-    start_pos_sorted_genes = gene_list
-    start_pos_sorted_genes.sort(key=lambda r: r[1])
-    sorted_start_positions = [r[1] for r in start_pos_sorted_genes]
-    start_pos = bisect_right(sorted_start_positions, snp_end_pos) - 1
-    if start_pos is not None:
-        if start_pos >= 0 and start_pos < len(start_pos_sorted_genes) - 1:
-            start_pos_sorted_genes = start_pos_sorted_genes[:start_pos + 1]
-        if start_pos < 0:
-            return associated_gene_eids
-    start_pos_sorted_genes.sort(key=lambda r: r[2])
-    stop_pos_sorted_genes = start_pos_sorted_genes
-    sorted_stop_positions = [r[2] for r in stop_pos_sorted_genes]
-    stop_pos = bisect_right(sorted_stop_positions, snp_end_pos) - 1
-    if stop_pos is not None:
-        if stop_pos < 0:
-            stop_pos = 0
-        stop_pos_sorted_genes = stop_pos_sorted_genes[stop_pos:]
     associated_gene_eids =\
-        locate_gene_simple(snp_end_pos, stop_pos_sorted_genes)
+        locate_gene_simple(snp_end_pos, gene_list)
     return associated_gene_eids
+    # sort genes and remove not usefule genes
+#    start_pos_sorted_genes = gene_list
+#    start_pos_sorted_genes.sort(key=lambda r: r[1])
+#    sorted_start_positions = [r[1] for r in start_pos_sorted_genes]
+#    start_pos = bisect_right(sorted_start_positions, snp_end_pos) - 1
+#    if start_pos is not None:
+#        if start_pos >= 0 and start_pos < len(start_pos_sorted_genes) - 1:
+#            start_pos_sorted_genes = start_pos_sorted_genes[:start_pos + 1]
+#        if start_pos < 0:
+#            return associated_gene_eids
+#    start_pos_sorted_genes.sort(key=lambda r: r[2])
+#    stop_pos_sorted_genes = start_pos_sorted_genes
+#    sorted_stop_positions = [r[2] for r in stop_pos_sorted_genes]
+#    stop_pos = bisect_right(sorted_stop_positions, snp_end_pos) - 1
+#    if stop_pos is not None:
+#        if stop_pos < 0:
+#            stop_pos = 0
+#        stop_pos_sorted_genes = stop_pos_sorted_genes[stop_pos:]
+#    associated_gene_eids = []
+#    associated_gene_eids =\
+#        locate_gene_simple(snp_end_pos, stop_pos_sorted_genes)
+#    return associated_gene_eids
 
 
 def import_chromosomes_db(store, path_chromosomes_json):
@@ -232,7 +238,6 @@ def import_genes_db(store,
                     chr_map):
     genes = import_genes(path_chromosomes_json, path_hg18_ref_gen_mate)
     for gene in genes:
-        #print 'gene', gene['name'], gene['chromosome']
         gene['chromosome'] = chr_map[gene['chromosome']]
         gene = store.create_entity('Gene', **gene)
     store.flush()
@@ -265,6 +270,47 @@ class NcbiSnpMapperConfig:
         self.line_num = line_num
 
 
+def is_useful_chromosome(chromosome_name):
+    '''
+    >>> is_useful_chromosome(u'chr6_apd_hap1')
+    True
+    >>> is_useful_chromosome(u'chr9_gl000198_random')
+    False
+    >>> is_useful_chromosome(u'chrX')
+    True
+    >>> is_useful_chromosome(u'chr1')
+    True
+    >>> is_useful_chromosome(u'chr11')
+    True
+    >>> is_useful_chromosome(u'chrUn_gl000229')
+    False
+    >>> is_useful_chromosome(u'chr6_dbb_hap3')
+    True
+    >>> is_useful_chromosome(u'chrUn_gl000225')
+    False
+    '''
+    not_useful_patterns = [u"ch(.*)_random",
+                           u"chrUn_(.*)"]
+    for nu_pattern in not_useful_patterns:
+        res = re.search(nu_pattern, chromosome_name)
+        if res is not None:
+            return False
+    return True
+
+
+def extract_chr_name(chromosome_name):
+    '''
+    >>> extract_chr_name(u'chr6_apd_hap1')
+    u'chr6'
+    >>> extract_chr_name(u'chr16_gl000225')
+    u'chr16'
+    '''
+    pattern = u'chr(.*?)_(.*)'
+    res = re.search(pattern, chromosome_name)
+    ch_name = "chr" + res.groups()[0]
+    return ch_name
+
+
 def flush_lines_into_db(input_lines,
                         store,
                         is_mute,
@@ -282,25 +328,34 @@ def flush_lines_into_db(input_lines,
             snp['rs_id'] = unicode(words[4])
             # Only the end position will be put here
             snp['position'] = int(words[3])
-            snp['chromosome'] = chr_map[unicode(words[1])]
-            # print "======================================"
-            # print "words = ", words
-            # print "snp = ", repr(snp)
-            # Save into database
-            snp_db = store.create_entity('Snp', **snp)
-            add_rel_platform_snp(store=store,
-                                 platform_eids=platform_eids,
-                                 platform_snps=platform_snps,
-                                 snp_rs_id=snp['rs_id'],
-                                 snp_db=snp_db)
-            # Look for all the gens and add relations
-            gene_eids = locate_genes(snp['position'],
-                                     sorted_gene_list)
-            if gene_eids != []:
-                for gene_eid in gene_eids:
-                    store.relate(gene_eid,
-                                 'snps_genes',
-                                 snp_db.eid)
+            ch_name = unicode(words[1])
+            if is_useful_chromosome(ch_name):
+                if ch_name in chr_map:
+                    snp['chromosome'] = chr_map[ch_name]
+                elif extract_chr_name(ch_name) in chr_map:
+                    snp['chromosome'] = chr_map[extract_chr_name(ch_name)]
+                else:
+                    print "Cannot find %s in %s" % (extract_chr_name(ch_name),
+                                                    repr(chr_map))
+                    continue
+                # print "======================================"
+                # print "words = ", words
+                # print "snp = ", repr(snp)
+                # Save into database
+                snp_db = store.create_entity('Snp', **snp)
+                add_rel_platform_snp(store=store,
+                                     platform_eids=platform_eids,
+                                     platform_snps=platform_snps,
+                                     snp_rs_id=snp['rs_id'],
+                                     snp_db=snp_db)
+                # Look for all the gens and add relations
+                gene_eids = locate_genes(snp['position'],
+                                         sorted_gene_list)
+                if gene_eids != []:
+                    for gene_eid in gene_eids:
+                        store.relate(gene_eid,
+                                     'snps_genes',
+                                     snp_db.eid)
             if isnp % store_flush_num == 0:
                 store.flush()
     store.flush()
@@ -322,7 +377,7 @@ def import_ncbi_snp_mapper(mapper_config):
     is_mute = mapper_config.is_mute
     line_num = mapper_config.line_num
     isnp = 0
-    store_flush_num = 5000
+    store_flush_num = 80000
     file_line_flush_num = store_flush_num
     input_lines = []
     len_input_lines = 0
@@ -408,9 +463,10 @@ if __name__ == '__main__':
     store = SQLGenObjectStore(session)
     sqlgen_store = True
     selected_opt = ""
-    # root_dir = "/volatile/jinpeng/frouin/ncbi/scripts/ncbi"
+    # root_dir = "/neurospin/brainomics/2014_bioresource/data"
     root_dir = osp.abspath(sys.argv[4])
     genetics_dir = osp.join(root_dir, 'genetics')
+    additional_genetics_dir = osp.join(root_dir, 'additional_genetics')
     if len(sys.argv) >= 6:
         selected_opt = sys.argv[5]
     if selected_opt == compute_opt.snps:
@@ -420,7 +476,7 @@ if __name__ == '__main__':
         else:
             snps_data_path = osp.join(genetics_dir, "snp138Common.txt")
     g_mes = 'qc_subjects_qc_genetics_all_snps_common.bim'  # 'Localizer94.bim'
-    path_chromosomes_json = os.path.join(genetics_dir,
+    path_chromosomes_json = os.path.join(additional_genetics_dir,
                                          'chromosomes.json')
     path_hg18_ref_gen_mate = os.path.join(genetics_dir,
                                           'hg18.refGene.meta')

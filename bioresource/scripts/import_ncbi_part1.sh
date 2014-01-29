@@ -2,4 +2,4 @@
 CUBENAME=bioresource
 INSTANCENAME=inst_$CUBENAME
 
-cubicweb-ctl shell $INSTANCENAME ./importncbi.py /volatile/jinpeng/frouin/ncbi/scripts/ncbi
+cubicweb-ctl shell $INSTANCENAME ./import_ncbi.py /neurospin/brainomics/2014_bioresource/data
