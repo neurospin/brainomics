@@ -19,8 +19,10 @@ from cubes.brainomics.importers.helpers import (get_image_info,
                                                 import_chromosomes,
                                                 import_snps)
 
+
 class compute_opt:
     snps = "SNPS"
+
 
 def read_csv_col(filename, ncol, quote='"', spliter=","):
     """
@@ -148,8 +150,8 @@ def get_sorted_genes_db(session):
     gene_list = []
     for gene in genes:
         data_element = (gene.eid,
-                        gene.start_position,
-                        gene.stop_position)
+                        float(gene.start_position),
+                        float(gene.stop_position) + 0.001)
         gene_list.append(data_element)
     gene_list.sort(key=lambda r: r[1])
     return gene_list
@@ -160,7 +162,7 @@ def locate_gene_simple(snp_end_pos, gene_list):
     for gene in gene_list:
         start_pos = gene[1]
         stop_pos = gene[2]
-        if snp_end_pos >= start_pos and snp_end_pos <= stop_pos:
+        if snp_end_pos >= start_pos and snp_end_pos < stop_pos:
             associated_gene_eids.append(gene[0])
     return associated_gene_eids
 
@@ -176,7 +178,49 @@ def cmp_list_str(list_1, list_2):
     return True
 
 
-def locate_genes(snp_end_pos, gene_list):
+def range_index(ranges):
+    '''
+    Example
+    -------
+    gene_list = []
+    gene_list.append(("gen2", 6, 10))
+    gene_list.append(("gen1", 1, 5))
+    gene_list.append(("gen4", 2, 3))
+    gene_list.append(("gen3", 11, 15))
+    sorted_sep_points, index_res = range_index(gene_list)
+    '''
+    sep_points = set()
+    for erange in ranges:
+        sep_points.add(erange[1])
+        sep_points.add(erange[2])
+    sorted_ranges = []
+    list_points = list(sep_points)
+    for i_point in xrange(len(list_points) - 1):
+        sorted_ranges.append((list_points[i_point],
+                              list_points[i_point + 1]))
+    index_res = []
+    for erange in sorted_ranges:
+        lower = erange[0]
+        higher = erange[1]
+        associated_ranges = []
+        for arange in ranges:
+            if ((arange[1] >= lower and arange[1] < higher) or \
+               (arange[2] > lower and arange[2] < higher)) or \
+               (arange[1] <= lower and arange[2] >= higher):
+                associated_ranges.append(arange)
+        index_res.append(associated_ranges)
+    sorted_sep_points = list(sep_points)
+    return sorted_sep_points, index_res
+
+
+def find_ranges(sorted_sep_points, index_res, point_x):
+    pos = bisect_right(sorted_sep_points, point_x) - 1
+    if pos == -1 or pos == (len(sorted_sep_points) - 1):
+        return []
+    return index_res[pos]
+
+
+def locate_genes(sorted_sep_points, index_res, snp_end_pos):
     """
     binary search gene
     Example
@@ -186,43 +230,26 @@ def locate_genes(snp_end_pos, gene_list):
     gene_list.append(("gen1", 1, 5))
     gene_list.append(("gen4", 2, 3))
     gene_list.append(("gen3", 11, 15))
+    gene_list.append(("gen3", 12, 16))
+    sorted_sep_points, index_res = range_index(gene_list)
     size = 1000
     test_list = range(size) - np.ones(size) * 10
     for pos in test_list:
-        res1 = locate_genes(pos, gene_list)
+        res1 = locate_genes(sorted_sep_points, index_res, pos)
         res2 = locate_gene_simple(pos, gene_list)
         print "=================================="
-        if not cmp_list_str(res1, res2):
-            print "Error"
         print "pos=", pos
         print "Gen=", res1
+        if not cmp_list_str(res1, res2):
+            print "Error"
+            break
     """
     associated_gene_eids = []
-    associated_gene_eids =\
-        locate_gene_simple(snp_end_pos, gene_list)
+    associated_gene_eids_list = \
+        find_ranges(sorted_sep_points, index_res, snp_end_pos)
+    for i in associated_gene_eids_list:
+        associated_gene_eids.append(i[0])
     return associated_gene_eids
-    # sort genes and remove not usefule genes
-#    start_pos_sorted_genes = gene_list
-#    start_pos_sorted_genes.sort(key=lambda r: r[1])
-#    sorted_start_positions = [r[1] for r in start_pos_sorted_genes]
-#    start_pos = bisect_right(sorted_start_positions, snp_end_pos) - 1
-#    if start_pos is not None:
-#        if start_pos >= 0 and start_pos < len(start_pos_sorted_genes) - 1:
-#            start_pos_sorted_genes = start_pos_sorted_genes[:start_pos + 1]
-#        if start_pos < 0:
-#            return associated_gene_eids
-#    start_pos_sorted_genes.sort(key=lambda r: r[2])
-#    stop_pos_sorted_genes = start_pos_sorted_genes
-#    sorted_stop_positions = [r[2] for r in stop_pos_sorted_genes]
-#    stop_pos = bisect_right(sorted_stop_positions, snp_end_pos) - 1
-#    if stop_pos is not None:
-#        if stop_pos < 0:
-#            stop_pos = 0
-#        stop_pos_sorted_genes = stop_pos_sorted_genes[stop_pos:]
-#    associated_gene_eids = []
-#    associated_gene_eids =\
-#        locate_gene_simple(snp_end_pos, stop_pos_sorted_genes)
-#    return associated_gene_eids
 
 
 def import_chromosomes_db(store, path_chromosomes_json):
@@ -317,9 +344,12 @@ def flush_lines_into_db(input_lines,
                         chr_map,
                         platform_eids,
                         platform_snps,
-                        sorted_gene_list,
+                        sorted_sep_points,
+                        index_res,
                         store_flush_num=100000):
     isnp = 0
+    start_time = datetime.datetime.now()
+    detal_total_locate_genes_time = datetime.timedelta()
     for line in input_lines:
         words = line.split("\t")
         if len(words) > 0:
@@ -348,16 +378,36 @@ def flush_lines_into_db(input_lines,
                                      platform_snps=platform_snps,
                                      snp_rs_id=snp['rs_id'],
                                      snp_db=snp_db)
+                start_locate_genes_time = datetime.datetime.now()
                 # Look for all the gens and add relations
-                gene_eids = locate_genes(snp['position'],
-                                         sorted_gene_list)
+                gene_eids = locate_genes(sorted_sep_points,
+                                         index_res,
+                                         snp['position'])
+                detal_total_locate_genes_time += datetime.datetime.now() - \
+                                                 start_locate_genes_time
+
                 if gene_eids != []:
                     for gene_eid in gene_eids:
                         store.relate(gene_eid,
                                      'snps_genes',
                                      snp_db.eid)
             if isnp % store_flush_num == 0:
+                delta_time = datetime.datetime.now() - start_time
+                minutes = float(delta_time.seconds) / float(60)
+                print "It takes %s minutes to create %s snps create_entity"\
+                      "(locate genes %s seconds)" %\
+                       (repr(minutes),
+                        repr(store_flush_num),
+                        repr(detal_total_locate_genes_time.seconds))
+                start_time = datetime.datetime.now()
+                detal_total_locate_genes_time = datetime.timedelta()
+
+                start_store_flush_time = datetime.datetime.now()
                 store.flush()
+                delta_time = datetime.datetime.now() - start_store_flush_time
+                minutes = float(delta_time.seconds) / float(60)
+                print "It takes %s minutes to create %s snps flush store" %\
+                       (repr(minutes), repr(store_flush_num))
     store.flush()
     return isnp
 
@@ -374,14 +424,16 @@ def import_ncbi_snp_mapper(mapper_config):
     platform_eids = mapper_config.platform_eids
     platform_snps = mapper_config.platform_snps
     sorted_gene_list = mapper_config.sorted_gene_list
+    sorted_sep_points, index_res = range_index(sorted_gene_list)
     is_mute = mapper_config.is_mute
     line_num = mapper_config.line_num
     isnp = 0
-    store_flush_num = 80000
+    store_flush_num = 100000
     file_line_flush_num = store_flush_num
     input_lines = []
     len_input_lines = 0
     start_time = datetime.datetime.now()
+    print "start_time = ", start_time
     ########################### Import data ############################
     with open(snps_data_path) as infile:
         for line in infile:
@@ -396,7 +448,8 @@ def import_ncbi_snp_mapper(mapper_config):
                                     chr_map,
                                     platform_eids,
                                     platform_snps,
-                                    sorted_gene_list,
+                                    sorted_sep_points,
+                                    index_res,
                                     store_flush_num)
                 input_lines = []
                 len_input_lines = 0
@@ -411,13 +464,17 @@ def import_ncbi_snp_mapper(mapper_config):
                     sys.stdout.write("Already import " +
                                 repr(isnp) +
                                 " snps into db." + "\n")
+    print "Try to flush last input lines:", len(input_lines)
     flush_lines_into_db(input_lines,
                         store,
                         is_mute,
                         chr_map,
                         platform_eids,
                         platform_snps,
+                        sorted_sep_points,
+                        index_res,
                         store_flush_num)
+    print "end_time = ", datetime.datetime.now()
     return isnp
 
 
