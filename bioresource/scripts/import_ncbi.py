@@ -150,8 +150,8 @@ def get_sorted_genes_db(session):
     gene_list = []
     for gene in genes:
         data_element = (gene.eid,
-                        float(gene.start_position),
-                        float(gene.stop_position) + 0.001)
+                        gene.start_position,
+                        gene.stop_position)
         gene_list.append(data_element)
     gene_list.sort(key=lambda r: r[1])
     return gene_list
@@ -194,10 +194,11 @@ def range_index(ranges):
         sep_points.add(erange[1])
         sep_points.add(erange[2])
     sorted_ranges = []
-    list_points = list(sep_points)
-    for i_point in xrange(len(list_points) - 1):
-        sorted_ranges.append((list_points[i_point],
-                              list_points[i_point + 1]))
+    sorted_sep_points = list(sep_points)
+    sorted_sep_points.sort()
+    for i_point in xrange(len(sorted_sep_points) - 1):
+        sorted_ranges.append((sorted_sep_points[i_point],
+                              sorted_sep_points[i_point + 1]))
     index_res = []
     for erange in sorted_ranges:
         lower = erange[0]
@@ -207,13 +208,22 @@ def range_index(ranges):
             if ((arange[1] >= lower and arange[1] < higher) or \
                (arange[2] > lower and arange[2] < higher)) or \
                (arange[1] <= lower and arange[2] >= higher):
-                associated_ranges.append(arange)
+                associated_ranges.append(arange[0])
         index_res.append(associated_ranges)
-    sorted_sep_points = list(sep_points)
     return sorted_sep_points, index_res
 
 
 def find_ranges(sorted_sep_points, index_res, point_x):
+    #    if point_x < sorted_sep_points[0]:
+    #        return []
+    #    for i in xrange(len(sorted_sep_points)):
+    #        if point_x >= sorted_sep_points[i]:
+    #            print "=================================="
+    #            print i
+    #            print sorted_sep_points[i]
+    #            print sorted_sep_points[i + 1]
+    #            return index_res[i]
+    #    return index_res[len(index_res) - 1]
     pos = bisect_right(sorted_sep_points, point_x) - 1
     if pos == -1 or pos == (len(sorted_sep_points) - 1):
         return []
@@ -244,11 +254,9 @@ def locate_genes(sorted_sep_points, index_res, snp_end_pos):
             print "Error"
             break
     """
-    associated_gene_eids = []
-    associated_gene_eids_list = \
-        find_ranges(sorted_sep_points, index_res, snp_end_pos)
-    for i in associated_gene_eids_list:
-        associated_gene_eids.append(i[0])
+    associated_gene_eids = find_ranges(sorted_sep_points,
+                                       index_res,
+                                       snp_end_pos)
     return associated_gene_eids
 
 
@@ -385,7 +393,6 @@ def flush_lines_into_db(input_lines,
                                          snp['position'])
                 detal_total_locate_genes_time += datetime.datetime.now() - \
                                                  start_locate_genes_time
-
                 if gene_eids != []:
                     for gene_eid in gene_eids:
                         store.relate(gene_eid,
@@ -401,7 +408,6 @@ def flush_lines_into_db(input_lines,
                         repr(detal_total_locate_genes_time.seconds))
                 start_time = datetime.datetime.now()
                 detal_total_locate_genes_time = datetime.timedelta()
-
                 start_store_flush_time = datetime.datetime.now()
                 store.flush()
                 delta_time = datetime.datetime.now() - start_store_flush_time
@@ -424,11 +430,15 @@ def import_ncbi_snp_mapper(mapper_config):
     platform_eids = mapper_config.platform_eids
     platform_snps = mapper_config.platform_snps
     sorted_gene_list = mapper_config.sorted_gene_list
+    print "start to index gene positions"
     sorted_sep_points, index_res = range_index(sorted_gene_list)
+    # sorted_sep_points = None
+    # index_res = None
+    print "end to index gene positions"
     is_mute = mapper_config.is_mute
     line_num = mapper_config.line_num
     isnp = 0
-    store_flush_num = 100000
+    store_flush_num = 200000
     file_line_flush_num = store_flush_num
     input_lines = []
     len_input_lines = 0
