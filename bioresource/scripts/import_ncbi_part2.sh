@@ -5,12 +5,14 @@
 
 CUBENAME=bioresource
 INSTANCENAME=inst_$CUBENAME
+LOGDIRPATH=~/ncbi_logs
+BIORES_DATA_ROOT=/neurospin/brainomics/2014_bioresource/data
 
-cubicweb-ctl shell $INSTANCENAME ./import_ncbi.py /neurospin/brainomics/2014_bioresource/data SNPS /neurospin/brainomics/2014_bioresource/data/snps/cleaned_snp138Common.txt_part_aa > ~/ncbi_logs/aa.log &
-cubicweb-ctl shell $INSTANCENAME ./import_ncbi.py /neurospin/brainomics/2014_bioresource/data SNPS /neurospin/brainomics/2014_bioresource/data/snps/cleaned_snp138Common.txt_part_ab > ~/ncbi_logs/ab.log &
-cubicweb-ctl shell $INSTANCENAME ./import_ncbi.py /neurospin/brainomics/2014_bioresource/data SNPS /neurospin/brainomics/2014_bioresource/data/snps/cleaned_snp138Common.txt_part_ac > ~/ncbi_logs/ac.log &
-cubicweb-ctl shell $INSTANCENAME ./import_ncbi.py /neurospin/brainomics/2014_bioresource/data SNPS /neurospin/brainomics/2014_bioresource/data/snps/cleaned_snp138Common.txt_part_ad > ~/ncbi_logs/ad.log &
-cubicweb-ctl shell $INSTANCENAME ./import_ncbi.py /neurospin/brainomics/2014_bioresource/data SNPS /neurospin/brainomics/2014_bioresource/data/snps/cleaned_snp138Common.txt_part_ae > ~/ncbi_logs/ae.log &
-cubicweb-ctl shell $INSTANCENAME ./import_ncbi.py /neurospin/brainomics/2014_bioresource/data SNPS /neurospin/brainomics/2014_bioresource/data/snps/cleaned_snp138Common.txt_part_af > ~/ncbi_logs/af.log &
-cubicweb-ctl shell $INSTANCENAME ./import_ncbi.py /neurospin/brainomics/2014_bioresource/data SNPS /neurospin/brainomics/2014_bioresource/data/snps/cleaned_snp138Common.txt_part_ag > ~/ncbi_logs/ag.log &
+(unbuffer cubicweb-ctl shell $INSTANCENAME ./import_ncbi.py $BIORES_DATA_ROOT SNPS $BIORES_DATA_ROOT/snps/cleaned_snp138Common.txt_part_aa > $LOGDIRPATH/aa.log &)  
+(unbuffer cubicweb-ctl shell $INSTANCENAME ./import_ncbi.py $BIORES_DATA_ROOT SNPS $BIORES_DATA_ROOT/snps/cleaned_snp138Common.txt_part_ab > $LOGDIRPATH/ab.log &)
+(unbuffer cubicweb-ctl shell $INSTANCENAME ./import_ncbi.py $BIORES_DATA_ROOT SNPS $BIORES_DATA_ROOT/snps/cleaned_snp138Common.txt_part_ac > $LOGDIRPATH/ac.log &)
+(unbuffer cubicweb-ctl shell $INSTANCENAME ./import_ncbi.py $BIORES_DATA_ROOT SNPS $BIORES_DATA_ROOT/snps/cleaned_snp138Common.txt_part_ad > $LOGDIRPATH/ad.log &)
+(unbuffer cubicweb-ctl shell $INSTANCENAME ./import_ncbi.py $BIORES_DATA_ROOT SNPS $BIORES_DATA_ROOT/snps/cleaned_snp138Common.txt_part_ae > $LOGDIRPATH/ae.log &)
+(unbuffer cubicweb-ctl shell $INSTANCENAME ./import_ncbi.py $BIORES_DATA_ROOT SNPS $BIORES_DATA_ROOT/snps/cleaned_snp138Common.txt_part_af > $LOGDIRPATH/af.log &)
+(unbuffer cubicweb-ctl shell $INSTANCENAME ./import_ncbi.py $BIORES_DATA_ROOT SNPS $BIORES_DATA_ROOT/snps/cleaned_snp138Common.txt_part_ag > $LOGDIRPATH/ag.log &)
 
