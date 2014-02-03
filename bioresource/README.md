@@ -70,14 +70,22 @@ This script will produce "/neurospin/brainomics/2014_bioresource/data/snps/clean
 
 __Step 4 : split snps data into n parts__
 
-1: Use 'wc' to see how many lines in file $ wc /neurospin/brainomics/2014_bioresource/data/snps/cleaned_snp138Common.txt , for example 13749965
+1: Use 'wc' to see how many lines in file 
+
+```
+$ wc /neurospin/brainomics/2014_bioresource/data/snps/cleaned_snp138Common.txt
+```
+
+For example there are 13749965 lines.
 
 
 2: Split the file into n parts, e.g. 7, which will run in paralle. Each file contains roughly 13749965/7 = 1964281 lines. Therefore run 
 
+
 ```
 $ split -l 1964281 /neurospin/brainomics/2014_bioresource/data/snps/cleaned_snp138Common.txt /neurospin/brainomics/2014_bioresource/data/snps/cleaned_snp138Common.txt_part_
 ```
+
 
 3: Edit and run the below bash jobs in paralle.
 
