@@ -56,7 +56,7 @@ __Step 2 : Import chromosome, gene, platform information into database.__
 $ source brainomics/bioresource/scripts/import_ncbi_part1.sh
 ```
 
-__Step 3 : clean_ncbi_duplicated_snp_data.py__
+__Step 3 : clean snps__
 
 In the file "/neurospin/brainomics/2014_bioresource/data/snps/snp138Common.txt",
 thre are some duplicated snps (the same rsxxxxx) and snps with unkown chromosomes,
