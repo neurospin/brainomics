@@ -39,6 +39,8 @@ I have tested my scripts on those versions:
 * trustedauth   0.3.0
 ```
 
+Install bioresource brainomics/bioresource/cubes/bioresource on the machine.
+
 How to import data
 ------------------
 
