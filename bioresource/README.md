@@ -4,44 +4,43 @@ bioresource
 Dependencies
 ------------
 
-You need to first install those cubes on your computer:
+You need to use hg install those cubes on your computer:
 
 ```
 hg clone http://hg.logilab.org/review/cubes/brainomics
 hg clone http://hg.logilab.org/review/cubes/genomics
 hg clone http://hg.logilab.org/review/cubes/questionnaire
-hg clone http://hg.logilab.org/review/cubes/medicalexp
-hg clone http://hg.logilab.org/review/cubes/neuroimaging
-
 hg clone http://hg.logilab.org/review/cubes/bootstrap
 hg clone http://hg.logilab.org/review/cubes/squareui
+hg clone http://hg.logilab.org/review/cubes/neuroimaging
+hg clone http://hg.logilab.org/review/cubes/medicalexp
 ```
 
-The above cubes have depencies that can be installed as system packages.
-On Ubuntu:
+Since the newest version is not stable, you need older version instead.
+
+I have tested my scripts on those versions:
 
 ```
-cubicweb-card
-cubicweb-comment
-cubicweb-dataio
-cubicweb-file
-cubicweb-dataio
-cubicweb-jqplot
+* bootstrap     cubicweb-bootstrap-centos-version-0.4.0-1:cubicweb-bootstrap-debian-version-0.4.0-1:cubicweb-bootstrap-version-0.4.0
+* brainomics    cubicweb-brainomics-debian-version-0.7.0
+* card          0.5.3
+* comment       1.9.1
+* file          1.15.0
+* forgotpwd     0.4.2
+* genomics      cubicweb-genomics-debian-version-0.6.0
+* jqplot        0.4.0
+* medicalexp    cubicweb-medicalexp-debian-version-0.7.0
+* neuroimaging  cubicweb-neuroimaging-debian-version-0.5.0
+* preview       1.0.0
+* questionnaire cubicweb-questionnaire-debian-version-0.5.0
+* registration  0.4.2
+* seo           0.2.0
+* squareui      r 16
+* trustedauth   0.3.0
 ```
 
-Since the newest version may be broken, you need stable version instead, for example:
+How to import data
+------------------
 
-```
-hg clone -u stable http://hg.logilab.org/review/cubes/registration
-```
+### Clean and Create Database for bioresource ###
 
-squareui needs to roll back into this version
-```
-$ hg clone http://hg.logilab.org/review/cubes/squareui
-$ hg up -r 292de533fa69
-
-changeset:   26:292de533fa69
-user:        Katia Saurfelt <katia.saurfelt@logilab.fr>
-date:        Fri Oct 18 15:33:37 2013 +0200
-summary:     [facets] add missing DATA_URL javascript variable definition (closes #3230380)
-```
