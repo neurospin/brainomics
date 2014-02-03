@@ -42,21 +42,43 @@ I have tested my scripts on those versions:
 How to import data
 ------------------
 
-__Step1: Clean and Create Database for bioresource__
+__Step 1: Clean and Create Database for bioresource__
 
+```
 $ source brainomics/bioresource/scripts/clean_and_build_db.sh
+```
 
 This step is used to clean your cubicweb instance and database, and then build a new instance.
 
+__Step 2 : Import chromosome, gene, platform information into database.__
 
-__Step 2 : clean_ncbi_duplicated_snp_data.py__
+```
+$ source brainomics/bioresource/scripts/import_ncbi_part1.sh
+```
+
+__Step 3 : clean_ncbi_duplicated_snp_data.py__
 
 In the file "/neurospin/brainomics/2014_bioresource/data/snps/snp138Common.txt",
 thre are some duplicated snps (the same rsxxxxx) and snps with unkown chromosomes,
 this script is used to clean up snps. 
 
+```
 $ python brainomics/bioresource/scripts/clean_ncbi_duplicated_snp_data.py
+```
 
 This script will produce "/neurospin/brainomics/2014_bioresource/data/snps/cleaned_snp138Common.txt"
 
+__Step 4 : split snps data into n parts__
 
+1: Use 'wc' to see how many lines in file $ wc /neurospin/brainomics/2014_bioresource/data/snps/cleaned_snp138Common.txt , for example 13749965
+2: Split the file into n parts, e.g. 7, which will run in paralle. Each file contains roughly 13749965/7 = 1964281 lines. Therefore run 
+
+```
+$ split -l 1964281 /neurospin/brainomics/2014_bioresource/data/snps/cleaned_snp138Common.txt /neurospin/brainomics/2014_bioresource/data/snps/cleaned_snp138Common.txt_part_
+```
+
+3: Edit and run the below bash jobs in paralle.
+
+```
+$ source brainomics/bioresource/scripts/import_ncbi_part2.sh
+```
