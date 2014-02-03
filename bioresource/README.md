@@ -48,3 +48,15 @@ $ source brainomics/bioresource/scripts/clean_and_build_db.sh
 
 This step is used to clean your cubicweb instance and database, and then build a new instance.
 
+
+__Step 2: clean_ncbi_duplicated_snp_data.py__
+
+In the file "/neurospin/brainomics/2014_bioresource/data/snps/snp138Common.txt",
+thre are some duplicated snps (the same rsxxxxx) and snps with unkown chromosomes,
+this script is used to clean up snps. 
+
+$ python brainomics/bioresource/scripts/clean_ncbi_duplicated_snp_data.py
+
+This script will produce "/neurospin/brainomics/2014_bioresource/data/snps/cleaned_snp138Common.txt"
+
+
