@@ -68,7 +68,7 @@ $ python brainomics/bioresource/scripts/clean_ncbi_duplicated_snp_data.py
 
 This script will produce "/neurospin/brainomics/2014_bioresource/data/snps/cleaned_snp138Common.txt"
 
-__Step 4 : Import snps in paralle__
+__Step 4 : Import snps in parallel__
 
 1: Use 'wc' to see how many lines in file 
 
