@@ -438,7 +438,7 @@ def import_ncbi_snp_mapper(mapper_config):
     is_mute = mapper_config.is_mute
     line_num = mapper_config.line_num
     isnp = 0
-    store_flush_num = 200000
+    store_flush_num = 50000
     file_line_flush_num = store_flush_num
     input_lines = []
     len_input_lines = 0
@@ -602,50 +602,3 @@ if __name__ == '__main__':
                                     sorted_gene_list=sorted_gene_list,
                                     is_mute=False)
         import_ncbi_snp_mapper(snp_mapper_config)
-
-
-#    for snp_mapper_config in snp_mapper_configs:
-#        import_ncbi_snp_mapper(snp_mapper_config)
-#### Genetics measures #####################################################
-#gen_measures = import_genomic_measures('genetics', g_mes.strip('.bim'))
-#
-## Flush/Commit
-#if sqlgen_store:
-#    store.flush()
-#
-#study = import_study(data_dir=root_dir)
-#study = store.create_entity('Study', **study)
-#
-############################################################################
-#### Subjects ##############################################################
-############################################################################
-#for sid in gen_measures.keys():
-#    subject = {'identifier':sha1(gen_measures[sid]['identifier']).hexdigest(),
-#               'gender':u'unknown',
-#               'handedness':u'unknown',
-#               'code_in_study':gen_measures[sid]['identifier']}
-#    subject_eid = store.create_entity('Subject',**subject).eid
-#    gen_assessment = {'identifier':sha1(gen_measures[sid]['identifier']+'ASS').hexdigest(),
-#                      'age_for_assessment':0,
-#                     }
-#    gen_assessment_eid = store.create_entity('Assessment', **gen_assessment).eid
-#    measure = gen_measures[sid]
-#    measure['platform'] = platform.eid
-#    measure['related_study'] = study.eid
-#    keep_filepath = measure.pop('filepath')
-#    measure_eid = store.create_entity('GenomicMeasure', **measure).eid
-#    
-#    fent_eid = store.create_entity('FileEntries',
-#                                    name=unicode(keep_filepath),
-#                                    filepath=unicode(keep_filepath)).eid
-#    fset_eid = store.create_entity('FileSet',
-#                                     name=unicode(keep_filepath),
-#                                     fset_format=measure['format']).eid
-#    store.relate(fset_eid, 'file_entries', fent_eid)                                 
-#    store.relate(measure_eid, 'external_resources', fset_eid)
-#    store.relate(measure_eid, 'concerns', subject_eid, subjtype='GenomicMeasure')
-#    store.relate(gen_assessment_eid, 'generates', measure_eid, subjtype='Assessment')
-## Flush/Commit
-#if sqlgen_store:
-#    store.flush()
-#store.commit()
