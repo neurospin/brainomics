@@ -42,5 +42,9 @@ I have tested my scripts on those versions:
 How to import data
 ------------------
 
-### Clean and Create Database for bioresource ###
+__Step1: Clean and Create Database for bioresource__
+
+$ source brainomics/bioresource/scripts/clean_and_build_db.sh
+
+This step is used to clean your cubicweb instance and database, and then build a new instance.
 
