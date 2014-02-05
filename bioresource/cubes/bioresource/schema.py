@@ -39,5 +39,9 @@ Snp.remove_relation(name="gene")
 
 Gene.add_relation(SubjectRelation('Snp', cardinality='**'), name='snps_genes')
 
+Gene.remove_relation(name="chromosomes")
+Gene.add_relation(SubjectRelation('Chromosome', cardinality='?*'),
+                  name='chromosome')
+
 # Todo: Change cardinality of Snp
 # Todo: add relation from gene to snp (?*), the name of relation is snps
