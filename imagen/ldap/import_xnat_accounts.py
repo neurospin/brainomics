@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-csvfile = 'PASSWORD'
+csvfile = 'ACCOUNTS.txt'
 
 import csv
 import re
@@ -128,7 +128,6 @@ import passlib.hash
 def add_to_ldap(ldapobject, accounts):
     uid = 3000
     gid = 100  # group "users" by default
-    m = hashlib.md5()
     for account in accounts:
         uid += 1
         BASE = 'dc=imagen,dc=cea,dc=fr'
