@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-csvfile = 'PASSWORD'
+csvfile = 'ACCOUNTS.txt'
 
 import csv
 import re
@@ -15,9 +15,9 @@ def unescape(s):
     """Converts HTML numeric character references to their applicable
     characters.
 
-    A `numeric character reference`_ look like &#931; and is converted
+    A `numeric character reference`_ looks like &#931; and is converted
     to its applicable code point of the Universal Character Set - in
-    this case Σ.
+    the case of &#931; the applicable character is Σ.
 
     Parameters
     ----------
@@ -33,6 +33,8 @@ def unescape(s):
     .. _numeric character reference: http://en.wikipedia.org/wiki/Numeric_character_reference
 
     """
+    if isinstance(s, str):
+        s = unicode(s, 'utf-8')
     return re.sub(r'&#(\d+);', _html_entity_decode, s)
 
 
@@ -98,10 +100,10 @@ def parse_psql_dump(psqlfile):
         reader = csv.reader(f, delimiter='|', quoting=csv.QUOTE_NONE)
         for row in reader:
             login = row[0].strip()
-            firstname = unescape(unicode(row[1].strip(), 'utf-8'))
-            lastname = unescape(unicode(row[2].strip(), 'utf-8'))
+            firstname = unescape(row[1].strip())
+            lastname = unescape(row[2].strip())
             email = row[3].strip()
-            primary_password = unicode(row[4].strip(), 'utf-8')
+            primary_password = row[4].strip()
             primary_password_encrypt = row[5].strip()
             enabled = row[6].strip()
             if enabled != '0':
@@ -120,37 +122,42 @@ def parse_psql_dump(psqlfile):
     return accounts
 
 
-import hashlib
-import base64
+import ldap
+import passlib.hash
 
-def _digest_md5_password(password):
-    return base64.b64encode(hashlib.md5(password).digest())
-
-
-def write_ldif(accounts):
-    uid = 2001
-    m = hashlib.md5()
+def add_to_ldap(ldapobject, accounts):
+    uid = 3000
+    gid = 100  # group "users" by default
     for account in accounts:
-        cn = account['firstname'] + ' ' + account['lastname']
-        password = account['password']
-        password = base64.b64encode(hashlib.sha1(password).digest())
-
-        print 'dn: cn=%s,ou=People,dc=imagen,dc=cea,dc=fr' % cn
-        print 'objectClass: top'
-        print 'objectClass: inetOrgPerson'
-        print 'objectClass: posixAccount'
-        print 'cn: %s' % cn
-        print 'sn: %s' % account['lastname']
-        print 'givenName: %s' % account['firstname']
-        print 'mail: %s' % account['email']
-        print 'uid: %s' % account['login']
-        print 'uidNumber: %d' % uid
-        print 'gidNumber: %d' % uid
-        print 'homeDirectory: /home/%s' % account['login']
-        print 'userPassword: {MD5}%s' % _digest_md5_password(account['password'])
-        print 'loginShell: /bin/false'
-        print
         uid += 1
+        BASE = 'dc=imagen,dc=cea,dc=fr'
+        BASE = 'dc=example,dc=com'
+        # add account to the restricted "partners" group
+        dn = 'cn=partners,ou=Group,' + BASE
+        attributes = [(ldap.MOD_ADD, 'memberUid', account['login'])]
+        ldapobject.modify_s(dn, attributes)
+        # create account
+        login = account['login']
+        firstname = account['firstname'].encode('utf-8')
+        lastname = account['lastname'].upper().encode('utf-8')
+        cn = firstname + ' ' + lastname
+        dn = 'cn=%s,ou=People,' % cn + BASE
+        email = account['email'].encode('utf-8')
+        password = passlib.hash.ldap_md5.encrypt(account['password'])
+        attributes = [
+            ('objectClass', ('top', 'person', 'inetOrgPerson', 'posixAccount')),
+            ('cn', (cn,)),
+            ('givenName', (firstname,)),
+            ('sn', (lastname,)),
+            ('mail', (email,)),
+            ('uid', (login,)),
+            ('uidNumber', (str(uid),)),
+            ('gidNumber', (str(gid),)),
+            ('homeDirectory', ('/home/' + login,)),
+            ('userPassword', (password,)),
+            ('loginShell', ('/bin/false',)),
+        ]
+        ldapobject.add_s(dn, attributes)
 
 
 def write_csv(accounts):
@@ -165,7 +172,12 @@ def write_csv(accounts):
 
 import sys
 import codecs
-sys.stdout = codecs.getwriter('utf8')(sys.stdout)
 
 accounts = parse_psql_dump(csvfile)
-write_csv(accounts)
+
+host = 'ldap://127.0.0.1'
+username = 'cn=admin,dc=example,dc=com'
+password = 'XXXXXXXX'
+ldapobject = ldap.initialize(host)
+ldapobject.simple_bind_s(username, password)
+add_to_ldap(ldapobject, accounts)
