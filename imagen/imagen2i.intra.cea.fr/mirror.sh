@@ -17,7 +17,3 @@ rsync -rlptv -e 'ssh' \
     --exclude="$MYSELF" \
     "$SOURCE/var/www" \
     root@imagen2i.intra.cea.fr:/var
-rsync -rlptv -e 'ssh' \
-    --exclude="$MYSELF" \
-    "$SOURCE/home/imagen" \
-    imagen@imagen2i.intra.cea.fr:/home
