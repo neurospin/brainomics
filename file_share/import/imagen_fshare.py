@@ -1,6 +1,6 @@
 
 import timeit
-from cubicweb_tool import CubicWebTool
+from brainomics.tools.cubicweb_tool import CubicWebTool
 from parse_tool import parse_imagen_process_data
 
 
@@ -9,6 +9,7 @@ class Imagen(CubicWebTool) :
     pair (entity, children).
     """
 
+    # Default values
     _fields = {
         "Center" : {"name" : u"Neursospin","identifier" : u"Neursospin"},
         "Study" : {"name" : u"ImagenFU2_File_Share",

@@ -3,9 +3,7 @@ import os, csv, glob, sys
 from collections import defaultdict
 import datetime
 
-from nsap.lib.base import Enum
 
-from _nsap.data import get_sample_data
 
 
 def parse_imagen_process_data(do_database=True) :
