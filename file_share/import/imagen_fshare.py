@@ -184,11 +184,11 @@ class Imagen(CubicWebTool) :
 if __name__=="__main__" :
 
     imagen = Imagen(parser = parse_imagen_process_data,
-                    instance = "imagen_fshare",
-                    login = "root",
+                    instance = "nsap_imagen",
+                    login = "admin",
                     passwd = "alpine")
 
-    imagen.create_schema()
+    #imagen.create_schema()
 
     #print stop
 

@@ -8,9 +8,10 @@ from cubicweb.dataimport import SQLGenObjectStore
 from cubicweb import cwconfig
 from cubicweb.dbapi import in_memory_repo_cnx
 
-import nsap.lib.base
-
-import pygraphviz as pgv
+try:
+    import pygraphviz as pgv
+except:
+    pass
 
 class CubicWebTool(object) :
     """ Base class to fill cubicweb database.
@@ -199,7 +200,7 @@ class CubicWebTool(object) :
     def _get_rules(self) :
         raise NotImplementedError()
     
-    rules = nsap.lib.base.LateBindingProperty(_get_rules)
-    relations = nsap.lib.base.LateBindingProperty(_get_relations)
-    fields = nsap.lib.base.LateBindingProperty(_get_fields)
+    rules = LateBindingProperty(_get_rules)
+    relations = LateBindingProperty(_get_relations)
+    fields = LateBindingProperty(_get_fields)
         
