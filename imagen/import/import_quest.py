@@ -50,7 +50,7 @@ t = time.gmtime()
 date = datetime.date(t.tm_year, t.tm_mon, t.tm_mday).isoformat()[:10]
 
 #Local cache variables
-subjects = dict(c.cursor().execute('Any I, S WHERE S is Subject, S code_in_study I'))
+subjects = dict(c.cursor().execute('Any I, S WHERE S is Subject, S identifier I'))
 QUESTIONS = dict(c.cursor().execute('Any I, X WHERE X is Question, X identifier I'))
 QUESTION_POSSIBLE_ANSWERS = dict(c.cursor().execute('Any X, A WHERE X is Question, X possible_answers A'))
 
@@ -92,15 +92,12 @@ def insert_quest(argv):
     i = argv[1].find('-')
     j = argv[1][i+1:].find('-')
     print argv[1][i+1:i+1+j]
-    try :
-        #c.cursor().execute('INSERT Study X: X name \'FU2\', X data_filepath \'\', X description \'Test Follow Up II\'')
-        #print 'FU2 inserted'
-        c.cursor().execute('INSERT Study X: X name \'Imagen\', X data_filepath \'\', X description \'Imagen Study\'')
-        print 'Imagen inserted'
-    except :
-        c.rollback()
-        #print 'can not insert Study FU2'
-        print 'can not insert Study Imagen'
+    #try :
+    #    c.cursor().execute('INSERT Study X: X name \'Imagen\', X data_filepath \'\', X description \'Imagen Study\'')
+    #    print 'Imagen inserted'
+    #except :
+    #    c.rollback()
+    #    print 'can not insert Study Imagen'
 
     validated = False
     language = ''
@@ -149,7 +146,8 @@ def insert_quest(argv):
         subject = l[0]
 
         #the file may contain information for subjects who are not in DB
-        if subject[0:12] in subjects:
+        if 'IMAGEN_%s'%subject[0:12] in subjects:
+            print '%s'%subject[0:12]
             #if the current line conserns the same subject that the precedent one only increment the question position
             if subject == old_subject:
                 position = position + 1
@@ -175,12 +173,12 @@ def insert_quest(argv):
             req = ''
             try:
                 age = int(age)
-                req = '''INSERT Assessment A, QuestionnaireRun Q: A identifier \'%(a)s%(f)s_%(c)s\', A age_for_assessment \'%(c)s\', 
+                req = '''INSERT Assessment A, QuestionnaireRun Q: A identifier \'%(a)s%(f)s_%(c)s\', A age_of_subject \'%(c)s\', A timepoint \'FU2\',
                 Q identifier \'%(a)s%(f)s_%(c)s_%(e)s\', Q user_ident \'%(b)s\', Q iteration \'%(e)s\', Q completed %(d)s
                 '''%{'a':questionnaire, 'b': subject[13:14], 'c': age, 'd':completed, 'e': l[1], 'f':subject[0:12]}
             except:
                 #if age is not an integer don't insert the value in age_for_assessment but keep it to construct questionnairerun and assessment identifiers
-                req = '''INSERT Assessment A, QuestionnaireRun Q: A identifier \'%(a)s%(f)s_%(c)s\', 
+                req = '''INSERT Assessment A, QuestionnaireRun Q: A identifier \'%(a)s%(f)s_%(c)s\', A timepoint \'FU2\',
                 Q identifier \'%(a)s%(f)s_%(c)s_%(e)s\', Q user_ident \'%(b)s\', Q iteration \'%(e)s\', Q completed %(d)s
                 '''%{'a':questionnaire, 'b': subject[13:14], 'c':age, 'd': completed, 'e': l[1], 'f':subject[0:12]}
             #parent questionnaire have no field "Valid"
@@ -193,9 +191,9 @@ def insert_quest(argv):
             X identifier \'%(g)s\', Y name \'Imagen\''''%{'f':subject[0:12], 'g':questionnaire}
             #iteration field is read only once time from the first question of each subject's questionnaire expecting only one iteration value for a questionnaire
             try :
-                #print 'req = ', req
+                print 'req = ', req
                 res = c.cursor().execute(req)
-                #print 'res = ', res
+                print 'res = ', res
             except :
                 c.rollback()
                 print 'can not insert Assessment and QuestionnaireRun %(a)s%(b)s_%(c)s'%{'a': argv[1][i+1:i+1+j], 'b': subject[0:12], 'c':age}
