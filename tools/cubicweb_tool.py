@@ -7,6 +7,7 @@ import logging
 from cubicweb.dataimport import SQLGenObjectStore
 from cubicweb import cwconfig
 from cubicweb.dbapi import in_memory_repo_cnx
+from brainomics.tools.late_binding_property import LateBindingProperty
 
 try:
     import pygraphviz as pgv

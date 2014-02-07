@@ -56,4 +56,4 @@ def get_genomic_platform():
 
 
 def parse_genomic_measure():
-    
+    pass
