@@ -24,10 +24,10 @@ from yams.buildobjs import (EntityType, RelationDefinition,
 from cubes.genomics.schema import GenomicPlatform
 from cubes.genomics.schema import Snp
 from cubes.genomics.schema import Gene
-from cubes.medicalexp.schema import Assessment
-from cubes.medicalexp.schema import ProcessingRun
-from cubes.medicalexp.schema import ScoreDefinition
-from cubes.medicalexp.schema import ScoreValue
+#from cubes.medicalexp.schema import Assessment
+#from cubes.medicalexp.schema import ProcessingRun
+#from cubes.medicalexp.schema import ScoreDefinition
+#from cubes.medicalexp.schema import ScoreValue
 
 
 # Remove identifier and add name
@@ -38,6 +38,10 @@ GenomicPlatform.remove_relation(name="identifier")
 Snp.remove_relation(name="gene")
 
 Gene.add_relation(SubjectRelation('Snp', cardinality='**'), name='snps_genes')
+
+Gene.remove_relation(name="chromosomes")
+Gene.add_relation(SubjectRelation('Chromosome', cardinality='?*'),
+                  name='chromosome')
 
 # Todo: Change cardinality of Snp
 # Todo: add relation from gene to snp (?*), the name of relation is snps

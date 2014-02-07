@@ -50,7 +50,7 @@ t = time.gmtime()
 date = datetime.date(t.tm_year, t.tm_mon, t.tm_mday).isoformat()[:10]
 
 #Local cache variables
-subjects = dict(c.cursor().execute('Any I, S WHERE S is Subject, S identifier I'))
+subjects = dict(c.cursor().execute('Any I, S WHERE S is Subject, S code_in_study I'))
 QUESTIONS = dict(c.cursor().execute('Any I, X WHERE X is Question, X identifier I'))
 QUESTION_POSSIBLE_ANSWERS = dict(c.cursor().execute('Any X, A WHERE X is Question, X possible_answers A'))
 
@@ -118,10 +118,22 @@ def insert_quest(argv):
     #Just for more fun, some questionnaire are empty...
     except StopIteration:
         return
+    questionnaire = argv[1][i+1:i+1+j]
+    version = ''
+    if questionnaire[-4:-1] == '_RC':
+        version = questionnaire[-3:]
+        questionnaire = questionnaire[:-4]
+    if questionnaire[:5] == 'IMGN_':
+        questionnaire = questionnaire[5:]
+    print 'questionnaire = ', questionnaire
+    print 'version = ', version
     try : 
-        c.cursor().execute('''INSERT Questionnaire Q: Q name \'%(a)s\', Q identifier \'%(b)s\', Q type \'%(c)s\',
-        Q language \'%(f)s\', Q note_format \'text/html\''''%{'a':argv[1][i+1:i+1+j], 'b': argv[1][i+1:i+1+j], 'c': argv[1][i+1:i+1+j], 
-        'f':language})
+        req = '''INSERT Questionnaire Q: Q name \'%(a)s\', Q identifier \'%(b)s\', Q type \'%(c)s\', Q version \'%(d)s\',
+        Q language \'%(f)s\', Q note_format \'text/html\''''%{'a':questionnaire, 'b': questionnaire, 'c': questionnaire, 
+        'd': version, 'f':language}
+        #print 'req = ',req
+        res = c.cursor().execute(req)
+        #print 'res = ',res
     except :
         c.rollback()
         print 'can not insert Questionnaire %s'%argv[1][i+1:i+1+j]
@@ -137,7 +149,7 @@ def insert_quest(argv):
         subject = l[0]
 
         #the file may contain information for subjects who are not in DB
-        if 'IMAGEN_%s'%subject[0:12] in subjects:
+        if subject[0:12] in subjects:
             #if the current line conserns the same subject that the precedent one only increment the question position
             if subject == old_subject:
                 position = position + 1
@@ -163,14 +175,14 @@ def insert_quest(argv):
             req = ''
             try:
                 age = int(age)
-                req = '''INSERT Assessment A, QuestionnaireRun Q: A identifier \'%(a)s_%(f)s_%(c)s\', A age_for_assessment \'%(c)s\', 
-                Q identifier \'%(a)s_%(f)s_%(c)s_%(e)s\', Q user_ident \'%(b)s\', Q iteration \'%(e)s\', Q completed %(d)s
-                '''%{'a':argv[1][i+1:i+1+j], 'b': subject[13:14], 'c': age, 'd':completed, 'e': l[1], 'f':subject[0:12]}
+                req = '''INSERT Assessment A, QuestionnaireRun Q: A identifier \'%(a)s%(f)s_%(c)s\', A age_for_assessment \'%(c)s\', 
+                Q identifier \'%(a)s%(f)s_%(c)s_%(e)s\', Q user_ident \'%(b)s\', Q iteration \'%(e)s\', Q completed %(d)s
+                '''%{'a':questionnaire, 'b': subject[13:14], 'c': age, 'd':completed, 'e': l[1], 'f':subject[0:12]}
             except:
                 #if age is not an integer don't insert the value in age_for_assessment but keep it to construct questionnairerun and assessment identifiers
-                req = '''INSERT Assessment A, QuestionnaireRun Q: A identifier \'%(a)s_%(f)s_%(c)s\', 
-                Q identifier \'%(a)s_%(f)s_%(c)s_%(e)s\', Q user_ident \'%(b)s\', Q iteration \'%(e)s\', Q completed %(d)s
-                '''%{'a':argv[1][i+1:i+1+j], 'b': subject[13:14], 'c':age, 'd': completed, 'e': l[1], 'f':subject[0:12]}
+                req = '''INSERT Assessment A, QuestionnaireRun Q: A identifier \'%(a)s%(f)s_%(c)s\', 
+                Q identifier \'%(a)s%(f)s_%(c)s_%(e)s\', Q user_ident \'%(b)s\', Q iteration \'%(e)s\', Q completed %(d)s
+                '''%{'a':questionnaire, 'b': subject[13:14], 'c':age, 'd': completed, 'e': l[1], 'f':subject[0:12]}
             #parent questionnaire have no field "Valid"
             if validated:
                 valid = 'False'
@@ -178,7 +190,7 @@ def insert_quest(argv):
                     valid = 'True'
                 req = req + ', Q valid %s'%valid
             req = req + ''', Q concerns S, Q instance_of X, Q related_study Y Where S is Subject, X is Questionnaire, Y is Study, S identifier \'IMAGEN_%(f)s\', 
-            X identifier \'%(g)s\', Y name \'Imagen\''''%{'f':subject[0:12], 'g':argv[1][i+1:i+1+j]}
+            X identifier \'%(g)s\', Y name \'Imagen\''''%{'f':subject[0:12], 'g':questionnaire}
             #iteration field is read only once time from the first question of each subject's questionnaire expecting only one iteration value for a questionnaire
             try :
                 #print 'req = ', req
@@ -186,19 +198,19 @@ def insert_quest(argv):
                 #print 'res = ', res
             except :
                 c.rollback()
-                print 'can not insert Assessment and QuestionnaireRun %(a)s_%(b)s_%(c)s'%{'a': argv[1][i+1:i+1+j], 'b': subject[0:12], 'c':age}
+                print 'can not insert Assessment and QuestionnaireRun %(a)s%(b)s_%(c)s'%{'a': argv[1][i+1:i+1+j], 'b': subject[0:12], 'c':age}
             try :
-                c.cursor().execute('''SET A related_study S Where A is Assessment, S is Study, S name \'Imagen\', A identifier \'%(a)s_%(b)s_%(c)s\'
-                '''%{'b':subject[0:12], 'a':argv[1][i+1:i+1+j], 'c':age})
-                c.cursor().execute('''SET C holds A Where A is Assessment, C is Center, C identifier \'%(d)s\', A identifier \'%(a)s_%(b)s_%(c)s\'
-                '''%{'b':subject[0:12], 'a':argv[1][i+1:i+1+j], 'c':age, 'd':center_id})
-                c.cursor().execute('''SET S concerned_by A Where A is Assessment, S is Subject, S identifier \'IMAGEN_%(b)s\', A identifier \'%(a)s_%(b)s_%(c)s\'
-                '''%{'b':subject[0:12], 'a':argv[1][i+1:i+1+j], 'c':age})
-                c.cursor().execute('''SET A generates Q Where A is Assessment, Q is QuestionnaireRun, A identifier \'%(a)s_%(b)s_%(c)s\', 
-                Q identifier \'%(a)s_%(b)s_%(c)s_%(d)s\''''%{'a':argv[1][i+1:i+1+j], 'b': subject[0:12], 'c':age, 'd':l[1]})
+                c.cursor().execute('''SET A related_study S Where A is Assessment, S is Study, S name \'Imagen\', A identifier \'%(a)s%(b)s_%(c)s\'
+                '''%{'b':subject[0:12], 'a':questionnaire, 'c':age})
+                c.cursor().execute('''SET C holds A Where A is Assessment, C is Center, C identifier \'%(d)s\', A identifier \'%(a)s%(b)s_%(c)s\'
+                '''%{'b':subject[0:12], 'a':questionnaire, 'c':age, 'd':center_id})
+                c.cursor().execute('''SET S concerned_by A Where A is Assessment, S is Subject, S identifier \'IMAGEN_%(b)s\', A identifier \'%(a)s%(b)s_%(c)s\'
+                '''%{'b':subject[0:12], 'a':questionnaire, 'c':age})
+                c.cursor().execute('''SET A generates Q Where A is Assessment, Q is QuestionnaireRun, A identifier \'%(a)s%(b)s_%(c)s\', 
+                Q identifier \'%(a)s%(b)s_%(c)s_%(d)s\''''%{'a':questionnaire, 'b': subject[0:12], 'c':age, 'd':l[1]})
             except :
                 c.rollback()
-                print 'can not relates Assessment and QuestionnaireRun %(a)s_%(b)s_%(c)s'%{'a': argv[1][i+1:i+1+j], 'b': subject[0:12], 'c':age}
+                print 'can not relates Assessment and QuestionnaireRun %(a)s%(b)s_%(c)s'%{'a': argv[1][i+1:i+1+j], 'b': subject[0:12], 'c':age}
             #print position, 'Q : ',l[7],', Answer : ',l[8],', time : ',l[10]
             try :
                 #Unit Separator
@@ -218,7 +230,7 @@ def insert_quest(argv):
                     value = 0
                     _type = u'text'
                 # Question
-                identifier = l[7]+'_'+argv[1][i+1:i+1+j]
+                identifier = l[7]+'_'+questionnaire
                 if identifier in QUESTIONS:
                     question_eid = QUESTIONS[identifier]
                     # Update possible answer
@@ -232,18 +244,18 @@ def insert_quest(argv):
                 else:
                     question = c.cursor().execute('''INSERT Question Q: Q identifier \'%(a)s\', Q position \'%(b)s\', Q text \'%(c)s\', Q type \'%(t)s\', 
                     Q possible_answers \'%(e)s\', Q questionnaire X Where X is Questionnaire, X identifier \'%(d)s\'
-                    '''%{'a': identifier, 'b': position, 'c': l[7], 't': _type, 'd': argv[1][i+1:i+1+j], 'e':possible_answers})
+                    '''%{'a': identifier, 'b': position, 'c': l[7], 't': _type, 'd': questionnaire, 'e':possible_answers})
                     #print 'question[0][0] = ',question[0][0], 'possible_answers = ', possible_answers
                     QUESTIONS[identifier] = question[0][0]
                     question_eid = question[0][0]
                     QUESTION_POSSIBLE_ANSWERS[question_eid] = possible_answers
                 # Answer
                 res = c.cursor().execute('''Any A, X Where A is Answer, X is QuestionnaireRun, Q is Question, A question Q, Q identifier \'%(a)s\', 
-                A questionnaire_run X, X identifier \'%(b)s_%(c)s_%(d)s_%(e)s\''''%{'a': identifier, 'b': argv[1][i+1:i+1+j], 'c': subject[0:12], 
+                A questionnaire_run X, X identifier \'%(b)s%(c)s_%(d)s_%(e)s\''''%{'a': identifier, 'b': questionnaire, 'c': subject[0:12], 
                 'd': age, 'e': l[1]})
                 if not res:
                     c.cursor().execute('''INSERT Answer A: A value \'%(a)s\', A question Q, A questionnaire_run X Where Q is Question, X is QuestionnaireRun, 
-                    Q identifier \'%(b)s\', X identifier \'%(c)s_%(d)s_%(e)s_%(f)s\''''%{'a': value, 'b': identifier, 'c': argv[1][i+1:i+1+j], 'd': subject[0:12], 
+                    Q identifier \'%(b)s\', X identifier \'%(c)s%(d)s_%(e)s_%(f)s\''''%{'a': value, 'b': identifier, 'c': questionnaire, 'd': subject[0:12], 
                     'e': age, 'f': l[1]})
             except Exception as e:
                 c.rollback()

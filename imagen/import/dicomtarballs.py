@@ -34,61 +34,61 @@ def parse_dicom(path, psc, scan):
     print '>>> path, psc, scan >>> ', path, psc, scan
     #path = '/neurospin/imagen/processed/dicomtarballs' \
     #   '/%s/SessionA/T2/T2.tar.gz'%psc
-       
-    tarball = tarfile.open(path)
-    file1 =  tarball.extractfile('./1.dcm')
-
-    dataset = dicom.read_file(file1)
 
     studies = dict(c.cursor().execute('Any N, S WHERE S is Study, S name N'))
 
     centers = dict(c.cursor().execute('Any I, C WHERE C is Center, C identifier I'))
 
     subjects = dict(c.cursor().execute('Any I, S WHERE S is Subject, S identifier I'))
-    center_eid = centers[psc_center[psc]]
-    subject_eid = subjects['IMAGEN_%(a)s'%{'a' : psc}]
+        
+    subject_eid = None
+    if 'IMAGEN_%(a)s'%{'a' : psc} in subjects:
+        subject_eid = subjects['IMAGEN_%(a)s'%{'a' : psc}]
     if not subject_eid:
         return
-    date = None
+    center_eid = centers[psc_center[psc]]
 
+    date = None
+    tarball = tarfile.open(path)
+    file1 =  tarball.extractfile('./1.dcm')
+    dataset = dicom.read_file(file1)
+    
     if (0x0020,0x0011) in dataset:
         cw_scan_id = dataset[0x0020,0x0011].value # StudyDate
                 
     if (0x0020,0x0011) in dataset:
         cw_scan_id = dataset[0x0020,0x0011].value
-        cw_scan_type = None
-        try:
-            #scan.set('type', serie)
-            cw_scan_type = serie
-            #scan.set('type', dcm_header['0008']['103e'])
-        except:
-            print 'Could not set scan type'
+        #cw_scan_type = None
+        #scan.set('type', serie)
+        cw_scan_type = scan
+        #scan.set('type', dcm_header['0008']['103e'])
+        #print 'Could not set scan type'
         cw_scanner_manufacturer = None
-        try:
+        if (0x0008, 0x0070) in dataset:
             cw_scanner_manufacturer = dataset[0x0008, 0x0070].value
-        except:
+        else:
             print 'Could not find scanner manufacturer in dicom header'
         cw_scanner_model = None
-        try:
+        if (0x0008,0x1090) in dataset:
             cw_scanner_model = dataset[0x0008,0x1090].value
-        except:
+        else:
             print 'Could not find scanner model in dicom header'
         cw_scanner_text = "None"
-        try:
+        if (0x0008,0x1010) in dataset:
             cw_scanner_text = dataset[0x0008,0x1010].value
-        except:
+        else:
             print 'Could not find scanner id in dicom header'
         cw_operator = None
-        try:
+        if (0x0008,0x1070) in dataset:
             cw_operator = dataset[0x0008,0x1070].value
-        except:
+        else:
             print 'Could not find operator name in dicom header'
         cw_uri = path.decode(locale.getpreferredencoding())
                 
         cw_content = None
-        try:
+        if (0x0008,0x103e) in dataset:
             cw_content = dataset[0x0008,0x103e].value+'_RAW'
-        except:
+        else:
             print 'Could not find scan content type in dicom header'  
         cw_voxelres_x = None
         cw_voxelres_y = None
@@ -99,75 +99,70 @@ def parse_dicom(path, psc, scan):
             cw_voxelres_y = resolution[1]
             cw_voxelres_z = dataset[0x0018,0x0050].value
         except:
-            print Warning('Could not find voxel resolution infos in dicom header')
+            print 'Could not find voxel resolution infos in dicom header'
         cw_fov_x = None
         cw_fov_y = None
-        try:
-            if dataset[0x0028,0X0010].value.isdigit() and dataset[0x0028,0x0011].value.isdigit():
+        if (0x0028,0x0010) in dataset and (0x0028,0x0011) in dataset:
                 cw_fov_x = dataset[0x0028,0x0010].value
                 cw_fov_y = dataset[0x0028,0x0011].value
-        except:
-            print Warning('Could not find fov infos in dicom header')
+        else:
+            print 'Could not find fov infos in dicom header'
         cw_tr = None
-        try:
+        if (0x0018,0x0080) in dataset:
             cw_tr = dataset[0x0018,0x0080].value
-        except:
-            print Warning('Could not find tr in dicom header')
+        else:
+            print 'Could not find tr in dicom header'
         cw_te = None
-        try:
+        if (0x0018,0x0081) in dataset:
             cw_te = dataset[0x0018,0x0081].value
-        except:
-            print Warning('Could not find te in dicom header')
+        else:
+            print 'Could not find te in dicom header'
         cw_sequence = None
-        try:
+        if (0x0018,0x0024) in dataset:
             cw_sequence = dataset[0x0018,0x0024].value
-        except:
-            print Warning('Could not find sequence in dicom header')
+        else:
+            print 'Could not find sequence in dicom header'
         cw_scanTime = None
-        try:
-            if dataset[0x0008,0x0031]:
-                st=dataset[0x0008,0x0031].value
-                cw_scanTime = st[0:2]+':'+st[2:4]+':'+st[4:6]
-        except:
-            print Warning('Could not find scan time in dicom header')
+        if (0x0008,0x0031) in dataset:
+            st=dataset[0x0008,0x0031].value
+            cw_scanTime = st[0:2]+':'+st[2:4]+':'+st[4:6]
+        else:
+            print 'Could not find scan time in dicom header'
         cw_imageType = None
-        try:
+        if (0x0008,0x0008) in dataset:
             cw_imageType = dataset[0x0008,0x0008].value
-        except:
-            print Warning('Could not find image type in dicom header')
+        else:
+            print 'Could not find image type in dicom header'
         cw_scanSequence = None
-        try:
+        if (0x0018,0x0020) in dataset:
             #dataset[0x0018,0x0020].value might be a list
             cw_scanSequence = '\\\\'.join(dataset[0x0018,0x0020].value)
-        except:
-            print Warning('Could not find scan sequence in dicom header')
+        else:
+            print 'Could not find scan sequence in dicom header'
         cw_seqVariant = None
-        try:
+        if (0x0018,0x0021) in dataset:
             cw_seqVariant = dataset[0x0018,0x0021].value
-        except:
-            print Warning('Could not find sequence variant in dicom header')
+        else:
+            print 'Could not find sequence variant in dicom header'
         cw_acqType = None
-        try:
+        if (0x0018,0x0023) in dataset:
             cw_acqType = dataset[0x0018,0x0023].value
-        except:
-            print Warning('Could not find acquisition type in dicom header')
+        else:
+            print 'Could not find acquisition type in dicom header'
         cw_protocol = None
-        try:
+        if (0x0018,0x1030) in dataset:
             cw_protocol = dataset[0x0018,0x1030].value
-        except:
-            print Warning('Could not find protocol in dicom header')
-        scan_date = None
-        try:
+        else:
+            print 'Could not find protocol in dicom header'
+        #Default date
+        scan_date = '1900-01-01'
+        if (0x0008,0x0022) in dataset:
             scan_date = dataset[0x0008,0x0022].value
             if len(scan_date)==8:
                 scan_date=scan_date[:4]+'-'+scan_date[4:6]+'-'+scan_date[6:]
-                if not date:
-                    date = scan_date
-                else:
-                    if scan_date != date:
-                        print 'scans date mismatch : '+date+' and '+scan_date
-        except:
+        else:
             print 'Warning : error while reading date from dicom header'
+        date = scan_date
     else:
         if (0x0020,0x0011) not in dataset:
             print '(0020,0011) not in header'
@@ -191,23 +186,26 @@ def parse_dicom(path, psc, scan):
                 
     #studies = dict(session.execute('Any N, S WHERE S is Study, S name N'))
     study_eid = None
-    if 'FU2' in studies:
-        study_eid = studies['FU2']
+    if 'Imagen' in studies:
+        study_eid = studies['Imagen']
     print 'study_eid = ',study_eid
     if (study_eid==None):        
         try:
-            c.cursor().execute('INSERT Study S: S name \'FU2\', S data_filepath \'\', S description \'Test Follow Up II\'')
+            c.cursor().execute('INSERT Study S: S name \'Imagen\', S data_filepath \'\', S description \'Imagen study\'')
         except:
             c.rollback()
             print 'Can not insert Study'
         studies = dict(c.cursor().execute('Any N, S WHERE S is Study, S name N'))
-        study_eid = studies['FU2']
+        study_eid = studies['Imagen']
 
     try:
-        c.cursor().execute('''INSERT Assessment A: A identifier \'%(f)s_%(a)s\', A datetime \'%(b)s\',
-    A related_study S, C holds A, X concerned_by A WHERE S is Study, C is Center, X is Subject, S name 'FU2', C identifier \'%(d)s\', X identifier \'IMAGEN_%(e)s\''''
-    %{'a': psc, 'b': date, 'c': cw_protocol, 'd': psc_center[psc], 'e': psc, 'f': scan})
-        c.cursor().execute('''INSERT Protocol P: P identifier \'%(a)s\', P related_study S WHERE S is Study, S name \'FU2\''''%{'a': cw_protocol})
+        req = '''INSERT Assessment A: A identifier \'%(f)s_%(a)s\', A datetime \'%(b)s\',
+        A related_study S, C holds A, X concerned_by A WHERE S is Study, C is Center, X is Subject, S name \'Imagen\', C identifier \'%(d)s\', X identifier \'IMAGEN_%(e)s\'
+        '''%{'a': psc, 'b': date, 'c': cw_protocol, 'd': psc_center[psc], 'e': psc, 'f': scan}
+        print 'req = ', req
+        res = c.cursor().execute(req)
+        print 'res = ', res
+        res = c.cursor().execute('''INSERT Protocol P: P identifier \'%(a)s\', P related_study S WHERE S is Study, S name \'Imagen\''''%{'a': cw_protocol})
         res = c.cursor().execute('''SET A protocols P Where A is Assessment, P is Protocol, P identifier \'%(a)s\', A identifier \'%(c)s_%(b)s\'
         '''%{'a': cw_protocol, 'b': psc, 'c': scan})
     except:
@@ -221,10 +219,10 @@ def parse_dicom(path, psc, scan):
     if (device==None):
         try:
             #still yet serialnum = void
-            req = '''INSERT Device D: D identifier \'%(a)s_%(b)s_%(c)s_%(h)s\', D name \'%(a)s\', D manufacturer \'%(b)s\', D model \'%(c)s\', D modification_date \'%(f)s\', D creation_date \'%(g)s\', 
-            D hosted_by C WHERE C is Center, C identifier \'%(h)s\'
-            '''%{'a': cw_scanner_text, 'b': cw_scanner_manufacturer, 'c': cw_scanner_model, 'f': date, 'g': date, 'h': psc_center[psc]}
-         
+            req = '''INSERT Device D: D serialnum \'%(a)s_%(b)s_%(c)s_%(d)s\', D name \'%(a)s\', D manufacturer \'%(b)s\', D model \'%(c)s\',
+            D hosted_by C WHERE C is Center, C identifier \'%(d)s\'
+            '''%{'a': cw_scanner_text, 'b': cw_scanner_manufacturer, 'c': cw_scanner_model, 'd': psc_center[psc]}
+            print 'req = ',req
             device = c.cursor().execute(req) 
         except:
             c.rollback()
@@ -232,15 +230,15 @@ def parse_dicom(path, psc, scan):
     try:
         req = 'INSERT MRIData M, Scan S: M sequence \'%(a)s\''%{'a':cw_scanSequence}
         if cw_voxelres_x!=None:
-            req = req + ', M voxel_res_x ' + cw_voxelres_x
+            req = req + ', M voxel_res_x %s'%cw_voxelres_x
         if cw_voxelres_y!=None:
-            req = req + ', M voxel_res_y ' + cw_voxelres_y
+            req = req + ', M voxel_res_y %s'%cw_voxelres_y
         if cw_voxelres_z!=None:
-            req = req + ', M voxel_res_z ' + cw_voxelres_z
+            req = req + ', M voxel_res_z %s'%cw_voxelres_z
         if cw_fov_x!=None:
-            req = req + ', M fov_x ' + cw_fov_x
+            req = req + ', M fov_x %s'%cw_fov_x
         if cw_fov_y!=None:
-            req = req + ', M fov_x ' + cw_fov_y
+            req = req + ', M fov_x %s'%cw_fov_y
         if cw_tr!=None:
             req = req + ', M tr %s'%cw_tr
         if cw_te!=None:
@@ -248,21 +246,47 @@ def parse_dicom(path, psc, scan):
         #print 'req = ', req
     
         req_end = ''', S has_data M, S identifier \'%(d)s_%(a)s\', S label \'%(d)s\', S type \'%(b)s\', S format \'tar.gz\', S completed True, S valid True, 
-        S filepath \'%(c)s\', S related_study X WHERE X is Study, X name \'FU2\''''%{'a': psc,'b': cw_scan_type, 'c': cw_uri, 'd': scan}
+        S related_study X WHERE X is Study, X name \'Imagen\''''%{'a': psc,'b': cw_scan_type, 'c': cw_uri, 'd': scan}
         
         req = req + req_end
-        #print 'req = ', req
+        print 'req = ', req
     
         c.cursor().execute(req)
+        
+        ##### TOFIX not sure that this code is ever run
+        #fent_eid = store.create_entity('FileEntries',
+        #                                name=unicode(filepath.get('content')),
+        #                                filepath=format_filepath(filepath.get('URI'))).eid
+        req = '''INSERT FileEntry F: F name \'%(a)s\', F filepath \'%(b)s\''''%{'a': scan, 'b': cw_uri}
+        res = c.cursor().execute(req)
+        fe_eid = res[0][0]
+        #fset_eid = store.create_entity('FileSet',
+        #                                 name=unicode(filepath.get('content')),
+        #                                 fset_format=filepath.get('format')).eid
+        req = '''INSERT FileSet F: F name \'%(a)s\', F format \'%(b)s\''''%{'a': scan, 'b': 'DICOM COMPRESSED'}
+        res = c.cursor().execute(req)
+        fs_eid = res[0][0]
+        #store.relate(fset_eid, 'file_entries', fent_eid)
+        res = c.cursor().execute('''SET S file_entries E Where S is FileSet, E is FileEntry, S eid \'%(a)s\', E eid \'%(b)s\'
+        '''%{'a': fs_eid, 'b': fe_eid})
+        #store.relate(scan_eid, 'external_resources', fset_eid)
+        res = c.cursor().execute('''SET S external_resources F Where S is Scan, F is FileSet, S identifier \'%(a)s_%(b)s\', F eid \'%(c)s\'
+        '''%{'a': scan, 'b': psc, 'c': fs_eid})
+        #store.relate(fset_eid, 'related_study', study_eid)
+        res = c.cursor().execute('''SET F related_study S Where S is Study, F is FileSet, S name \'Imagen\', F eid \'%(a)s\'
+        '''%{'a': fs_eid})
     
         res = c.cursor().execute('''SET S concerns Y Where S is Scan, Y is Subject, S identifier \'%(c)s_%(a)s\', Y identifier \'IMAGEN_%(b)s\'
         '''%{'a': psc, 'b': psc, 'c': scan})
         #print 'res = ',res
-        res = c.cursor().execute('''SET S uses_device D Where S is Scan, D is Device, S identifier \'%(g)s_%(a)s\', D identifier \'%(c)s_%(d)s_%(e)s_%(f)s\'
+        res = c.cursor().execute('''SET S uses_device D Where S is Scan, D is Device, S identifier \'%(g)s_%(a)s\', D serialnum \'%(c)s_%(d)s_%(e)s_%(f)s\'
         '''%{'a': psc, 'b': cw_scanner_text,'c': cw_scanner_text, 'd': cw_scanner_manufacturer, 'e': cw_scanner_model, 'f': psc_center[psc], 'g': scan})
-        #print 'res = ', res
+        print 'res = ', res
         res = c.cursor().execute('''SET A generates S Where A is Assessment, S is Scan, S identifier \'%(c)s_%(a)s\', A identifier \'%(c)s_%(b)s\'
         '''%{'a': psc, 'b': psc, 'c': scan})
+        print 'res = ',res
+        #res = c.cursor().execute('''SET A uses S Where A is Assessment, S is Scan, S identifier \'%(c)s_%(a)s\', A identifier \'%(c)s_%(b)s\'
+        #'''%{'a': psc, 'b': psc, 'c': scan})
         #print 'res = ',res
     except Exception as e:
         c.rollback()
@@ -288,27 +312,11 @@ def main(argv):
     #print 'file = ',f
     
     #TOBEDONE
-    l = glob('/neurospin/imagen/FU2/processed/dicomtarballs/000000106601/*/*/*.gz')
+    l = glob('/neurospin/imagen/FU2/processed/dicomtarballs/*/*/*/*.gz')
     for i in l:
         j = i.split('/')
-        psc = j[5]
-        scan = j[7]
-        infos = parse_dicom(i, psc, scan)
-        print 'infos = ',  infos
-    
-    l = glob('/neurospin/imagen/FU2/processed/dicomtarballs/000002296749/*/*/*.gz')
-    for i in l:
-        j = i.split('/')
-        psc = j[5]
-        scan = j[7]
-        infos = parse_dicom(i, psc, scan)
-        print 'infos = ',  infos
-    
-    l = glob('/neurospin/imagen/FU2/processed/dicomtarballs/000003726191/*/*/*.gz')
-    for i in l:
-        j = i.split('/')
-        psc = j[5]
-        scan = j[7]
+        psc = j[-4]
+        scan = j[-2]
         infos = parse_dicom(i, psc, scan)
         print 'infos = ',  infos
     
