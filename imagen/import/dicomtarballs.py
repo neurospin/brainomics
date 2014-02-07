@@ -1,6 +1,14 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+########################################################################
+#
+# python dicomtarballs.py should insert all .tar.gz file contain in
+# /neurospin/imagen/FU2/processed/dicomtarballs/*/*/*/*.gz and related
+# to a present subject into database
+#
+########################################################################
+
 import sys
 import os
 from os.path import sep, join, exists
@@ -18,8 +26,6 @@ import tarfile
 
 from cubicweb import dbapi
 
-#psc = '000002296749'
-#psc = '000012029891'
 psc_center_file='/neurospin/imagen/src/scripts/psc_tools/psc2_centre.csv'
 psc_center={}
 for i in reader(open(psc_center_file)):
@@ -32,8 +38,6 @@ c = dbapi.connect('zmqpickle-tcp://127.0.0.1:8181', login='admin', password='adm
 
 def parse_dicom(path, psc, scan):
     print '>>> path, psc, scan >>> ', path, psc, scan
-    #path = '/neurospin/imagen/processed/dicomtarballs' \
-    #   '/%s/SessionA/T2/T2.tar.gz'%psc
 
     studies = dict(c.cursor().execute('Any N, S WHERE S is Study, S name N'))
 
@@ -52,10 +56,7 @@ def parse_dicom(path, psc, scan):
     tarball = tarfile.open(path)
     file1 =  tarball.extractfile('./1.dcm')
     dataset = dicom.read_file(file1)
-    
-    if (0x0020,0x0011) in dataset:
-        cw_scan_id = dataset[0x0020,0x0011].value # StudyDate
-                
+                    
     if (0x0020,0x0011) in dataset:
         cw_scan_id = dataset[0x0020,0x0011].value
         #cw_scan_type = None
@@ -184,7 +185,6 @@ def parse_dicom(path, psc, scan):
     cw_voxelres_x, cw_voxelres_y, cw_voxelres_z, cw_fov_x, cw_fov_y, cw_tr, cw_te, cw_sequence ,
     cw_scanTime, cw_imageType, cw_scanSequence, cw_seqVariant, cw_acqType, cw_protocol, scan_date]
                 
-    #studies = dict(session.execute('Any N, S WHERE S is Study, S name N'))
     study_eid = None
     if 'Imagen' in studies:
         study_eid = studies['Imagen']
@@ -199,9 +199,9 @@ def parse_dicom(path, psc, scan):
         study_eid = studies['Imagen']
 
     try:
-        req = '''INSERT Assessment A: A identifier \'%(f)s_%(a)s\', A datetime \'%(b)s\',
+        req = '''INSERT Assessment A: A identifier \'%(f)s_%(a)s\', A datetime \'%(b)s\', A timepoint \'FU2\',
         A related_study S, C holds A, X concerned_by A WHERE S is Study, C is Center, X is Subject, S name \'Imagen\', C identifier \'%(d)s\', X identifier \'IMAGEN_%(e)s\'
-        '''%{'a': psc, 'b': date, 'c': cw_protocol, 'd': psc_center[psc], 'e': psc, 'f': scan}
+        '''%{'a': psc, 'b': date, 'd': psc_center[psc], 'e': psc, 'f': scan}
         print 'req = ', req
         res = c.cursor().execute(req)
         print 'res = ', res
@@ -245,8 +245,9 @@ def parse_dicom(path, psc, scan):
             req = req + ', M te %s'%cw_te
         #print 'req = ', req
     
-        req_end = ''', S has_data M, S identifier \'%(d)s_%(a)s\', S label \'%(d)s\', S type \'%(b)s\', S format \'tar.gz\', S completed True, S valid True, 
-        S related_study X WHERE X is Study, X name \'Imagen\''''%{'a': psc,'b': cw_scan_type, 'c': cw_uri, 'd': scan}
+        req_end = ''', S has_data M, S identifier \'%(d)s_%(a)s\', S label \'%(d)s\', S type \'%(b)s\', S format \'tar.gz\',
+        S filepath \'%(c)s\', S completed True, S valid True, S related_study X WHERE X is Study, X name \'Imagen\'
+        '''%{'a': psc,'b': cw_scan_type, 'c': cw_uri, 'd': scan}
         
         req = req + req_end
         print 'req = ', req
@@ -254,28 +255,25 @@ def parse_dicom(path, psc, scan):
         c.cursor().execute(req)
         
         ##### TOFIX not sure that this code is ever run
-        #fent_eid = store.create_entity('FileEntries',
-        #                                name=unicode(filepath.get('content')),
-        #                                filepath=format_filepath(filepath.get('URI'))).eid
-        req = '''INSERT FileEntry F: F name \'%(a)s\', F filepath \'%(b)s\''''%{'a': scan, 'b': cw_uri}
+        #req = '''INSERT FileEntry F: F name \'%(a)s\', F filepath \'%(b)s\''''%{'a': scan, 'b': cw_uri}
+        #res = c.cursor().execute(req)
+        #fe_eid = res[0][0]
+        #req = '''INSERT FileSet F: F name \'%(a)s\', F format \'%(b)s\''''%{'a': scan, 'b': 'DICOM COMPRESSED'}
+        #res = c.cursor().execute(req)
+        #fs_eid = res[0][0]
+        #res = c.cursor().execute('''SET S file_entries E Where S is FileSet, E is FileEntry, S eid \'%(a)s\', E eid \'%(b)s\'
+        #'''%{'a': fs_eid, 'b': fe_eid})
+        #res = c.cursor().execute('''SET S external_resources F Where S is Scan, F is FileSet, S identifier \'%(a)s_%(b)s\', F eid \'%(c)s\'
+        #'''%{'a': scan, 'b': psc, 'c': fs_eid})
+        #res = c.cursor().execute('''SET F related_study S Where S is Study, F is FileSet, S name \'Imagen\', F eid \'%(a)s\'
+        #'''%{'a': fs_eid})
+        req = '''INSERT ExternalResource E: E name \'%(a)s\', E filepath \'%(b)s\', E related_study S Where S is Study, S name \'Imagen\'
+        '''%{'a': scan, 'b': cw_uri}
         res = c.cursor().execute(req)
-        fe_eid = res[0][0]
-        #fset_eid = store.create_entity('FileSet',
-        #                                 name=unicode(filepath.get('content')),
-        #                                 fset_format=filepath.get('format')).eid
-        req = '''INSERT FileSet F: F name \'%(a)s\', F format \'%(b)s\''''%{'a': scan, 'b': 'DICOM COMPRESSED'}
-        res = c.cursor().execute(req)
-        fs_eid = res[0][0]
-        #store.relate(fset_eid, 'file_entries', fent_eid)
-        res = c.cursor().execute('''SET S file_entries E Where S is FileSet, E is FileEntry, S eid \'%(a)s\', E eid \'%(b)s\'
-        '''%{'a': fs_eid, 'b': fe_eid})
-        #store.relate(scan_eid, 'external_resources', fset_eid)
-        res = c.cursor().execute('''SET S external_resources F Where S is Scan, F is FileSet, S identifier \'%(a)s_%(b)s\', F eid \'%(c)s\'
-        '''%{'a': scan, 'b': psc, 'c': fs_eid})
-        #store.relate(fset_eid, 'related_study', study_eid)
-        res = c.cursor().execute('''SET F related_study S Where S is Study, F is FileSet, S name \'Imagen\', F eid \'%(a)s\'
-        '''%{'a': fs_eid})
-    
+        ext_eid = res[0][0]
+        res = c.cursor().execute('''SET S external_resources E Where S is Scan, E is ExternalResource, S identifier \'%(a)s_%(b)s\', E eid \'%(c)s\'
+        '''%{'a': scan, 'b': psc, 'c': ext_eid})
+
         res = c.cursor().execute('''SET S concerns Y Where S is Scan, Y is Subject, S identifier \'%(c)s_%(a)s\', Y identifier \'IMAGEN_%(b)s\'
         '''%{'a': psc, 'b': psc, 'c': scan})
         #print 'res = ',res
@@ -285,9 +283,6 @@ def parse_dicom(path, psc, scan):
         res = c.cursor().execute('''SET A generates S Where A is Assessment, S is Scan, S identifier \'%(c)s_%(a)s\', A identifier \'%(c)s_%(b)s\'
         '''%{'a': psc, 'b': psc, 'c': scan})
         print 'res = ',res
-        #res = c.cursor().execute('''SET A uses S Where A is Assessment, S is Scan, S identifier \'%(c)s_%(a)s\', A identifier \'%(c)s_%(b)s\'
-        #'''%{'a': psc, 'b': psc, 'c': scan})
-        #print 'res = ',res
     except Exception as e:
         c.rollback()
         print 'Can not insert MRIData or Scan'
@@ -299,19 +294,7 @@ def parse_dicom(path, psc, scan):
 
 #main
 def main(argv):
-    #psc is the 4th argument if this script is called with: cubicweb-ctl shell "instanceName" ./import_dicom.py "psc"
-    #psc = sys.argv[1]
-    #print len(sys.argv)
 
-    #subjectID = psc#listOfFiles[i][k:k+12]
-    #subjects = dict(session.execute('Any I, S WHERE S is Subject, S identifier I'))
-    #print subjects['IMAGEN_%(a)s'%{'a' : subjectID}]
-    #psc = subjects['IMAGEN_%(a)s'%{'a' : subjectID}]
-    
-    #f = os.path.join(os.getcwd(),listOfFiles[i])
-    #print 'file = ',f
-    
-    #TOBEDONE
     l = glob('/neurospin/imagen/FU2/processed/dicomtarballs/*/*/*/*.gz')
     for i in l:
         j = i.split('/')
