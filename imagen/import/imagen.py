@@ -7,29 +7,6 @@ Find additionnal data from FU2 processings
 
 Only the information about F-maps or contrast is kept
 """
-#TODO
-#SQLGenObjectStore -> RQLObjectStore
-#  File "/home/cl239099/brainomics/imagen/import/imagen.py", line 1145, in import_subject
-#    gender=gender, handedness=handedness)
-#  File "/usr/lib/python2.7/dist-packages/cubicweb/dataimport.py", line 605, in create_entity
-#    entity = self.session.create_entity(*args, **kwargs)
-#  File "/usr/lib/python2.7/dist-packages/cubicweb/req.py", line 153, in create_entity
-#    return cls.cw_instantiate(self.execute, **kwargs)
-#  File "/usr/lib/python2.7/dist-packages/cubicweb/entity.py", line 538, in cw_instantiate
-#    created = execute(rql, qargs).get_entity(0, 0)
-#  File "/usr/lib/python2.7/dist-packages/cubicweb/server/session.py", line 1185, in execute
-#    rset = self._execute(self, rql, kwargs, build_descr)
-#  File "/usr/lib/python2.7/dist-packages/cubicweb/server/querier.py", line 627, in execute
-#    plan = self.plan_factory(rqlst, args, session)
-#  File "/usr/lib/python2.7/dist-packages/cubicweb/server/querier.py", line 540, in plan_factory
-#    return InsertPlan(self, rqlst, args, session)
-#  File "/usr/lib/python2.7/dist-packages/cubicweb/server/querier.py", line 346, in __init__
-#    ExecutionPlan.__init__(self, querier, rqlst, args, session)
-#  File "/usr/lib/python2.7/dist-packages/cubicweb/server/querier.py", line 144, in __init__
-#    self.syssource = session.cnxset.source('system')
-#AttributeError: 'NoneType' object has no attribute 'source'
-#BL/FU1 vs FU2 in assessment
-
 
 import logging
 import os
@@ -984,6 +961,7 @@ def create_assessment_for_experiment(store, experiment, age, study_eid,
                                          identifier=experiment_id,
                                          #age_for_assessment=age,
                                          age_of_subject=age,
+                                         timepoint=unicode('BL/FU1'),
                                          #protocols=unicode(experiment.get('%stype' % XSI)),
                                          related_study=study_eid).eid
     # Create relations
