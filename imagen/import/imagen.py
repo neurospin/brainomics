@@ -247,6 +247,7 @@ def get_node_text(node, path, converter=None):
         return unicode(info)
     return None
 
+
 def format_filepath(filepath):
     """Correctly change the path, according to some user-defined conversions
     """
@@ -255,6 +256,7 @@ def format_filepath(filepath):
     for old, new in PATHCHANGES:
         filepath = filepath.replace(old, new)
     return unicode(filepath)
+
 
 def iterate_external_resources(store, experiment, study_eid):
     """Iterate over all the possible external resources (resouce/file)
@@ -273,6 +275,7 @@ def iterate_external_resources(store, experiment, study_eid):
             added_files.add(filepath)
             yield {'name': filepath, 'filepath': filepath, 'related_study': study_eid}
 
+
 def iterate_investigators(node):
     """Iterate over the investigators of a node"""
     for assistant in node.findall('%sResearchAssistant' % IMAGEN):
@@ -281,6 +284,7 @@ def iterate_investigators(node):
         lastname = lastname.replace('-', '').strip()
         if lastname:
             yield {'identifier': lastname, 'lastname': lastname}
+
 
 def iterate_score_value_infos(store, node, category, base_tag=XNAT):
     """Iterate possible score values over a node
@@ -300,6 +304,7 @@ def iterate_score_value_infos(store, node, category, base_tag=XNAT):
     for name, value in scores:
         yield build_score_value_infos(store, name, value, category)
 
+
 def build_score_value_infos(store, name, value, category=u'various',
                             unit=None, possible_values=None):
     """Build score value infos from a name and a value
@@ -313,9 +318,12 @@ def build_score_value_infos(store, name, value, category=u'various',
         entity_eid = SCORE_DEFS[name]
     else:
         #print 'ScoreDefinition = ', name, category, _type, unit, possible_values
-        entity = session.create_entity('ScoreDefinition', name=unicode(name),
-                                     category=unicode(category), type=unicode(_type),
-                                     unit=unicode(unit), possible_values=unicode(possible_values))
+        entity = session.create_entity('ScoreDefinition',
+                                       name=unicode(name),
+                                       category=unicode(category),
+                                       type=unicode(_type),
+                                       unit=unicode(unit),
+                                       possible_values=unicode(possible_values))
         #print 'entity = ', entity, entity.eid
         #scoredef = dict(session.execute('Any I, X WHERE X is ScoreDefinition, X name I'))
         #print 'scoredef = ', scoredef
@@ -330,11 +338,12 @@ def build_score_value_infos(store, name, value, category=u'various',
         attrs['value'] = value
     else:
         # Truncate text
-        if len(value)>=2040:
+        if len(value) >= 2040:
             attrs['text'] = unicode(value[:2040] + u'[...]')
         else:
             attrs['text'] = unicode(value)
     return attrs
+
 
 def build_csv_external_resource(store, file_id, all_scores, study_eid):
     all_data = []
@@ -359,11 +368,11 @@ def build_csv_external_resource(store, file_id, all_scores, study_eid):
 #        fset_eid = store.create_entity('FileSet', name=file_id,
 #                                         format='csv',
 #                                         related_study=study_eid).eid
-#        store.relate(fset_eid, 'file_entries', fent_eid)                                 
+#        store.relate(fset_eid, 'file_entries', fent_eid)
 #        return fset_eid
         ext_eid = store.create_entity('ExternalResource', name=file_id,
-        filepath=format_filepath(filename),
-        related_study=study_eid).eid
+                                      filepath=format_filepath(filename),
+                                      related_study=study_eid).eid
         return ext_eid
     return None
 
@@ -381,6 +390,7 @@ def import_genomics_scores(store, tree, experiment, study_eid, subject_eid, cent
                                                       study_eid, subject_eid,
                                                       center_eid, measure_eid)
     # Create measure
+
 
 ###############################################################################
 ### NEUROIMAGING EXPERIMENT ###################################################
@@ -409,15 +419,16 @@ def build_scan_map(tree, scan, experiment, psc):
     index = identifier.find(psc)
     identifier = identifier[index:]
     attributes = {
-        'identifier': '%(a)s_%(b)s'%{'a': scan_type, 'b': identifier}, # required attribute
+        'identifier': '%(a)s_%(b)s' % {'a': scan_type, 'b': identifier},  # required attribute
         #'identifier': identifier,
-        'label': scan_type, # required attribute ### infer from type?
-        'type': unicode(_type), # required attribute
+        'label': scan_type,  # required attribute ### infer from type?
+        'type': unicode(_type),  # required attribute
         'format': file_format,
-        'filepath': file_uri, # required attribute
+        'filepath': file_uri,  # required attribute
         'position_acquisition': int(scan_id),
     }
     return attributes
+
 
 def build_scan_data_map(store, tree, scan):
     """Retrieve ScanData attributes from a scan
@@ -429,7 +440,7 @@ def build_scan_data_map(store, tree, scan):
     scan_type = unicode(scan.get('%stype' % XSI).split(':')[-1])
     ### TODO fix below
     if scan_type == 'mrScanData':
-        data_etype ='MRIData'
+        data_etype = 'MRIData'
         scan_infos = {}
         path = 'xnat:parameters'
         find = scan.xpath(path, namespaces=nsmap)
@@ -454,6 +465,7 @@ def build_scan_data_map(store, tree, scan):
         raise
     return store.create_entity(data_etype, **scan_infos).eid
 
+
 def build_resource_scan_infos(resource, assessor, psc):
     """Build scan infos from an assessor and a resource
     """
@@ -465,11 +477,12 @@ def build_resource_scan_infos(resource, assessor, psc):
     index = identifier.find(psc)
     identifier = identifier[index:]
     return {'format': unicode(resource.get('format')),
-            'identifier': '%(a)s_%(b)s'%{'a':unicode(assessor.get('%stype' % XSI)), 'b': identifier},
+            'identifier': '%(a)s_%(b)s' % {'a': unicode(assessor.get('%stype' % XSI)), 'b': identifier},
             #'identifier': identifier,
             'label': label,
             'type': unicode(SCAN_TYPES.get(assessor.get('%stype' % XSI), 'raw fMRI')),
             'filepath': format_filepath(resource.get('URI'))}
+
 
 def import_neuroimaging_raw_scan(store, tree, experiment, scan,
                                  assessment_eid, study_eid, subject_eid,
@@ -508,14 +521,16 @@ def import_neuroimaging_raw_scan(store, tree, experiment, scan,
 #        fset_eid = store.create_entity('FileSet',
 #                                         name=unicode(filepath.get('content')),
 #                                         format=filepath.get('format')).eid
-        ext_eid = store.create_entity('ExternalResource', name=unicode(filepath.get('content')),
-        filepath=format_filepath(filepath.get('URI')),
-        related_study=study_eid).eid
+        ext_eid = store.create_entity('ExternalResource',
+                                      name=unicode(filepath.get('content')),
+                                      filepath=format_filepath(filepath.get('URI')),
+                                      related_study=study_eid).eid
 #        store.relate(fset_eid, 'file_entries', fent_eid)
 #        store.relate(scan_eid, 'external_resources', fset_eid)
         store.relate(scan_eid, 'external_resources', ext_eid)
 #        store.relate(fset_eid, 'related_study', study_eid)
     return scan_infos['type'], scan_eid
+
 
 def build_freesurfer_analysis(store, tree, assessor, study_eid, subject_eid):
     _type = u'Freesurfer'
@@ -545,9 +560,10 @@ def build_freesurfer_analysis(store, tree, assessor, study_eid, subject_eid):
 #            store.relate(extres_eid , 'file_entries', fent_eid)
 #            store.relate(measure.eid, 'external_resources', extres_eid)
 #            store.relate(extres_eid, 'related_study', study_eid)
-            ext_eid = store.create_entity('ExternalResource',name=unicode(extres_infos.get('name')), 
-            filepath=extres_infos['filepath'], 
-            related_study=study_eid).eid
+            ext_eid = store.create_entity('ExternalResource',
+                                          name=unicode(extres_infos.get('name')),
+                                          filepath=extres_infos['filepath'],
+                                          related_study=study_eid).eid
             store.relate(measure.eid, 'external_resources', ext_eid)
 
     # Add scores - Volumetric
@@ -603,10 +619,11 @@ def build_freesurfer_analysis(store, tree, assessor, study_eid, subject_eid):
                                 score_eid = store.create_entity('ScoreValue', **attrs).eid
     return measure.eid
 
+
 def import_neuroimaging(store, tree, experiment, study_eid, subject_eid, center_eid, center_id, psc):
     """Import a neuroimaging assessment from an experiment node"""
     # Create assessment
-    assessment_eid = create_assessment_for_experiment(store, experiment, None, #TODO: None->age?
+    assessment_eid = create_assessment_for_experiment(store, experiment, None,  # TODO: None->age?
                                                       study_eid, subject_eid, center_eid)
     # Create device
     device_eid = import_device(store, tree, experiment, center_eid, center_id)
@@ -659,9 +676,10 @@ def import_neuroimaging(store, tree, experiment, study_eid, subject_eid, center_
 #                         filepath=keep_filepath).eid
 #            store.relate(fset_eid, 'file_entries', fent_eid )
 #            store.relate(assessor_scan_eid, 'external_resources', fset_eid)
-            ext_eid = store.create_entity('ExternalResource', name=assessor_scan_infos.get('label'),
-            filepath=assessor_scan_infos['filepath'],
-            related_study=study_eid).eid
+            ext_eid = store.create_entity('ExternalResource',
+                                          name=assessor_scan_infos.get('label'),
+                                          filepath=assessor_scan_infos['filepath'],
+                                          related_study=study_eid).eid
             store.relate(assessor_scan_eid, 'external_resources', ext_eid)
             store.relate(assessment_eid, 'generates', assessor_scan_eid, subjtype='Assessment')
         else:
@@ -697,15 +715,15 @@ def iterate_behavioural_trials(experiment, xml_ns):
         yield dict([(key, value) for key, value in trial.items()
                     if key not in XNAT_TAGS_SKIPPED or key == 'ID'])
 
+
 def import_behavioural(store, tree, experiment, study_eid, subject_eid, center_eid):
     """Import a behavioural (as a type of psytool experiment)
     """
     # Create behavioural data
-    behavioural_run_eid, behavioural_eid, age, psytool_type = import_pystool_experiment(store, tree,
-                                                                          experiment,
-                                                                          subject_eid,
-                                                                          'Questionnaire',
-                                                                          'QuestionnaireRun', study_eid)
+    behavioural_run_eid, behavioural_eid, age, psytool_type = \
+        import_pystool_experiment(store, tree, experiment, subject_eid,
+                                  'Questionnaire', 'QuestionnaireRun',
+                                  study_eid)
     # Create questions/answers
     build_question_answer_infos(store, experiment, behavioural_eid, behavioural_run_eid, psytool_type)
     # Create trials file in a two steps procedure to merge possibly different keys
@@ -729,9 +747,10 @@ def import_behavioural(store, tree, experiment, study_eid, subject_eid, center_e
 #            store.relate(extres_eid , 'file_entries', fent_eid)
 #            store.relate(behavioural_run_eid, 'external_resources', extres_eid)
 #            store.relate(extres_eid, 'related_study', study_eid)
-            ext_eid = store.create_entity('ExternalResource', name=unicode(extres_infos.get('name')),
-            filepath=extres_infos['filepath'],
-            related_study=study_eid).eid
+            ext_eid = store.create_entity('ExternalResource',
+                                          name=unicode(extres_infos.get('name')),
+                                          filepath=extres_infos['filepath'],
+                                          related_study=study_eid).eid
             store.relate(behavioural_run_eid, 'external_resources', ext_eid)
     # Relate to an assessment
     assessment_eid = create_assessment_for_experiment(store, experiment, age,
@@ -771,6 +790,7 @@ def build_psytool_experiment(store, tree, experiment, etype):
     EXPERIMENTS[psytool_type] = entity.eid
     return entity.eid, psytool_type
 
+
 def build_psytool_experiment_run(store, tree, experiment, etype_run, subject_eid, experiment_eid, study_eid):
     """Retrieve ExperimentRun attributes from a Psytools run
 
@@ -802,17 +822,18 @@ def build_psytool_experiment_run(store, tree, experiment, etype_run, subject_eid
         find = experiment.xpath(path, namespaces=nsmap)
         age = int(find[0].text) if find else None
     #identifier build to assume its unicity
-    experiment_id =  '''%(a)s_%(b)s_%(c)s'''%{'a':experiment_id, 'b':age, 'c':iteration}
+    experiment_id = '''%(a)s_%(b)s_%(c)s''' % {'a': experiment_id, 'b': age, 'c': iteration}
     experiment_id = experiment_id.upper()
     entity = store.create_entity(etype_run,
-                               identifier=experiment_id,
-                               iteration=iteration,
-                               completed=completed,
-                               user_ident=user_ident,
-                               concerns=subject_eid,
-                               instance_of=experiment_eid)
+                                 identifier=experiment_id,
+                                 iteration=iteration,
+                                 completed=completed,
+                                 user_ident=user_ident,
+                                 concerns=subject_eid,
+                                 instance_of=experiment_eid)
     store.relate(entity.eid, 'related_study', study_eid)
     return entity.eid, age
+
 
 def import_pystool_experiment(store, tree, experiment, subject_eid, exp_etype, etype_run, study_eid):
     """Import all types of psytool experiments (questionnaire/behavioural)"""
@@ -829,6 +850,7 @@ def import_pystool_experiment(store, tree, experiment, subject_eid, exp_etype, e
                                                            study_eid)
     return experiment_run_eid, experiment_eid, age, psytool_type
 
+
 def build_question_answer_infos(store, experiment, questionnaire_eid, questionnaire_run_eid, psytool_type):
     """Iterate over questions and answers for a questionnaire
     """
@@ -842,14 +864,14 @@ def build_question_answer_infos(store, experiment, questionnaire_eid, questionna
         if key not in XNAT_TAGS_SKIPPED:
             #Unit Separator
             US = '\x1f'
-                
+
             try:
                 value = float(value)
                 possible_answers = None
                 _type = u'numerical'
             except ValueError:
                 # keep string as int, use possible_answers
-                if value.find(US)>0:
+                if value.find(US) > 0:
                     raise Exception('Mais pourquoi ? (...\x1e, \x1f are Record Seprator and Unit Separator...)')
                 possible_answers = unicode(value)
                 value = 0
@@ -880,14 +902,13 @@ def build_question_answer_infos(store, experiment, questionnaire_eid, questionna
                                          question=question_eid)
             ind += 1
 
+
 def import_questionnaire(store, tree, experiment, study_eid, subject_eid, center_eid):
     """Import a questionnaire (as a type of psytool experiment)"""
     # Create questionnaire
-    questionnaire_run_eid, questionnaire_eid, age, psytool_type = import_pystool_experiment(store, tree,
-                                                                              experiment,
-                                                                              subject_eid,
-                                                                              'Questionnaire',
-                                                                              'QuestionnaireRun', study_eid)
+    questionnaire_run_eid, questionnaire_eid, age, psytool_type = \
+        import_pystool_experiment(store, tree, experiment, subject_eid,
+                                  'Questionnaire', 'QuestionnaireRun', study_eid)
     # Create questions/answers
     build_question_answer_infos(store, experiment, questionnaire_eid, questionnaire_run_eid, psytool_type)
     # Create external resources
@@ -939,6 +960,7 @@ def import_generic_test_run(store, experiment, study_eid, subject_eid, _type=Non
         score_value_eid = store.create_entity('ScoreValue', **score_value_infos).eid
     return measure.eid
 
+
 def create_assessment_for_experiment(store, experiment, age, study_eid,
                                      subject_eid, center_eid, measure_eid=None):
     """Create an assessment and required relations from and experiment
@@ -956,7 +978,7 @@ def create_assessment_for_experiment(store, experiment, age, study_eid,
     # Create an assessment
     experiment_id = unicode(experiment.get('ID'))
     #identifier build to assume its unicity
-    experiment_id =  '''%(a)s_%(b)s'''%{'a':experiment_id, 'b':age}
+    experiment_id = '''%(a)s_%(b)s''' % {'a': experiment_id, 'b': age}
     assessment_eid = store.create_entity('Assessment',
                                          identifier=experiment_id,
                                          #age_for_assessment=age,
@@ -966,8 +988,8 @@ def create_assessment_for_experiment(store, experiment, age, study_eid,
                                          related_study=study_eid).eid
     # Create relations
     protocol_eid = store.create_entity('Protocol',
-                                         identifier=unicode(experiment.get('%stype' % XSI)),
-                                         related_study=study_eid).eid
+                                       identifier=unicode(experiment.get('%stype' % XSI)),
+                                       related_study=study_eid).eid
     store.relate(assessment_eid, 'protocols', protocol_eid)
     store.relate(subject_eid, 'concerned_by', assessment_eid)
     store.relate(center_eid, 'holds', assessment_eid)
@@ -978,16 +1000,17 @@ def create_assessment_for_experiment(store, experiment, age, study_eid,
         if extres_infos.get('filepath'):
             #TOFIX quick workaround to fix the external_resource FileSet modifications
             extres_infos['format'] = 'ascii'
-            fent_infos = {'filepath':extres_infos.get('filepath'),
-                          'name' : extres_infos.get('name')}
+            fent_infos = {'filepath': extres_infos.get('filepath'),
+                          'name': extres_infos.get('name')}
             #extres_infos.pop('filepath')
 #            fset_eid = store.create_entity('FileSet', **extres_infos).eid
 #            fent_eid = store.create_entity('FileEntry', **fent_infos).eid
 #            store.relate(fset_eid, 'file_entries', fent_eid)
 #            store.relate(assessment_eid, 'external_resources', fset_eid)
-            ext_eid = store.create_entity('ExternalResource', name=unicode(extres_infos.get('name')),
-            filepath=extres_infos.get('filepath'),
-            related_study=study_eid).eid
+            ext_eid = store.create_entity('ExternalResource',
+                                          name=unicode(extres_infos.get('name')),
+                                          filepath=extres_infos.get('filepath'),
+                                          related_study=study_eid).eid
             store.relate(assessment_eid, 'external_resources', ext_eid)
     # Investigators
     for investigator_infos in iterate_investigators(experiment):
@@ -1000,11 +1023,12 @@ def create_assessment_for_experiment(store, experiment, age, study_eid,
         store.relate(assessment_eid, 'conducted_by', investigator_eid)
     return assessment_eid
 
+
 def import_quality_report(store, tree, experiment, study_eid, subject_eid, center_eid):
     """Import the quality report assessment from an experiment node
     """
     measure_eid = import_generic_test_run(store, experiment, study_eid, subject_eid)
-    assessment_eid = create_assessment_for_experiment(store, experiment, None,  #TODO: None->age
+    assessment_eid = create_assessment_for_experiment(store, experiment, None,  # TODO: None->age
                                                       study_eid, subject_eid,
                                                       center_eid, measure_eid)
     for _type in XNAT_TAGS_SUBJECT_INFOS:
@@ -1014,6 +1038,7 @@ def import_quality_report(store, tree, experiment, study_eid, subject_eid, cente
                 score_value_infos['measure'] = measure_eid
                 score_value_eid = store.create_entity('ScoreValue', **score_value_infos).eid
     return assessment_eid
+
 
 def import_generic_subject_assessments(store, tree, experiment, study_eid, subject_eid, center_eid):
     """Import generic assessments infos for various data of a subject,
@@ -1067,6 +1092,7 @@ def import_center(store, tree):
     CENTERS[identifier] = entity.eid
     return entity.eid, identifier
 
+
 def import_study(store, tree, filepath):
     """Create Study attributes ex nihilo
     Imagen XML files lack the relevant information but it is
@@ -1084,6 +1110,7 @@ def import_study(store, tree, filepath):
                                  description=u'Imagen XNAT data')
     STUDIES[name] = entity.eid
     return entity.eid
+
 
 def import_subject(store, tree):
     """Retrieve Subject attributes
@@ -1153,6 +1180,7 @@ def import_subject(store, tree):
     return entity.eid
     #return res[0][0]
 
+
 def import_demographics(store, tree, subject_eid):
     """Import subject demographics (excluding gender and handedness)
     """
@@ -1164,6 +1192,7 @@ def import_demographics(store, tree, subject_eid):
             for score_value_infos in iterate_score_value_infos(store, child, u'demographics'):
                 score_value_eid = store.create_entity('ScoreValue', **score_value_infos).eid
                 store.relate(subject_eid, 'related_infos', score_value_eid)
+
 
 def import_subject_additional_infos(store, experiment, study_eid, subject_eid, center_eid):
     """Import subject additional infos (e.g. cyclePhaseInfo)
@@ -1209,25 +1238,24 @@ def import_device(store, tree, experiment, center_eid, center_id):
     # identifier='%(a)s_%(b)s_%(c)s_%(d)s'%{'a':name, 'b':manufacturer, 'c':model, 'd':center_id}
     # if identifier in DEVICES:
     #     return DEVICES[identifier]
-    # entity = store.create_entity('Device', identifier=identifier, 
+    # entity = store.create_entity('Device', identifier=identifier,
     #                             name=name,
     #                             manufacturer=manufacturer,
     #                             hosted_by=center_eid, model=model)
     # DEVICES[identifier] = entity.eid
     # return entity.eid
-    #serialnum = unicode(hashlib.sha1('%(a)s_%(b)s_%(c)s_%(d)s'%{'a':name, 'b':manufacturer, 'c':model, 'd':center_id}).hexdigest())
-    serialnum = unicode('%(a)s_%(b)s_%(c)s_%(d)s'%{'a':name, 'b':manufacturer, 'c':model, 'd':center_id})
+    #serialnum = unicode(hashlib.sha1('%(a)s_%(b)s_%(c)s_%(d)s' % {'a': name, 'b': manufacturer, 'c': model, 'd': center_id}).hexdigest())
+    serialnum = unicode('%(a)s_%(b)s_%(c)s_%(d)s' % {'a': name, 'b': manufacturer, 'c': model, 'd': center_id})
     if serialnum in DEVICES:
         ret_eid = DEVICES[serialnum]
     else:
-        entity = store.create_entity('Device', serialnum=serialnum, 
-                                name=name,
-                                manufacturer=manufacturer,
-                                hosted_by=center_eid, model=model)
+        entity = store.create_entity('Device', serialnum=serialnum,
+                                     name=name,
+                                     manufacturer=manufacturer,
+                                     hosted_by=center_eid, model=model)
         DEVICES[serialnum] = entity.eid
         ret_eid = entity.eid
     return ret_eid
-    
 
 
 ###############################################################################
@@ -1285,6 +1313,7 @@ def import_imagen_file(store, xml_file, filepath):
             print '!!! UNKNOWN EXPERIMENT --->', experiment_type
             continue
 
+
 def rescue_psc_from_xml_file_path(xml_file):
     psc = os.path.split(os.path.abspath(xml_file))[1]
     psc = psc.replace('IMAGEN_', '')
@@ -1330,7 +1359,7 @@ if __name__ == '__main__':
         STORE_FLUSH = True
     else:
         STORE_FLUSH = False
-    
+
     for ind, xml_file in enumerate(glob.iglob(os.path.join(path, '*.xml'))):
         print 80*'*'
         print 'Processing', xml_file
