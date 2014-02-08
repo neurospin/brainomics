@@ -874,7 +874,7 @@ def build_question_answer_infos(store, experiment, questionnaire_eid, questionna
             except ValueError:
                 # keep string as int, use possible_answers
                 if value.find(US) > 0:
-                    raise Exception('Mais pourquoi ? (...\x1e, \x1f are Record Seprator and Unit Separator...)')
+                    raise Exception('Uuuh? (...\x1e, \x1f are Record Seprator and Unit Separator...)')
                 possible_answers = unicode(value)
                 value = 0
                 _type = u'text'
