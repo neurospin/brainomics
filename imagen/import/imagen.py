@@ -1363,7 +1363,7 @@ if __name__ == '__main__':
         STORE_FLUSH = False
 
     for ind, xml_file in enumerate(glob.iglob(os.path.join(path, '*.xml'))):
-        print 80*'*'
+        print 80 * '*'
         print 'Processing', xml_file
         try:
             import_imagen_file(store, xml_file, path)
@@ -1372,12 +1372,12 @@ if __name__ == '__main__':
             # instead of xnat:Subject
             continue
         if ind and ind % 10 == 0:
-            print 80*'*'
-            print 80*'*'
+            print 80 * '*'
+            print 80 * '*'
             print 'FLUSHING !'
             store.flush()
-            print 80*'*'
-            print 80*'*'
+            print 80 * '*'
+            print 80 * '*'
     # Update all questions
     for eid, pa in QUESTION_POSSIBLE_ANSWERS.iteritems():
         store.rql('SET X possible_answers %(pa)s WHERE X eid %(e)s',
