@@ -5,7 +5,7 @@
 #
 # python dicomtarballs.py should insert all .tar.gz file contain in
 # /neurospin/imagen/FU2/processed/dicomtarballs/*/*/*/*.gz and related
-# to a present subject into database
+# to a subject already in database
 #
 ########################################################################
 
