@@ -243,22 +243,46 @@ def insert_quest(argv):
                         value = old_possible_answers.index(possible_answers)
                     #print 'value',value
                 else:
-                    question = c.cursor().execute('''INSERT Question Q: Q identifier \'%(a)s\', Q position \'%(b)s\', Q text \'%(c)s\', Q type \'%(t)s\',
-                    Q possible_answers \'%(e)s\', Q questionnaire X Where X is Questionnaire, X identifier \'%(d)s\'
-                    ''' % {'a': identifier, 'b': position, 'c': l[7], 't': _type, 'd': questionnaire, 'e': possible_answers})
+                    req = ("INSERT Question Q: Q identifier '%(question)s', "
+                           "Q position '%(position)s', Q text '%(text)s', "
+                           "Q type '%(type)s', "
+                           "Q possible_answers '%(answers)s', "
+                           "Q questionnaire X Where X is Questionnaire, "
+                           "X identifier '%(questionnaire)s'"
+                           % {'question': identifier,
+                              'position': position,
+                              'text': l[7],
+                              'type': _type,
+                              'answers': possible_answers,
+                              'questionnaire': questionnaire}
+                           )
+                    question = c.cursor().execute(req)
                     #print 'question[0][0] = ',question[0][0], 'possible_answers = ', possible_answers
                     QUESTIONS[identifier] = question[0][0]
                     question_eid = question[0][0]
                     QUESTION_POSSIBLE_ANSWERS[question_eid] = possible_answers
                 # Answer
-                res = c.cursor().execute('''Any A, X Where A is Answer, X is QuestionnaireRun, Q is Question, A question Q, Q identifier \'%(a)s\',
-                A questionnaire_run X, X identifier \'%(b)s%(c)s_%(d)s_%(e)s\'''' % {'a': identifier, 'b': questionnaire, 'c': subject[0:12], 'd': age, 'e': l[1]})
+                questionnaire_identifier = questionnaire + subject[0:12] + '_' + age + '_' + l[1]
+                req = ("Any A, X Where A is Answer, X is QuestionnaireRun, "
+                       "Q is Question, A question Q, Q identifier '%(question)s', "
+                       "A questionnaire_run X, "
+                       "X identifier '%(questionnaire)s'"
+                       % {'question': identifier, 'questionnaire': questionnaire_identifier}
+                       )
+                res = c.cursor().execute(req)
                 if not res:
-                    c.cursor().execute('''INSERT Answer A: A value \'%(a)s\', A question Q, A questionnaire_run X Where Q is Question, X is QuestionnaireRun,
-                    Q identifier \'%(b)s\', X identifier \'%(c)s%(d)s_%(e)s_%(f)s\'''' % {'a': value, 'b': identifier, 'c': questionnaire, 'd': subject[0:12], 'e': age, 'f': l[1]})
+                    req = ("INSERT Answer A: A value '%(value)s', A question Q, "
+                           "A questionnaire_run X Where Q is Question, "
+                           "X is QuestionnaireRun, "
+                           "Q identifier '%(question)s', "
+                           "X identifier '%(questionnaire)s'"
+                           % {'value': value,
+                              'question': identifier,
+                              'questionnaire': questionnaire_identifier})
+                    c.cursor().execute(req)
             except Exception as e:
                 c.rollback()
-                print 'can not insert Question %(q)s and Answer %(a)s' % {'q': l[7], 'a': l[8]}
+                print 'cannot insert Question %(q)s and Answer %(a)s' % {'q': l[7], 'a': l[8]}
                 e_t, e_v, e_tb = sys.exc_info()
                 print 'Exc', e_t, e_v
                 traceback.print_tb(e_tb)
