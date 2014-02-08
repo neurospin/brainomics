@@ -11,148 +11,138 @@
 
 import sys
 import os
-from os.path import sep, join, exists
-from os import listdir
-import re
-import tempfile
-import shutil
-#import traceback
-from csv import reader
-from glob import glob
+import csv
 import dicom
 import locale
-
 import tarfile
-
 from cubicweb import dbapi
 
 psc_center_file = '/neurospin/imagen/src/scripts/psc_tools/psc2_centre.csv'
 psc_center = {}
-for i in reader(open(psc_center_file)):
-    psc_center[i[0]] = i[1]
-cw_project = 'IMAGEN'
-
-c = dbapi.connect('zmqpickle-tcp://127.0.0.1:8181', login='admin', password='admin')
+with open(psc_center_file) as csvfile:
+    for row in csv.reader(csvfile):
+        psc_center[row[0]] = row[1]
 
 
-def parse_dicom(path, psc, scan):
-    print '>>> path, psc, scan >>> ', path, psc, scan
+def insert_dicomtarball(path, cnx, subject, series):
+    print '>>> path, subject, series >>> ', path, subject, series
 
-    studies = dict(c.cursor().execute('Any N, S WHERE S is Study, S name N'))
+    studies = dict(cnx.cursor().execute('Any N, S WHERE S is Study, S name N'))
 
-    centers = dict(c.cursor().execute('Any I, C WHERE C is Center, C identifier I'))
+    centers = dict(cnx.cursor().execute('Any I, C WHERE C is Center, C identifier I'))
 
-    subjects = dict(c.cursor().execute('Any I, S WHERE S is Subject, S identifier I'))
+    subjects = dict(cnx.cursor().execute('Any I, S WHERE S is Subject, S identifier I'))
 
     subject_eid = None
-    if 'IMAGEN_%(a)s' % {'a': psc} in subjects:
-        subject_eid = subjects['IMAGEN_%(a)s' % {'a': psc}]
+    if 'IMAGEN_' + subject in subjects:
+        subject_eid = subjects['IMAGEN_' + subject]
     if not subject_eid:
         return
-    center_eid = centers[psc_center[psc]]
+    center_eid = centers[psc_center[subject]]
 
     date = None
     tarball = tarfile.open(path)
     file1 = tarball.extractfile('./1.dcm')
     dataset = dicom.read_file(file1)
+    tarball.close()
 
     if (0x0020,0x0011) in dataset:
         cw_scan_id = dataset[0x0020,0x0011].value
         #cw_scan_type = None
         #scan.set('type', serie)
-        cw_scan_type = scan
+        cw_scan_type = series
         #scan.set('type', dcm_header['0008']['103e'])
         #print 'Could not set scan type'
-        cw_scanner_manufacturer = None
-        if (0x0008, 0x0070) in dataset:
-            cw_scanner_manufacturer = dataset[0x0008, 0x0070].value
+        if (0x0008,0x0070) in dataset:
+            cw_scanner_manufacturer = dataset[0x0008,0x0070].value
         else:
+            cw_scanner_manufacturer = None
             print 'Could not find scanner manufacturer in dicom header'
-        cw_scanner_model = None
         if (0x0008,0x1090) in dataset:
             cw_scanner_model = dataset[0x0008,0x1090].value
         else:
+            cw_scanner_model = None
             print 'Could not find scanner model in dicom header'
-        cw_scanner_text = "None"
         if (0x0008,0x1010) in dataset:
             cw_scanner_text = dataset[0x0008,0x1010].value
         else:
+            cw_scanner_text = 'None'
             print 'Could not find scanner id in dicom header'
-        cw_operator = None
         if (0x0008,0x1070) in dataset:
             cw_operator = dataset[0x0008,0x1070].value
         else:
+            cw_operator = None
             print 'Could not find operator name in dicom header'
         cw_uri = path.decode(locale.getpreferredencoding())
 
-        cw_content = None
         if (0x0008,0x103e) in dataset:
-            cw_content = dataset[0x0008,0x103e].value+'_RAW'
+            cw_content = dataset[0x0008,0x103e].value + '_RAW'
         else:
+            cw_content = None
             print 'Could not find scan content type in dicom header'
-        cw_voxelres_x = None
-        cw_voxelres_y = None
-        cw_voxelres_z = None
-        try:
+        if (0x0028,0x0030) in dataset and (0x0018,0x0050) in dataset:
             resolution = dataset[0x0028,0x0030].value.split('\\')
             cw_voxelres_x = resolution[0]
             cw_voxelres_y = resolution[1]
             cw_voxelres_z = dataset[0x0018,0x0050].value
-        except:
-            print 'Could not find voxel resolution infos in dicom header'
-        cw_fov_x = None
-        cw_fov_y = None
-        if (0x0028,0x0010) in dataset and (0x0028,0x0011) in dataset:
-                cw_fov_x = dataset[0x0028,0x0010].value
-                cw_fov_y = dataset[0x0028,0x0011].value
         else:
-            print 'Could not find fov infos in dicom header'
-        cw_tr = None
+            cw_voxelres_x = None
+            cw_voxelres_y = None
+            cw_voxelres_z = None
+            print 'Could not find voxel resolution infos in dicom header'
+        if (0x0028,0x0010) in dataset and (0x0028,0x0011) in dataset:
+            cw_fov_x = dataset[0x0028,0x0010].value
+            cw_fov_y = dataset[0x0028,0x0011].value
+        else:
+            cw_fov_x = None
+            cw_fov_y = None
+            print 'Could not find FoV infos in dicom header'
         if (0x0018,0x0080) in dataset:
             cw_tr = dataset[0x0018,0x0080].value
         else:
-            print 'Could not find tr in dicom header'
-        cw_te = None
+            cw_tr = None
+            print 'Could not find TR in dicom header'
         if (0x0018,0x0081) in dataset:
             cw_te = dataset[0x0018,0x0081].value
         else:
-            print 'Could not find te in dicom header'
-        cw_sequence = None
+            cw_te = None
+            print 'Could not find TE in dicom header'
         if (0x0018,0x0024) in dataset:
             cw_sequence = dataset[0x0018,0x0024].value
         else:
+            cw_sequence = None
             print 'Could not find sequence in dicom header'
-        cw_scanTime = None
         if (0x0008,0x0031) in dataset:
             st = dataset[0x0008,0x0031].value
             cw_scanTime = st[0:2]+':'+st[2:4]+':'+st[4:6]
         else:
+            cw_scanTime = None
             print 'Could not find scan time in dicom header'
-        cw_imageType = None
         if (0x0008,0x0008) in dataset:
             cw_imageType = dataset[0x0008,0x0008].value
         else:
+            cw_imageType = None
             print 'Could not find image type in dicom header'
-        cw_scanSequence = None
         if (0x0018,0x0020) in dataset:
             #dataset[0x0018,0x0020].value might be a list
             cw_scanSequence = '\\\\'.join(dataset[0x0018,0x0020].value)
         else:
+            cw_scanSequence = None
             print 'Could not find scan sequence in dicom header'
-        cw_seqVariant = None
         if (0x0018,0x0021) in dataset:
             cw_seqVariant = dataset[0x0018,0x0021].value
         else:
+            cw_seqVariant = None
             print 'Could not find sequence variant in dicom header'
-        cw_acqType = None
         if (0x0018,0x0023) in dataset:
             cw_acqType = dataset[0x0018,0x0023].value
         else:
+            cw_acqType = None
             print 'Could not find acquisition type in dicom header'
-        cw_protocol = None
         if (0x0018,0x1030) in dataset:
             cw_protocol = dataset[0x0018,0x1030].value
         else:
+            cw_protocol = None
             print 'Could not find protocol in dicom header'
         #Default date
         scan_date = '1900-01-01'
@@ -161,18 +151,12 @@ def parse_dicom(path, psc, scan):
             if len(scan_date) == 8:
                 scan_date = scan_date[:4] + '-' + scan_date[4:6] + '-' + scan_date[6:]
         else:
-            print 'Warning : error while reading date from dicom header'
+            print 'Could not read date from dicom header'
         date = scan_date
     else:
-        if (0x0020,0x0011) not in dataset:
-            print '(0020,0011) not in header'
-        #2 deadcode lines
-        else:
-            print dataset[0x0020,0x0011].value
-        print 'Could not set scan id from dicom tag ( 0020:0011 )'
+        print 'Could not set scan id from dicom tag (0020:0011)'
     print "====="
-    print [cw_project,
-           # Scan
+    print [# Scan
            cw_scan_id, cw_scan_type,
            # Device
            cw_scanner_manufacturer, cw_scanner_model, cw_scanner_text,
@@ -189,29 +173,47 @@ def parse_dicom(path, psc, scan):
     print 'study_eid = ', study_eid
     if study_eid is None:
         try:
-            c.cursor().execute('INSERT Study S: S name \'Imagen\', S data_filepath \'\', S description \'Imagen study\'')
+            cnx.cursor().execute("INSERT Study S: S name 'Imagen', "
+                                 "S data_filepath '', "
+                                 "S description 'Imagen study'")
         except:
-            c.rollback()
-            print 'Can not insert Study'
-        studies = dict(c.cursor().execute('Any N, S WHERE S is Study, S name N'))
+            cnx.rollback()
+            print 'Cannot insert Study'
+        studies = dict(cnx.cursor().execute('Any N, S WHERE S is Study, S name N'))
         study_eid = studies['Imagen']
 
     try:
-        req = '''INSERT Assessment A: A identifier \'%(f)s_%(a)s\', A datetime \'%(b)s\', A timepoint \'FU2\',
-        A related_study S, C holds A, X concerned_by A WHERE S is Study, C is Center, X is Subject, S name \'Imagen\', C identifier \'%(d)s\', X identifier \'IMAGEN_%(e)s\'
-        ''' % {'a': psc, 'b': date, 'd': psc_center[psc], 'e': psc, 'f': scan}
+        req = ("INSERT Assessment A: A identifier '%(f)s_%(a)s', "
+               "A datetime '%(b)s', A timepoint 'FU2', "
+               "A related_study S, C holds A, "
+               "X concerned_by A WHERE S is Study, C is Center, "
+               "X is Subject, S name 'Imagen', "
+               "C identifier '%(d)s', X identifier 'IMAGEN_%(e)s'"
+               % {'a': subject, 'b': date, 'd': psc_center[subject], 'e': subject, 'f': series}
+               )
         print 'req = ', req
-        res = c.cursor().execute(req)
+        res = cnx.cursor().execute(req)
         print 'res = ', res
-        res = c.cursor().execute('''INSERT Protocol P: P identifier \'%(a)s\', P related_study S WHERE S is Study, S name \'Imagen\''''
-                                 % {'a': cw_protocol})
-        res = c.cursor().execute('''SET A protocols P Where A is Assessment, P is Protocol, P identifier \'%(a)s\', A identifier \'%(c)s_%(b)s\''''
-                                 % {'a': cw_protocol, 'b': psc, 'c': scan})
+        req = ("INSERT Protocol P: P identifier '%(protocol)s', "
+               "P related_study S WHERE S is Study, S name 'Imagen'"
+               % {'protocol': cw_protocol}
+               )
+        res = cnx.cursor().execute(req)
+        req = ("SET A protocols P Where A is Assessment, "
+               "P is Protocol, P identifier '%(protocol)s', "
+               "A identifier '%(series)s_%(subject)s"
+               % {'protocol': cw_protocol, 'subject': subject, 'series': series}
+               )
+        res = cnx.cursor().execute()
     except:
-        c.rollback()
-        print 'Can not insert Assessment'
-    devices = dict(c.cursor().execute('Any N, D WHERE D is Device, D name N, D manufacturer \"%(b)s\", D model \"%(c)s\"'
-                                      % {'b': cw_scanner_manufacturer, 'c': cw_scanner_model}))
+        cnx.rollback()
+        print 'Cannot insert Assessment'
+
+    req = ("Any N, D WHERE D is Device, "
+           "D name N, D manufacturer '%(manufacturer)s', D model '%(model)s'"
+           % {'manufacturer': cw_scanner_manufacturer, 'model': cw_scanner_model}
+           )
+    devices = dict(c.cursor().execute(req))
     device = None
     if cw_scanner_text in devices:
         device = devices[cw_scanner_text]
@@ -219,94 +221,115 @@ def parse_dicom(path, psc, scan):
     if device is None:
         try:
             # still yet serialnum = void
-            req = '''INSERT Device D: D serialnum \'%(a)s_%(b)s_%(c)s_%(d)s\', D name \'%(a)s\', D manufacturer \'%(b)s\', D model \'%(c)s\',
-            D hosted_by C WHERE C is Center, C identifier \'%(d)s\'''' % {'a': cw_scanner_text, 'b': cw_scanner_manufacturer, 'c': cw_scanner_model, 'd': psc_center[psc]}
+            req = ("INSERT Device D: D serialnum '%(a)s_%(b)s_%(c)s_%(d)s', "
+                   "D name '%(a)s', D manufacturer '%(b)s', D model '%(c)s', "
+                   "D hosted_by C WHERE C is Center, C identifier '%(d)s'"
+                   % {'a': cw_scanner_text,
+                      'b': cw_scanner_manufacturer,
+                      'c': cw_scanner_model,
+                      'd': psc_center[subject]}
+                   )
             print 'req = ', req
-            device = c.cursor().execute(req)
+            device = cnx.cursor().execute(req)
         except:
-            c.rollback()
-            print 'Can not insert Device'
+            cnx.rollback()
+            print 'Cannot insert Device'
     try:
-        req = 'INSERT MRIData M, Scan S: M sequence \'%(a)s\'' % {'a': cw_scanSequence}
+        req = "INSERT MRIData M, Scan S: M sequence '%(a)s'" % {'a': cw_scanSequence}
         if cw_voxelres_x is not None:
-            req = req + ', M voxel_res_x ' + cw_voxelres_x
+            req += ', M voxel_res_x ' + cw_voxelres_x
         if cw_voxelres_y is not None:
-            req = req + ', M voxel_res_y ' + cw_voxelres_y
+            req += ', M voxel_res_y ' + cw_voxelres_y
         if cw_voxelres_z is not None:
-            req = req + ', M voxel_res_z ' % cw_voxelres_z
+            req += ', M voxel_res_z ' % cw_voxelres_z
         if cw_fov_x is not None:
-            req = req + ', M fov_x ' + cw_fov_x
+            req += ', M fov_x ' + cw_fov_x
         if cw_fov_y is not None:
-            req = req + ', M fov_x ' + cw_fov_y
+            req += ', M fov_x ' + cw_fov_y
         if cw_tr is not None:
-            req = req + ', M tr ' + cw_tr
+            req += ', M tr ' + cw_tr
         if cw_te is not None:
-            req = req + ', M te ' + cw_te
+            req += ', M te ' + cw_te
         #print 'req = ', req
-
-        req_end = ''', S has_data M, S identifier \'%(d)s_%(a)s\', S label \'%(d)s\', S type \'%(b)s\', S format \'tar.gz\',
-        S filepath \'%(c)s\', S completed True, S valid True, S related_study X WHERE X is Study, X name \'Imagen\'
-        ''' % {'a': psc, 'b': cw_scan_type, 'c': cw_uri, 'd': scan}
-
-        req = req + req_end
+        req += (", S has_data M, S identifier '%(d)s_%(a)s', "
+                "S label '%(d)s', S type '%(b)s', S format 'tar.gz', "
+                "S filepath '%(c)s', S completed True, S valid True, "
+                "S related_study X WHERE X is Study, X name 'Imagen'"
+                % {'a': subject, 'b': cw_scan_type, 'c': cw_uri, 'd': series}
+                )
         print 'req = ', req
 
-        c.cursor().execute(req)
+        cnx.cursor().execute(req)
 
         ##### TOFIX not sure that this code is ever run
-        #req = '''INSERT FileEntry F: F name \'%(a)s\', F filepath \'%(b)s\''''%{'a': scan, 'b': cw_uri}
-        #res = c.cursor().execute(req)
+        #req = '''INSERT FileEntry F: F name \'%(a)s\', F filepath \'%(b)s\''''%{'a': series, 'b': cw_uri}
+        #res = cnx.cursor().execute(req)
         #fe_eid = res[0][0]
-        #req = '''INSERT FileSet F: F name \'%(a)s\', F format \'%(b)s\''''%{'a': scan, 'b': 'DICOM COMPRESSED'}
-        #res = c.cursor().execute(req)
+        #req = '''INSERT FileSet F: F name \'%(a)s\', F format \'%(b)s\''''%{'a': series, 'b': 'DICOM COMPRESSED'}
+        #res = cnx.cursor().execute(req)
         #fs_eid = res[0][0]
-        #res = c.cursor().execute('''SET S file_entries E Where S is FileSet, E is FileEntry, S eid \'%(a)s\', E eid \'%(b)s\'
+        #res = cnx.cursor().execute('''SET S file_entries E Where S is FileSet, E is FileEntry, S eid \'%(a)s\', E eid \'%(b)s\'
         #''' % {'a': fs_eid, 'b': fe_eid})
-        #res = c.cursor().execute('''SET S external_resources F Where S is Scan, F is FileSet, S identifier \'%(a)s_%(b)s\', F eid \'%(c)s\'
-        #''' % {'a': scan, 'b': psc, 'c': fs_eid})
-        #res = c.cursor().execute('''SET F related_study S Where S is Study, F is FileSet, S name \'Imagen\', F eid \'%(a)s\'
+        #res = cnx.cursor().execute('''SET S external_resources F Where S is Scan, F is FileSet, S identifier \'%(a)s_%(b)s\', F eid \'%(c)s\'
+        #''' % {'a': series, 'b': subject, 'c': fs_eid})
+        #res = cnx.cursor().execute('''SET F related_study S Where S is Study, F is FileSet, S name \'Imagen\', F eid \'%(a)s\'
         #''' % {'a': fs_eid})
-        req = '''INSERT ExternalResource E: E name \'%(a)s\', E filepath \'%(b)s\', E related_study S Where S is Study, S name \'Imagen\'
-        ''' % {'a': scan, 'b': cw_uri}
-        res = c.cursor().execute(req)
+        req = ("INSERT ExternalResource E: E name '%(a)s', E filepath '%(b)s', "
+               "E related_study S Where S is Study, S name 'Imagen'"
+               % {'a': series, 'b': cw_uri}
+               )
+        res = cnx.cursor().execute(req)
         ext_eid = res[0][0]
-        res = c.cursor().execute('''SET S external_resources E Where S is Scan, E is ExternalResource, S identifier \'%(a)s_%(b)s\', E eid \'%(c)s\'
-        ''' % {'a': scan, 'b': psc, 'c': ext_eid})
+        res = cnx.cursor().execute("SET S external_resources E Where S is Scan, "
+                                   "E is ExternalResource, "
+                                   "S identifier '%(a)s_%(b)s', "
+                                   "E eid '%(c)s'"
+                                   % {'a': series, 'b': subject, 'c': ext_eid})
 
-        res = c.cursor().execute('''SET S concerns Y Where S is Scan, Y is Subject, S identifier \'%(c)s_%(a)s\', Y identifier \'IMAGEN_%(b)s\'
-        ''' % {'a': psc, 'b': psc, 'c': scan})
+        res = cnx.cursor().execute("SET S concerns Y Where S is Scan, "
+                                   "Y is Subject, "
+                                   "S identifier '%(c)s_%(a)s', "
+                                   "Y identifier 'IMAGEN_%(b)s'"
+                                   % {'a': subject, 'b': subject, 'c': series})
         #print 'res = ', res
-        res = c.cursor().execute('''SET S uses_device D Where S is Scan, D is Device, S identifier \'%(g)s_%(a)s\', D serialnum \'%(c)s_%(d)s_%(e)s_%(f)s\'
-        ''' % {'a': psc, 'b': cw_scanner_text, 'c': cw_scanner_text, 'd': cw_scanner_manufacturer, 'e': cw_scanner_model, 'f': psc_center[psc], 'g': scan})
+        res = cnx.cursor().execute("SET S uses_device D Where S is Scan, "
+                                   "D is Device, "
+                                   "S identifier '%(g)s_%(a)s', "
+                                   "D serialnum '%(c)s_%(d)s_%(e)s_%(f)s'"
+                                   % {'a': subject, 'b': cw_scanner_text, 'c': cw_scanner_text, 'd': cw_scanner_manufacturer, 'e': cw_scanner_model, 'f': psc_center[subject], 'g': series})
         print 'res = ', res
-        res = c.cursor().execute('''SET A generates S Where A is Assessment, S is Scan, S identifier \'%(c)s_%(a)s\', A identifier \'%(c)s_%(b)s\'
-        ''' % {'a': psc, 'b': psc, 'c': scan})
+        res = cnx.cursor().execute("SET A generates S Where A is Assessment, "
+                                   "S is Scan, "
+                                   "S identifier '%(c)s_%(a)s', "
+                                   "A identifier '%(c)s_%(b)s'"
+                                   % {'a': subject, 'b': subject, 'c': series})
         print 'res = ', res
     except Exception as e:
         c.rollback()
-        print 'Can not insert MRIData or Scan'
+        print 'Cannot insert MRIData or Scan'
         e_t, e_v, e_tb = sys.exc_info()
         print 'Exc', e_t, e_v, e_tb
         traceback.print_tb(e_tb)
-    c.commit()
-    return [cw_project, cw_scan_id, cw_scan_type]
+    cnx.commit()
+    return [cw_scan_id, cw_scan_type]
 
 
-def main(argv):
+from glob import glob
 
-    l = glob('/neurospin/imagen/FU2/processed/dicomtarballs/*/*/*/*.gz')
-    for i in l:
-        j = i.split('/')
-        psc = j[-4]
-        scan = j[-2]
-        infos = parse_dicom(i, psc, scan)
+if __name__ == '__main__':
+
+    cnx = dbapi.connect('zmqpickle-tcp://127.0.0.1:8181', login='admin', password='admin')
+
+    tarballs = glob('/neurospin/imagen/FU2/processed/dicomtarballs/*/*/*/*.gz')
+    for tarball in tarballs:
+        j = tarball.split(os.sep)
+        subject = j[-4]
+        series = j[-2]
+        infos = insert_dicomtarball(tarball, cnx, subject, series)
         print 'infos = ',  infos
 
     #infos = parse_dicom()
     # dialogue avec la base CW
     # faire les create entities ....
 
-    #c.commit()
-
-if __name__ == '__main__':
-    main(sys.argv)
+    cnx.close()
