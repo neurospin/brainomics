@@ -26,14 +26,13 @@ import tarfile
 
 from cubicweb import dbapi
 
-psc_center_file='/neurospin/imagen/src/scripts/psc_tools/psc2_centre.csv'
-psc_center={}
+psc_center_file = '/neurospin/imagen/src/scripts/psc_tools/psc2_centre.csv'
+psc_center = {}
 for i in reader(open(psc_center_file)):
-    psc_center[i[0]]=i[1]
+    psc_center[i[0]] = i[1]
 cw_project = 'IMAGEN'
 
 c = dbapi.connect('zmqpickle-tcp://127.0.0.1:8181', login='admin', password='admin')
-
 
 
 def parse_dicom(path, psc, scan):
@@ -44,19 +43,19 @@ def parse_dicom(path, psc, scan):
     centers = dict(c.cursor().execute('Any I, C WHERE C is Center, C identifier I'))
 
     subjects = dict(c.cursor().execute('Any I, S WHERE S is Subject, S identifier I'))
-        
+
     subject_eid = None
-    if 'IMAGEN_%(a)s'%{'a' : psc} in subjects:
-        subject_eid = subjects['IMAGEN_%(a)s'%{'a' : psc}]
+    if 'IMAGEN_%(a)s' % {'a': psc} in subjects:
+        subject_eid = subjects['IMAGEN_%(a)s' % {'a': psc}]
     if not subject_eid:
         return
     center_eid = centers[psc_center[psc]]
 
     date = None
     tarball = tarfile.open(path)
-    file1 =  tarball.extractfile('./1.dcm')
+    file1 = tarball.extractfile('./1.dcm')
     dataset = dicom.read_file(file1)
-                    
+
     if (0x0020,0x0011) in dataset:
         cw_scan_id = dataset[0x0020,0x0011].value
         #cw_scan_type = None
@@ -85,17 +84,17 @@ def parse_dicom(path, psc, scan):
         else:
             print 'Could not find operator name in dicom header'
         cw_uri = path.decode(locale.getpreferredencoding())
-                
+
         cw_content = None
         if (0x0008,0x103e) in dataset:
             cw_content = dataset[0x0008,0x103e].value+'_RAW'
         else:
-            print 'Could not find scan content type in dicom header'  
+            print 'Could not find scan content type in dicom header'
         cw_voxelres_x = None
         cw_voxelres_y = None
         cw_voxelres_z = None
         try:
-            resolution=dataset[0x0028,0x0030].value.split('\\')
+            resolution = dataset[0x0028,0x0030].value.split('\\')
             cw_voxelres_x = resolution[0]
             cw_voxelres_y = resolution[1]
             cw_voxelres_z = dataset[0x0018,0x0050].value
@@ -125,7 +124,7 @@ def parse_dicom(path, psc, scan):
             print 'Could not find sequence in dicom header'
         cw_scanTime = None
         if (0x0008,0x0031) in dataset:
-            st=dataset[0x0008,0x0031].value
+            st = dataset[0x0008,0x0031].value
             cw_scanTime = st[0:2]+':'+st[2:4]+':'+st[4:6]
         else:
             print 'Could not find scan time in dicom header'
@@ -159,8 +158,8 @@ def parse_dicom(path, psc, scan):
         scan_date = '1900-01-01'
         if (0x0008,0x0022) in dataset:
             scan_date = dataset[0x0008,0x0022].value
-            if len(scan_date)==8:
-                scan_date=scan_date[:4]+'-'+scan_date[4:6]+'-'+scan_date[6:]
+            if len(scan_date) == 8:
+                scan_date = scan_date[:4] + '-' + scan_date[4:6] + '-' + scan_date[6:]
         else:
             print 'Warning : error while reading date from dicom header'
         date = scan_date
@@ -172,24 +171,23 @@ def parse_dicom(path, psc, scan):
             print dataset[0x0020,0x0011].value
         print 'Could not set scan id from dicom tag ( 0020:0011 )'
     print "====="
-    print [
-    cw_project, 
-    #Scan
-    cw_scan_id, cw_scan_type,
-    #Device
-    cw_scanner_manufacturer, cw_scanner_model, cw_scanner_text, 
-    cw_operator, 
-    cw_uri,
-    cw_content, 
-    #MRIData
-    cw_voxelres_x, cw_voxelres_y, cw_voxelres_z, cw_fov_x, cw_fov_y, cw_tr, cw_te, cw_sequence ,
-    cw_scanTime, cw_imageType, cw_scanSequence, cw_seqVariant, cw_acqType, cw_protocol, scan_date]
-                
+    print [cw_project,
+           # Scan
+           cw_scan_id, cw_scan_type,
+           # Device
+           cw_scanner_manufacturer, cw_scanner_model, cw_scanner_text,
+           cw_operator,
+           cw_uri,
+           cw_content,
+           # MRIData
+           cw_voxelres_x, cw_voxelres_y, cw_voxelres_z, cw_fov_x, cw_fov_y, cw_tr, cw_te, cw_sequence,
+           cw_scanTime, cw_imageType, cw_scanSequence, cw_seqVariant, cw_acqType, cw_protocol, scan_date]
+
     study_eid = None
     if 'Imagen' in studies:
         study_eid = studies['Imagen']
-    print 'study_eid = ',study_eid
-    if (study_eid==None):        
+    print 'study_eid = ', study_eid
+    if study_eid is None:
         try:
             c.cursor().execute('INSERT Study S: S name \'Imagen\', S data_filepath \'\', S description \'Imagen study\'')
         except:
@@ -201,59 +199,60 @@ def parse_dicom(path, psc, scan):
     try:
         req = '''INSERT Assessment A: A identifier \'%(f)s_%(a)s\', A datetime \'%(b)s\', A timepoint \'FU2\',
         A related_study S, C holds A, X concerned_by A WHERE S is Study, C is Center, X is Subject, S name \'Imagen\', C identifier \'%(d)s\', X identifier \'IMAGEN_%(e)s\'
-        '''%{'a': psc, 'b': date, 'd': psc_center[psc], 'e': psc, 'f': scan}
+        ''' % {'a': psc, 'b': date, 'd': psc_center[psc], 'e': psc, 'f': scan}
         print 'req = ', req
         res = c.cursor().execute(req)
         print 'res = ', res
-        res = c.cursor().execute('''INSERT Protocol P: P identifier \'%(a)s\', P related_study S WHERE S is Study, S name \'Imagen\''''%{'a': cw_protocol})
-        res = c.cursor().execute('''SET A protocols P Where A is Assessment, P is Protocol, P identifier \'%(a)s\', A identifier \'%(c)s_%(b)s\'
-        '''%{'a': cw_protocol, 'b': psc, 'c': scan})
+        res = c.cursor().execute('''INSERT Protocol P: P identifier \'%(a)s\', P related_study S WHERE S is Study, S name \'Imagen\''''
+                                 % {'a': cw_protocol})
+        res = c.cursor().execute('''SET A protocols P Where A is Assessment, P is Protocol, P identifier \'%(a)s\', A identifier \'%(c)s_%(b)s\''''
+                                 % {'a': cw_protocol, 'b': psc, 'c': scan})
     except:
         c.rollback()
         print 'Can not insert Assessment'
-    devices = dict(c.cursor().execute('Any N, D WHERE D is Device, D name N, D manufacturer \"%(b)s\", D model \"%(c)s\"'%{'b' : cw_scanner_manufacturer, 'c' : cw_scanner_model}))
+    devices = dict(c.cursor().execute('Any N, D WHERE D is Device, D name N, D manufacturer \"%(b)s\", D model \"%(c)s\"'
+                                      % {'b': cw_scanner_manufacturer, 'c': cw_scanner_model}))
     device = None
     if cw_scanner_text in devices:
         device = devices[cw_scanner_text]
-    print 'device = ',device
-    if (device==None):
+    print 'device = ', device
+    if device is None:
         try:
-            #still yet serialnum = void
+            # still yet serialnum = void
             req = '''INSERT Device D: D serialnum \'%(a)s_%(b)s_%(c)s_%(d)s\', D name \'%(a)s\', D manufacturer \'%(b)s\', D model \'%(c)s\',
-            D hosted_by C WHERE C is Center, C identifier \'%(d)s\'
-            '''%{'a': cw_scanner_text, 'b': cw_scanner_manufacturer, 'c': cw_scanner_model, 'd': psc_center[psc]}
-            print 'req = ',req
-            device = c.cursor().execute(req) 
+            D hosted_by C WHERE C is Center, C identifier \'%(d)s\'''' % {'a': cw_scanner_text, 'b': cw_scanner_manufacturer, 'c': cw_scanner_model, 'd': psc_center[psc]}
+            print 'req = ', req
+            device = c.cursor().execute(req)
         except:
             c.rollback()
             print 'Can not insert Device'
     try:
-        req = 'INSERT MRIData M, Scan S: M sequence \'%(a)s\''%{'a':cw_scanSequence}
-        if cw_voxelres_x!=None:
-            req = req + ', M voxel_res_x %s'%cw_voxelres_x
-        if cw_voxelres_y!=None:
-            req = req + ', M voxel_res_y %s'%cw_voxelres_y
-        if cw_voxelres_z!=None:
-            req = req + ', M voxel_res_z %s'%cw_voxelres_z
-        if cw_fov_x!=None:
-            req = req + ', M fov_x %s'%cw_fov_x
-        if cw_fov_y!=None:
-            req = req + ', M fov_x %s'%cw_fov_y
-        if cw_tr!=None:
-            req = req + ', M tr %s'%cw_tr
-        if cw_te!=None:
-            req = req + ', M te %s'%cw_te
+        req = 'INSERT MRIData M, Scan S: M sequence \'%(a)s\'' % {'a': cw_scanSequence}
+        if cw_voxelres_x is not None:
+            req = req + ', M voxel_res_x ' + cw_voxelres_x
+        if cw_voxelres_y is not None:
+            req = req + ', M voxel_res_y ' + cw_voxelres_y
+        if cw_voxelres_z is not None:
+            req = req + ', M voxel_res_z ' % cw_voxelres_z
+        if cw_fov_x is not None:
+            req = req + ', M fov_x ' + cw_fov_x
+        if cw_fov_y is not None:
+            req = req + ', M fov_x ' + cw_fov_y
+        if cw_tr is not None:
+            req = req + ', M tr ' + cw_tr
+        if cw_te is not None:
+            req = req + ', M te ' + cw_te
         #print 'req = ', req
-    
+
         req_end = ''', S has_data M, S identifier \'%(d)s_%(a)s\', S label \'%(d)s\', S type \'%(b)s\', S format \'tar.gz\',
         S filepath \'%(c)s\', S completed True, S valid True, S related_study X WHERE X is Study, X name \'Imagen\'
-        '''%{'a': psc,'b': cw_scan_type, 'c': cw_uri, 'd': scan}
-        
+        ''' % {'a': psc, 'b': cw_scan_type, 'c': cw_uri, 'd': scan}
+
         req = req + req_end
         print 'req = ', req
-    
+
         c.cursor().execute(req)
-        
+
         ##### TOFIX not sure that this code is ever run
         #req = '''INSERT FileEntry F: F name \'%(a)s\', F filepath \'%(b)s\''''%{'a': scan, 'b': cw_uri}
         #res = c.cursor().execute(req)
@@ -262,37 +261,37 @@ def parse_dicom(path, psc, scan):
         #res = c.cursor().execute(req)
         #fs_eid = res[0][0]
         #res = c.cursor().execute('''SET S file_entries E Where S is FileSet, E is FileEntry, S eid \'%(a)s\', E eid \'%(b)s\'
-        #'''%{'a': fs_eid, 'b': fe_eid})
+        #''' % {'a': fs_eid, 'b': fe_eid})
         #res = c.cursor().execute('''SET S external_resources F Where S is Scan, F is FileSet, S identifier \'%(a)s_%(b)s\', F eid \'%(c)s\'
-        #'''%{'a': scan, 'b': psc, 'c': fs_eid})
+        #''' % {'a': scan, 'b': psc, 'c': fs_eid})
         #res = c.cursor().execute('''SET F related_study S Where S is Study, F is FileSet, S name \'Imagen\', F eid \'%(a)s\'
-        #'''%{'a': fs_eid})
+        #''' % {'a': fs_eid})
         req = '''INSERT ExternalResource E: E name \'%(a)s\', E filepath \'%(b)s\', E related_study S Where S is Study, S name \'Imagen\'
-        '''%{'a': scan, 'b': cw_uri}
+        ''' % {'a': scan, 'b': cw_uri}
         res = c.cursor().execute(req)
         ext_eid = res[0][0]
         res = c.cursor().execute('''SET S external_resources E Where S is Scan, E is ExternalResource, S identifier \'%(a)s_%(b)s\', E eid \'%(c)s\'
-        '''%{'a': scan, 'b': psc, 'c': ext_eid})
+        ''' % {'a': scan, 'b': psc, 'c': ext_eid})
 
         res = c.cursor().execute('''SET S concerns Y Where S is Scan, Y is Subject, S identifier \'%(c)s_%(a)s\', Y identifier \'IMAGEN_%(b)s\'
-        '''%{'a': psc, 'b': psc, 'c': scan})
-        #print 'res = ',res
+        ''' % {'a': psc, 'b': psc, 'c': scan})
+        #print 'res = ', res
         res = c.cursor().execute('''SET S uses_device D Where S is Scan, D is Device, S identifier \'%(g)s_%(a)s\', D serialnum \'%(c)s_%(d)s_%(e)s_%(f)s\'
-        '''%{'a': psc, 'b': cw_scanner_text,'c': cw_scanner_text, 'd': cw_scanner_manufacturer, 'e': cw_scanner_model, 'f': psc_center[psc], 'g': scan})
+        ''' % {'a': psc, 'b': cw_scanner_text, 'c': cw_scanner_text, 'd': cw_scanner_manufacturer, 'e': cw_scanner_model, 'f': psc_center[psc], 'g': scan})
         print 'res = ', res
         res = c.cursor().execute('''SET A generates S Where A is Assessment, S is Scan, S identifier \'%(c)s_%(a)s\', A identifier \'%(c)s_%(b)s\'
-        '''%{'a': psc, 'b': psc, 'c': scan})
-        print 'res = ',res
+        ''' % {'a': psc, 'b': psc, 'c': scan})
+        print 'res = ', res
     except Exception as e:
         c.rollback()
         print 'Can not insert MRIData or Scan'
         e_t, e_v, e_tb = sys.exc_info()
-        print 'Exc',e_t, e_v, e_tb
+        print 'Exc', e_t, e_v, e_tb
         traceback.print_tb(e_tb)
     c.commit()
-    return [cw_project, cw_scan_id, cw_scan_type]		            
+    return [cw_project, cw_scan_id, cw_scan_type]
 
-#main
+
 def main(argv):
 
     l = glob('/neurospin/imagen/FU2/processed/dicomtarballs/*/*/*/*.gz')
@@ -302,13 +301,12 @@ def main(argv):
         scan = j[-2]
         infos = parse_dicom(i, psc, scan)
         print 'infos = ',  infos
-    
+
     #infos = parse_dicom()
     # dialogue avec la base CW
     # faire les create entities ....
 
     #c.commit()
-    
+
 if __name__ == '__main__':
     main(sys.argv)
-
