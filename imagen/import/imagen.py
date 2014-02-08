@@ -698,7 +698,7 @@ def import_neuroimaging(store, tree, experiment, study_eid, subject_eid, center_
         # XXX MISSING BEHAVIOURAL DATA, e.g. xsi:type="behavioural:face_taskData
     # Write the CSV scores
     if all_scores:
-        _id = unicode(experiment.attrib['ID'])+'_'+'image_scores'
+        _id = unicode(experiment.attrib['ID']) + '_' + 'image_scores'
         extres_eid = build_csv_external_resource(store, _id, all_scores, study_eid)
         if extres_eid:
             store.relate(assessment_eid, 'external_resources', extres_eid)
@@ -1326,7 +1326,7 @@ def rescue_psc_from_xml_file_path(xml_file):
 ###############################################################################
 SUBJECTS = dict(session.execute('Any I, X WHERE X is Subject, X identifier I'))
 CENTERS = dict(session.execute('Any I, X WHERE X is Center, X identifier I'))
-#TOFIX Temporary proposal for the present importer : use of serial num
+#TOFIX Temporary proposal for the present importer: use of serial num
 #DEVICES = dict(session.execute('Any I, X WHERE X is Device, X identifier I'))
 DEVICES = dict(session.execute('Any I, X WHERE X is Device, X serialnum I'))
 STUDIES = dict(session.execute('Any I, X WHERE X is Study, X name I'))
