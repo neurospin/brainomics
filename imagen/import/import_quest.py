@@ -81,7 +81,7 @@ def main(argv):
             pa = pa.replace("'", "\\'")
             #debug
             print 'pa', pa, 'eid', eid
-        c.cursor().execute('SET X possible_answers \'%(pa)s\' WHERE X eid %(e)s' % {'e': eid, 'pa': pa})
+        c.cursor().execute("SET X possible_answers '%(pa)s' WHERE X eid %(eid)s" % {'eid': eid, 'pa': pa})
         c.commit()
 
 
@@ -97,7 +97,7 @@ def insert_quest(argv):
     #    print 'Imagen inserted'
     #except :
     #    c.rollback()
-    #    print 'can not insert Study Imagen'
+    #    print 'cannot insert Study Imagen'
 
     validated = False
     language = ''
@@ -125,15 +125,22 @@ def insert_quest(argv):
     print 'questionnaire = ', questionnaire
     print 'version = ', version
     try:
-        req = '''INSERT Questionnaire Q: Q name \'%(a)s\', Q identifier \'%(b)s\', Q type \'%(c)s\', Q version \'%(d)s\',
-        Q language \'%(f)s\', Q note_format \'text/html\'''' % {'a': questionnaire, 'b': questionnaire, 'c': questionnaire,
-                                                                'd': version, 'f': language}
-        #print 'req = ',req
+        req = ("INSERT Questionnaire Q: Q name '%(a)s', "
+               "Q identifier '%(identifier)s', Q type '%(type)s', "
+               "Q version '%(version)s', Q language '%(language)s', "
+               "Q note_format 'text/html'"
+               % {'questionnaire': questionnaire,
+                  'identifier': questionnaire,
+                  'type': questionnaire,
+                  'version': version,
+                  'language': language}
+               )
+        #print 'req = ', req
         res = c.cursor().execute(req)
-        #print 'res = ',res
+        #print 'res = ', res
     except:
         c.rollback()
-        print 'can not insert Questionnaire %s' % argv[1][i+1:i+1+j]
+        print 'cannot insert Questionnaire %s' % argv[1][i+1:i+1+j]
     #city has to be read from filepath
     city = 'BERLIN'
     center = {
@@ -151,7 +158,7 @@ def insert_quest(argv):
         #the file may contain information for subjects who are not in DB
         if 'IMAGEN_%s' % subject[0:12] in subjects:
             print '%s' % subject[0:12]
-            #if the current line conserns the same subject that the precedent one only increment the question position
+            #if the current line concerns the same subject than the precedent one only increment the question position
             if subject == old_subject:
                 position += 1
                 #print position, 'Q : ',l[7],', Answer : ',l[8],', time : ',l[10]
@@ -163,35 +170,63 @@ def insert_quest(argv):
                 #print l
                 #print subject
 
-            #age_for_assessment maybe one of those two following values
+            #age_for_subject maybe one of those two following values
             if l[4] != '':
                 #Completed Timestamp
                 age = l[4]
             else:
                 #Processed Timestamp
                 age = l[5]
-            completed = 'False'
             if l[3] == 't':
                 completed = 'True'
-            req = ''
-            try:
-                age = int(age)
-                req = '''INSERT Assessment A, QuestionnaireRun Q: A identifier \'%(a)s%(f)s_%(c)s\', A age_of_subject \'%(c)s\', A timepoint \'FU2\',
-                Q identifier \'%(a)s%(f)s_%(c)s_%(e)s\', Q user_ident \'%(b)s\', Q iteration \'%(e)s\', Q completed %(d)s
-                ''' % {'a': questionnaire, 'b': subject[13:14], 'c': age, 'd': completed, 'e': l[1], 'f': subject[0:12]}
-            except:
-                #if age is not an integer don't insert the value in age_for_assessment but keep it to construct questionnairerun and assessment identifiers
-                req = '''INSERT Assessment A, QuestionnaireRun Q: A identifier \'%(a)s%(f)s_%(c)s\', A timepoint \'FU2\',
-                Q identifier \'%(a)s%(f)s_%(c)s_%(e)s\', Q user_ident \'%(b)s\', Q iteration \'%(e)s\', Q completed %(d)s
-                ''' % {'a': questionnaire, 'b': subject[13:14], 'c': age, 'd': completed, 'e': l[1], 'f': subject[0:12]}
+            else:
+                completed = 'False'
+            assesment_id = questionnaire + subject[0:12] + '_' + age
+            questionnairerun_id = assesment_id + '_' + l[1]
+            if age.isdigit():
+                req = ("INSERT Assessment A, "
+                       "QuestionnaireRun Q: A identifier '%(assesment)s', "
+                       "A age_of_subject '%(age)s', "
+                       "A timepoint 'FU2', "
+                       "Q identifier '%(questionnairerun)s', "
+                       "Q user_ident '%(subject)s', "
+                       "Q iteration '%(iteration)s', "
+                       "Q completed %(completed)s"
+                       % {'assesment': assesment_id,
+                          'age': age,
+                          'questionnairerun': questionnairerun_id,
+                          'subject': subject[13:14],
+                          'completed': completed,
+                          'iteration': l[1]}
+                       )
+            else:
+                req = ("INSERT Assessment A, "
+                       "QuestionnaireRun Q: A identifier '%(assesment)s', "
+                       "A timepoint 'FU2', "
+                       "Q identifier '%(questionnairerun)s', "
+                       "Q user_ident '%(subject)s', "
+                       "Q iteration '%(iteration)s', "
+                       "Q completed %(completed)s"
+                       % {'assesment': assesment_id,
+                          'questionnairerun': questionnairerun_id,
+                          'subject': subject[13:14],
+                          'completed': completed,
+                          'iteration': l[1]}
+                       )
             #parent questionnaire have no field "Valid"
             if validated:
                 valid = 'False'
                 if l[11] == 't':
                     valid = 'True'
-                req = req + ', Q valid ' + valid
-            req = req + ''', Q concerns S, Q instance_of X, Q related_study Y Where S is Subject, X is Questionnaire, Y is Study, S identifier \'IMAGEN_%(f)s\',
-            X identifier \'%(g)s\', Y name \'Imagen\'''' % {'f': subject[0:12], 'g': questionnaire}
+                req += ', Q valid ' + valid
+            req = req + (", Q concerns S, Q instance_of X, "
+                         "Q related_study Y Where S is Subject, "
+                         "X is Questionnaire, Y is Study, "
+                         "S identifier 'IMAGEN_%(subject)s', "
+                         "X identifier '%(questionnaire)s', Y name 'Imagen'"
+                         % {'subject': subject[0:12],
+                            'questionnaire': questionnaire}
+                         )
             #iteration field is read only once time from the first question of each subject's questionnaire expecting only one iteration value for a questionnaire
             try:
                 print 'req = ', req
@@ -199,19 +234,38 @@ def insert_quest(argv):
                 print 'res = ', res
             except:
                 c.rollback()
-                print 'can not insert Assessment and QuestionnaireRun %(a)s%(b)s_%(c)s' % {'a': argv[1][i+1:i+1+j], 'b': subject[0:12], 'c': age}
+                print 'cannot insert Assessment and QuestionnaireRun %(a)s%(b)s_%(c)s' % {'a': argv[1][i+1:i+1+j], 'b': subject[0:12], 'c': age}
             try:
-                c.cursor().execute('''SET A related_study S Where A is Assessment, S is Study, S name \'Imagen\', A identifier \'%(a)s%(b)s_%(c)s\'
-                ''' % {'b': subject[0:12], 'a': questionnaire, 'c': age})
-                c.cursor().execute('''SET C holds A Where A is Assessment, C is Center, C identifier \'%(d)s\', A identifier \'%(a)s%(b)s_%(c)s\'
-                ''' % {'b': subject[0:12], 'a': questionnaire, 'c': age, 'd': center_id})
-                c.cursor().execute('''SET S concerned_by A Where A is Assessment, S is Subject, S identifier \'IMAGEN_%(b)s\', A identifier \'%(a)s%(b)s_%(c)s\'
-                ''' % {'b': subject[0:12], 'a': questionnaire, 'c': age})
-                c.cursor().execute('''SET A generates Q Where A is Assessment, Q is QuestionnaireRun, A identifier \'%(a)s%(b)s_%(c)s\',
-                Q identifier \'%(a)s%(b)s_%(c)s_%(d)s\'''' % {'a': questionnaire, 'b': subject[0:12], 'c': age, 'd': l[1]})
+                assesment_id = questionnaire + subject[0:12] + '_' + age
+                req = ("SET A related_study S Where A is Assessment, "
+                       "S is Study, S name 'Imagen', "
+                       "A identifier '%(assesment)s'"
+                       % {'assesment': assesment_id}
+                       )
+                c.cursor().execute(req)
+                req = ("SET C holds A Where A is Assessment, "
+                       "C is Center, C identifier '%(center)s', "
+                       "A identifier '%(assesment)s'"
+                       % {'assesment': assesment_id, 'center': center_id}
+                       )
+                c.cursor().execute(req)
+                req = ("SET S concerned_by A Where A is Assessment, "
+                       "S is Subject, S identifier 'IMAGEN_%(subject)s', "
+                       "A identifier '%(assesment)s'"
+                       % {'subject': subject[0:12], 'assesment': assesment_id}
+                       )
+                c.cursor().execute(req)
+                questionnairerun_id = questionnaire + subject[0:12] + '_' + age + '_' + l[1]
+                req = ("SET A generates Q Where A is Assessment, "
+                       "Q is QuestionnaireRun, "
+                       "A identifier '%(assesment)s', "
+                       "Q identifier '%(questionnairerun)s'"
+                       % {'assesment': assesment_id, 'questionnairerun': questionnairerun_id}
+                       )
+                c.cursor().execute(req)
             except:
                 c.rollback()
-                print 'can not relates Assessment and QuestionnaireRun %(a)s%(b)s_%(c)s' % {'a': argv[1][i+1:i+1+j], 'b': subject[0:12], 'c': age}
+                print 'cannot relate Assessment and QuestionnaireRun %(a)s%(b)s_%(c)s' % {'a': argv[1][i+1:i+1+j], 'b': subject[0:12], 'c': age}
             #print position, 'Q : ',l[7],', Answer : ',l[8],', time : ',l[10]
             try:
                 #Unit Separator
@@ -225,8 +279,8 @@ def insert_quest(argv):
                 except ValueError:
                     # keep string as int, use possible_answers
                     if value.find(US) >= 0:
-                        #This case should never happened in usual usage, if it does the csv file may have been corrupted
-                        raise Exception('Mais pourquoi ? (...\x1e, \x1f are Record Seprator and Unit Separator...)')
+                        #This case should never happen. If it does the CSV file may be corrupted.
+                        raise Exception('Uuuh? (...\x1e, \x1f are Record Seprator and Unit Separator...)')
                     possible_answers = unicode(value)
                     value = 0
                     _type = u'text'
@@ -262,23 +316,24 @@ def insert_quest(argv):
                     question_eid = question[0][0]
                     QUESTION_POSSIBLE_ANSWERS[question_eid] = possible_answers
                 # Answer
-                questionnaire_identifier = questionnaire + subject[0:12] + '_' + age + '_' + l[1]
+                questionnaire_id = questionnaire + subject[0:12] + '_' + age + '_' + l[1]
                 req = ("Any A, X Where A is Answer, X is QuestionnaireRun, "
-                       "Q is Question, A question Q, Q identifier '%(question)s', "
+                       "Q is Question, A question Q, "
+                       "Q identifier '%(question)s', "
                        "A questionnaire_run X, "
                        "X identifier '%(questionnaire)s'"
-                       % {'question': identifier, 'questionnaire': questionnaire_identifier}
+                       % {'question': identifier, 'questionnaire': questionnaire_id}
                        )
                 res = c.cursor().execute(req)
                 if not res:
-                    req = ("INSERT Answer A: A value '%(value)s', A question Q, "
+                    req = ("INSERT Answer A: A value '%(answer)s', A question Q, "
                            "A questionnaire_run X Where Q is Question, "
                            "X is QuestionnaireRun, "
                            "Q identifier '%(question)s', "
                            "X identifier '%(questionnaire)s'"
-                           % {'value': value,
+                           % {'answer': value,
                               'question': identifier,
-                              'questionnaire': questionnaire_identifier})
+                              'questionnaire': questionnaire_id})
                     c.cursor().execute(req)
             except Exception as e:
                 c.rollback()
