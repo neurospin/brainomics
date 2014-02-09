@@ -1,10 +1,12 @@
+# -*- coding: utf-8 -*-
+
 import os
+import os.path
 import sys
 import time
 import datetime
 import traceback
-from glob import glob
-from csv import reader
+import csv
 from cubicweb import dbapi
 
 ########################################################################
@@ -43,34 +45,29 @@ from cubicweb import dbapi
 #
 #
 
-c = dbapi.connect('zmqpickle-tcp://127.0.0.1:8181', login='admin', password='admin')
 
 #date is unused
 t = time.gmtime()
 date = datetime.date(t.tm_year, t.tm_mon, t.tm_mday).isoformat()[:10]
 
+cnx = dbapi.connect('zmqpickle-tcp://127.0.0.1:8181', login='admin', password='admin')
+
 #Local cache variables
-subjects = dict(c.cursor().execute('Any I, S WHERE S is Subject, S identifier I'))
-QUESTIONS = dict(c.cursor().execute('Any I, X WHERE X is Question, X identifier I'))
-QUESTION_POSSIBLE_ANSWERS = dict(c.cursor().execute('Any X, A WHERE X is Question, X possible_answers A'))
+subjects = dict(cnx.cursor().execute('Any I, S WHERE S is Subject, S identifier I'))
+QUESTIONS = dict(cnx.cursor().execute('Any I, X WHERE X is Question, X identifier I'))
+QUESTION_POSSIBLE_ANSWERS = dict(cnx.cursor().execute('Any X, A WHERE X is Question, X possible_answers A'))
 
 
-def main(argv):
+def main(path, cnx)
+    print path
+    print date
 
-    print len(argv)
-    print argv[1]
-    print date, c
-
-    try:
-        #if argv[1] is a file, call insert_quest method to insert this questionnary in DB
-        file(argv[1])
-        insert_quest(argv)
-    except:
-        #if argv[1] is not a file, it should be a directory containing csv questionnary files to be inserted in DB
-        l = glob(os.path.join(argv[1], '*.csv'))
-        for i in l:
-            print i
-            insert_quest(['import_quest.py', i])
+    if os.path.isdir(path):
+        for filename in os.listdir(path):
+            if os.path.splitext(filename)[1] == '.csv':
+                insert_questionnaire(os.path.join(path, filename), cnx)
+    else:
+        insert_questionnaire(path, cnx)
 
     # Update all questions
     for eid, pa in QUESTION_POSSIBLE_ANSWERS.iteritems():
@@ -81,41 +78,44 @@ def main(argv):
             pa = pa.replace("'", "\\'")
             #debug
             print 'pa', pa, 'eid', eid
-        c.cursor().execute("SET X possible_answers '%(pa)s' WHERE X eid %(eid)s" % {'eid': eid, 'pa': pa})
-        c.commit()
+        cnx.cursor().execute("SET X possible_answers '%(pa)s' "
+                           "WHERE X eid %(eid)s"
+                           % {'eid': eid, 'pa': pa})
+        cnx.commit()
 
 
-def insert_quest(argv):
+def insert_questionnaire(filename, cnx):
     for i in subjects:
         print i, subjects[i]
 
-    i = argv[1].find('-')
-    j = argv[1][i+1:].find('-')
-    print argv[1][i+1:i+1+j]
+    i = filename.find('-')
+    j = filename[i+1:].find('-')
+    print filename[i+1:i+1+j]
     #try :
-    #    c.cursor().execute('INSERT Study X: X name \'Imagen\', X data_filepath \'\', X description \'Imagen Study\'')
+    #    cnx.cursor().execute('INSERT Study X: X name \'Imagen\', X data_filepath \'\', X description \'Imagen Study\'')
     #    print 'Imagen inserted'
     #except :
-    #    c.rollback()
+    #    cnx.rollback()
     #    print 'cannot insert Study Imagen'
 
     validated = False
     language = ''
     try:
-        lignes = reader(open(argv[1]))
-        first_ligne = lignes.next()
-        #Child questionnaire have 12 columns, the last one ('Valid'), is not present for parent questionnaire
-        if len(first_ligne) == 12:
-            print first_ligne[11]
-            if first_ligne[11] == 'Valid':
-                validated = True
-        first_ligne = lignes.next()
-        #language is set here for the whole questionnaire
-        language = first_ligne[2]
+        with open(filename) as csvfile:
+            lignes = csv.reader(csvfile)
+            first_ligne = lignes.next()
+            #Child questionnaire have 12 columns, the last one ('Valid'), is not present for parent questionnaire
+            if len(first_ligne) == 12:
+                print first_ligne[11]
+                if first_ligne[11] == 'Valid':
+                    validated = True
+            first_ligne = lignes.next()
+            #language is set here for the whole questionnaire
+            language = first_ligne[2]
     #Just for more fun, some questionnaire are empty...
     except StopIteration:
         return
-    questionnaire = argv[1][i+1:i+1+j]
+    questionnaire = filename[i+1:i+1+j]
     version = ''
     if questionnaire[-4:-1] == '_RC':
         version = questionnaire[-3:]
@@ -136,11 +136,11 @@ def insert_quest(argv):
                   'language': language}
                )
         #print 'req = ', req
-        res = c.cursor().execute(req)
+        res = cnx.cursor().execute(req)
         #print 'res = ', res
     except:
-        c.rollback()
-        print 'cannot insert Questionnaire %s' % argv[1][i+1:i+1+j]
+        cnx.rollback()
+        print 'cannot insert Questionnaire %s' % filename[i+1:i+1+j]
     #city has to be read from filepath
     city = 'BERLIN'
     center = {
@@ -149,7 +149,8 @@ def insert_quest(argv):
     }
     center_id = center[city]
 
-    lignes = reader(open(argv[1]))
+    csvfile = open(filename)
+    lignes = csv.reader(csvfile)
     old_subject = None
     position = 0
     for l in lignes:
@@ -230,11 +231,11 @@ def insert_quest(argv):
             #iteration field is read only once time from the first question of each subject's questionnaire expecting only one iteration value for a questionnaire
             try:
                 print 'req = ', req
-                res = c.cursor().execute(req)
+                res = cnx.cursor().execute(req)
                 print 'res = ', res
             except:
-                c.rollback()
-                print 'cannot insert Assessment and QuestionnaireRun %(a)s%(b)s_%(c)s' % {'a': argv[1][i+1:i+1+j], 'b': subject[0:12], 'c': age}
+                cnx.rollback()
+                print 'cannot insert Assessment and QuestionnaireRun %(a)s%(b)s_%(c)s' % {'a': filename[i+1:i+1+j], 'b': subject[0:12], 'c': age}
             try:
                 assesment_id = questionnaire + subject[0:12] + '_' + age
                 req = ("SET A related_study S Where A is Assessment, "
@@ -242,19 +243,19 @@ def insert_quest(argv):
                        "A identifier '%(assesment)s'"
                        % {'assesment': assesment_id}
                        )
-                c.cursor().execute(req)
+                cnx.cursor().execute(req)
                 req = ("SET C holds A Where A is Assessment, "
                        "C is Center, C identifier '%(center)s', "
                        "A identifier '%(assesment)s'"
                        % {'assesment': assesment_id, 'center': center_id}
                        )
-                c.cursor().execute(req)
+                cnx.cursor().execute(req)
                 req = ("SET S concerned_by A Where A is Assessment, "
                        "S is Subject, S identifier 'IMAGEN_%(subject)s', "
                        "A identifier '%(assesment)s'"
                        % {'subject': subject[0:12], 'assesment': assesment_id}
                        )
-                c.cursor().execute(req)
+                cnx.cursor().execute(req)
                 questionnairerun_id = questionnaire + subject[0:12] + '_' + age + '_' + l[1]
                 req = ("SET A generates Q Where A is Assessment, "
                        "Q is QuestionnaireRun, "
@@ -262,10 +263,10 @@ def insert_quest(argv):
                        "Q identifier '%(questionnairerun)s'"
                        % {'assesment': assesment_id, 'questionnairerun': questionnairerun_id}
                        )
-                c.cursor().execute(req)
+                cnx.cursor().execute(req)
             except:
-                c.rollback()
-                print 'cannot relate Assessment and QuestionnaireRun %(a)s%(b)s_%(c)s' % {'a': argv[1][i+1:i+1+j], 'b': subject[0:12], 'c': age}
+                cnx.rollback()
+                print 'cannot relate Assessment and QuestionnaireRun %(a)s%(b)s_%(c)s' % {'a': filename[i+1:i+1+j], 'b': subject[0:12], 'c': age}
             #print position, 'Q : ',l[7],', Answer : ',l[8],', time : ',l[10]
             try:
                 #Unit Separator
@@ -310,7 +311,7 @@ def insert_quest(argv):
                               'answers': possible_answers,
                               'questionnaire': questionnaire}
                            )
-                    question = c.cursor().execute(req)
+                    question = cnx.cursor().execute(req)
                     #print 'question[0][0] = ',question[0][0], 'possible_answers = ', possible_answers
                     QUESTIONS[identifier] = question[0][0]
                     question_eid = question[0][0]
@@ -324,7 +325,7 @@ def insert_quest(argv):
                        "X identifier '%(questionnaire)s'"
                        % {'question': identifier, 'questionnaire': questionnaire_id}
                        )
-                res = c.cursor().execute(req)
+                res = cnx.cursor().execute(req)
                 if not res:
                     req = ("INSERT Answer A: A value '%(answer)s', A question Q, "
                            "A questionnaire_run X Where Q is Question, "
@@ -334,15 +335,18 @@ def insert_quest(argv):
                            % {'answer': value,
                               'question': identifier,
                               'questionnaire': questionnaire_id})
-                    c.cursor().execute(req)
+                    cnx.cursor().execute(req)
             except Exception as e:
-                c.rollback()
+                cnx.rollback()
                 print 'cannot insert Question %(q)s and Answer %(a)s' % {'q': l[7], 'a': l[8]}
                 e_t, e_v, e_tb = sys.exc_info()
                 print 'Exc', e_t, e_v
                 traceback.print_tb(e_tb)
         #commit must be done here to avoid insertion of current question/answer be rollbacked by a next rollback() method call
-        c.commit()
+        cnx.commit()
+    csvfile.close()
+
 
 if __name__ == '__main__':
-    main(sys.argv)
+
+    main(sys.argv, cnx)
