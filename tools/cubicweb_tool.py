@@ -126,6 +126,11 @@ class CubicWebTool(object) :
                                          parent_entities)
 
         if insert :
+            print "============================"
+            print "entity_name=", entity_name
+            print "parent_entities=", parent_entities
+            print "relations=", relations
+            print "kwargs=", kwargs
             # insert entity
             rqt_parameters = ["X {0} '{1}'".format(x,y) for x,y in entity_parameters.items()]
             rqt_parameters = ",".join(rqt_parameters)
@@ -134,6 +139,7 @@ class CubicWebTool(object) :
             print rqt
 
             query_res = self.send_request(rqt)
+            print query_res
             entity = query_res.get_entity(0,0)
 
             # create relations

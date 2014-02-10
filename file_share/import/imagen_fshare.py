@@ -156,21 +156,21 @@ class Imagen(CubicWebTool) :
         rqt = "Any X WHERE X is Assessment"
         return self.send_request(rqt)
 
-    def get_all_scans(self) :
+    def get_all_scans(self):
         rqt = "Any X WHERE X is Scan"
         return self.send_request(rqt)
 
-    def get_all_fsets(self) :
+    def get_all_fsets(self):
         rqt = "Any X WHERE X is FileSet"
         return self.send_request(rqt)
 
-    def get_all_fentries(self) :
+    def get_all_fentries(self):
         rqt = "Any X WHERE X is FileEntries"
         return self.send_request(rqt)
 
     def _get_time(self):
         return self._time
-       
+
     centers = property(get_all_centers)
     studies = property(get_all_studies)
     subjects = property(get_all_subjects)
