@@ -396,7 +396,7 @@ def flush_lines_into_db(input_lines,
                 if gene_eids != []:
                     for gene_eid in gene_eids:
                         store.relate(gene_eid,
-                                     'snps_genes',
+                                     'genes',
                                      snp_db.eid)
             if isnp % store_flush_num == 0:
                 delta_time = datetime.datetime.now() - start_time

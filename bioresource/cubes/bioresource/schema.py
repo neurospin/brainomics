@@ -37,7 +37,7 @@ GenomicPlatform.remove_relation(name="identifier")
 
 Snp.remove_relation(name="gene")
 
-Gene.add_relation(SubjectRelation('Snp', cardinality='**'), name='snps_genes')
+Gene.add_relation(SubjectRelation('Snp', cardinality='**'), name='genes')
 
 Gene.remove_relation(name="chromosomes")
 Gene.add_relation(SubjectRelation('Chromosome', cardinality='?*'),
