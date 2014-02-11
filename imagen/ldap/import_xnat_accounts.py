@@ -1,6 +1,12 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+host = 'ldap://132.166.140.10'
+host = 'ldap://imagen2i.intra.cea.fr'
+BASE = 'dc=imagen2,dc=cea,dc=fr'
+BASE = 'dc=example,dc=com'
+
+
 import csv
 import re
 
@@ -169,7 +175,7 @@ def write_csv(accounts):
 
 import os
 import sys
-import codecs
+import getpass
 
 if len(sys.argv) > 2:
     sys.exit('Usage: %s [PSQLDUMPFILE]' % os.path.basename(sys.argv[0]))
@@ -181,12 +187,15 @@ else:
     with open(sys.argv[1], 'rb') as psqlfile:
         accounts = parse_psql_dump(psqlfile)
 
-host = 'ldap://132.166.140.10'
-host = 'ldap://imagen2i.intra.cea.fr'
-BASE = 'dc=imagen2,dc=cea,dc=fr'
-BASE = 'dc=example,dc=com'
 username = 'cn=admin,' + BASE
-password = 'kelbordel'
 ldapobject = ldap.initialize(host)
-ldapobject.simple_bind_s(username, password)
+while True:
+    password = getpass.getpass(prompt='LDAP administrator password? ')
+    try:
+        ldapobject.simple_bind_s(username, password)
+    except ldap.INVALID_CREDENTIALS:
+        continue
+    else:
+        break
 add_to_ldap(ldapobject, BASE, accounts)
+ldapobject.unbind_s()
