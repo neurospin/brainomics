@@ -1,8 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-csvfile = 'ACCOUNTS.txt'
-
 import csv
 import re
 
@@ -96,29 +94,28 @@ def parse_psql_dump(psqlfile):
 
     """
     accounts = []
-    with open(psqlfile, 'rb') as f:
-        reader = csv.reader(f, delimiter='|', quoting=csv.QUOTE_NONE)
-        for row in reader:
-            login = row[0].strip()
-            firstname = unescape(row[1].strip())
-            lastname = unescape(row[2].strip())
-            email = row[3].strip()
-            primary_password = row[4].strip()
-            primary_password_encrypt = row[5].strip()
-            enabled = row[6].strip()
-            if enabled != '0':
-                if primary_password_encrypt != '0':
-                    plain_text = deobfuscate(primary_password)
-                else:
-                    plain_text = primary_password
-                account = {
-                    'login': login,
-                    'firstname': firstname,
-                    'lastname': lastname,
-                    'email': email,
-                    'password': plain_text,
-                }
-                accounts.append(account)
+    reader = csv.reader(psqlfile, delimiter='|', quoting=csv.QUOTE_NONE)
+    for row in reader:
+        login = row[0].strip()
+        firstname = unescape(row[1].strip())
+        lastname = unescape(row[2].strip())
+        email = row[3].strip()
+        primary_password = row[4].strip()
+        primary_password_encrypt = row[5].strip()
+        enabled = row[6].strip()
+        if enabled != '0':
+            if primary_password_encrypt != '0':
+                plain_text = deobfuscate(primary_password)
+            else:
+                plain_text = primary_password
+            account = {
+                'login': login,
+                'firstname': firstname,
+                'lastname': lastname,
+                'email': email,
+                'password': plain_text,
+            }
+            accounts.append(account)
     return accounts
 
 
@@ -170,10 +167,19 @@ def write_csv(accounts):
         print formatting % account
 
 
+import os
 import sys
 import codecs
 
-accounts = parse_psql_dump(csvfile)
+if len(sys.argv) > 2:
+    sys.exit('Usage: %s [PSQLDUMPFILE]' % os.path.basename(sys.argv[0]))
+elif len(sys.argv) < 2:
+    accounts = parse_psql_dump(sys.stdin)
+elif not os.path.isfile(sys.argv[1]):
+    sys.exit('File not found: %s' % sys.argv[1])
+else:
+    with open(sys.argv[1], 'rb') as psqlfile:
+        accounts = parse_psql_dump(psqlfile)
 
 host = 'ldap://127.0.0.1'
 username = 'cn=admin,dc=example,dc=com'
