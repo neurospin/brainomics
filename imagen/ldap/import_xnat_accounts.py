@@ -96,6 +96,8 @@ def parse_psql_dump(psqlfile):
     accounts = []
     reader = csv.reader(psqlfile, delimiter='|', quoting=csv.QUOTE_NONE)
     for row in reader:
+        if not row:  # skip empty lines
+            continue
         login = row[0].strip()
         firstname = unescape(row[1].strip())
         lastname = unescape(row[2].strip())
