@@ -124,15 +124,13 @@ def parse_psql_dump(psqlfile):
 import ldap
 import passlib.hash
 
-def add_to_ldap(ldapobject, accounts):
-    uid = 3000
+def add_to_ldap(ldapobject, base, accounts):
+    uid = 3000  # attempt to avoid messing with existing accounts
     gid = 100  # group "users" by default
     for account in accounts:
         uid += 1
-        BASE = 'dc=imagen,dc=cea,dc=fr'
-        BASE = 'dc=example,dc=com'
         # add account to the restricted "partners" group
-        dn = 'cn=partners,ou=Group,' + BASE
+        dn = 'cn=partners,ou=Group,' + base
         attributes = [(ldap.MOD_ADD, 'memberUid', account['login'])]
         ldapobject.modify_s(dn, attributes)
         # create account
@@ -140,7 +138,7 @@ def add_to_ldap(ldapobject, accounts):
         firstname = account['firstname'].encode('utf-8')
         lastname = account['lastname'].upper().encode('utf-8')
         cn = firstname + ' ' + lastname
-        dn = 'cn=%s,ou=People,' % cn + BASE
+        dn = 'cn=%s,ou=People,' % cn + base
         email = account['email'].encode('utf-8')
         password = passlib.hash.ldap_md5.encrypt(account['password'])
         attributes = [
@@ -183,9 +181,12 @@ else:
     with open(sys.argv[1], 'rb') as psqlfile:
         accounts = parse_psql_dump(psqlfile)
 
-host = 'ldap://127.0.0.1'
-username = 'cn=admin,dc=example,dc=com'
-password = 'XXXXXXXX'
+host = 'ldap://132.166.140.10'
+host = 'ldap://imagen2i.intra.cea.fr'
+BASE = 'dc=imagen2,dc=cea,dc=fr'
+BASE = 'dc=example,dc=com'
+username = 'cn=admin,' + BASE
+password = 'kelbordel'
 ldapobject = ldap.initialize(host)
 ldapobject.simple_bind_s(username, password)
-add_to_ldap(ldapobject, accounts)
+add_to_ldap(ldapobject, BASE, accounts)
