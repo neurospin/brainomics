@@ -1,5 +1,5 @@
 CUBENAME=bioresource
-INSTANCENAME=inst_$CUBENAME
+INSTANCENAME=inst2_$CUBENAME
 
 cubicweb-ctl stop $INSTANCENAME
 cubicweb-ctl delete $INSTANCENAME

@@ -24,6 +24,8 @@ from yams.buildobjs import (EntityType, RelationDefinition,
 from cubes.genomics.schema import GenomicPlatform
 from cubes.genomics.schema import Snp
 from cubes.genomics.schema import Gene
+from cubes.medicalexp.schema import Assessment
+# from cubes.medicalexp.schema import GenomicMeasure
 #from cubes.medicalexp.schema import Assessment
 #from cubes.medicalexp.schema import ProcessingRun
 #from cubes.medicalexp.schema import ScoreDefinition
@@ -42,6 +44,14 @@ Gene.add_relation(SubjectRelation('Snp', cardinality='**'), name='genes')
 Gene.remove_relation(name="chromosomes")
 Gene.add_relation(SubjectRelation('Chromosome', cardinality='?*'),
                   name='chromosome')
+
+Assessment.remove_relation(name='related_study')
+Assessment.add_relation(SubjectRelation('Study', cardinality='?*'),
+                        name='related_study')
+## It doesn't work
+# GenomicMeasure.remove_relation(name='concerns')
+# GenomicMeasure.add_relation(SubjectRelation('SubjectGroup', cardinality='?*'), name='concerns')
+
 
 # Todo: Change cardinality of Snp
 # Todo: add relation from gene to snp (?*), the name of relation is snps
