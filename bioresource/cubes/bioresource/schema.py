@@ -25,6 +25,7 @@ from cubes.genomics.schema import GenomicPlatform
 from cubes.genomics.schema import Snp
 from cubes.genomics.schema import Gene
 from cubes.medicalexp.schema import Assessment
+from cubes.medicalexp.schema import concerned_by
 # from cubes.medicalexp.schema import GenomicMeasure
 #from cubes.medicalexp.schema import Assessment
 #from cubes.medicalexp.schema import ProcessingRun
@@ -48,6 +49,9 @@ Gene.add_relation(SubjectRelation('Chromosome', cardinality='?*'),
 Assessment.remove_relation(name='related_study')
 Assessment.add_relation(SubjectRelation('Study', cardinality='?*'),
                         name='related_study')
+
+concerned_by.cardinality = "**"
+
 ## It doesn't work
 # GenomicMeasure.remove_relation(name='concerns')
 # GenomicMeasure.add_relation(SubjectRelation('SubjectGroup', cardinality='?*'), name='concerns')

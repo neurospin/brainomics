@@ -269,9 +269,9 @@ def import_chromosomes_db(store, path_chromosomes_json):
 
 def import_genes_db(store,
                     path_chromosomes_json,
-                    path_hg18_ref_gen_mate,
+                    path_hg19_ref_gen_mate,
                     chr_map):
-    genes = import_genes(path_chromosomes_json, path_hg18_ref_gen_mate)
+    genes = import_genes(path_chromosomes_json, path_hg19_ref_gen_mate)
     for gene in genes:
         gene['chromosome'] = chr_map[gene['chromosome']]
         gene = store.create_entity('Gene', **gene)
@@ -545,8 +545,8 @@ if __name__ == '__main__':
     g_mes = 'qc_subjects_qc_genetics_all_snps_common.bim'  # 'Localizer94.bim'
     path_chromosomes_json = os.path.join(additional_genetics_dir,
                                          'chromosomes.json')
-    path_hg18_ref_gen_mate = os.path.join(genetics_dir,
-                                          'hg18.refGene.meta')
+    path_hg19_ref_gen_mate = os.path.join(genetics_dir,
+                                          'hg19.refGene.meta')
     path_platforms = osp.join(root_dir, 'platforms')
     path_genome_wide_snp_6_na33_annot = osp.join(path_platforms,
                                                  "GenomeWideSNP_6.na33.annot.csv")
@@ -563,7 +563,7 @@ if __name__ == '__main__':
     if sqlgen_store:
         import_genes_db(store,
                         path_chromosomes_json,
-                        path_hg18_ref_gen_mate,
+                        path_hg19_ref_gen_mate,
                         chr_map)
     sorted_gene_list = get_sorted_genes_db(session)
     # Import three Platforms
