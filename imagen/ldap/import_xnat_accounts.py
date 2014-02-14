@@ -1,7 +1,11 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-csvfile = 'ACCOUNTS.txt'
+host = 'ldap://132.166.140.10'
+host = 'ldap://imagen2i.intra.cea.fr'
+BASE = 'dc=imagen2,dc=cea,dc=fr'
+BASE = 'dc=example,dc=com'
+
 
 import csv
 import re
@@ -96,44 +100,43 @@ def parse_psql_dump(psqlfile):
 
     """
     accounts = []
-    with open(psqlfile, 'rb') as f:
-        reader = csv.reader(f, delimiter='|', quoting=csv.QUOTE_NONE)
-        for row in reader:
-            login = row[0].strip()
-            firstname = unescape(row[1].strip())
-            lastname = unescape(row[2].strip())
-            email = row[3].strip()
-            primary_password = row[4].strip()
-            primary_password_encrypt = row[5].strip()
-            enabled = row[6].strip()
-            if enabled != '0':
-                if primary_password_encrypt != '0':
-                    plain_text = deobfuscate(primary_password)
-                else:
-                    plain_text = primary_password
-                account = {
-                    'login': login,
-                    'firstname': firstname,
-                    'lastname': lastname,
-                    'email': email,
-                    'password': plain_text,
-                }
-                accounts.append(account)
+    reader = csv.reader(psqlfile, delimiter='|', quoting=csv.QUOTE_NONE)
+    for row in reader:
+        if not row:  # skip empty lines
+            continue
+        login = row[0].strip()
+        firstname = unescape(row[1].strip())
+        lastname = unescape(row[2].strip())
+        email = row[3].strip()
+        primary_password = row[4].strip()
+        primary_password_encrypt = row[5].strip()
+        enabled = row[6].strip()
+        if enabled != '0':
+            if primary_password_encrypt != '0':
+                plain_text = deobfuscate(primary_password)
+            else:
+                plain_text = primary_password
+            account = {
+                'login': login,
+                'firstname': firstname,
+                'lastname': lastname,
+                'email': email,
+                'password': plain_text,
+            }
+            accounts.append(account)
     return accounts
 
 
 import ldap
 import passlib.hash
 
-def add_to_ldap(ldapobject, accounts):
-    uid = 3000
+def add_to_ldap(ldapobject, base, accounts):
+    uid = 3000  # attempt to avoid messing with existing accounts
     gid = 100  # group "users" by default
     for account in accounts:
         uid += 1
-        BASE = 'dc=imagen,dc=cea,dc=fr'
-        BASE = 'dc=example,dc=com'
         # add account to the restricted "partners" group
-        dn = 'cn=partners,ou=Group,' + BASE
+        dn = 'cn=partners,ou=Group,' + base
         attributes = [(ldap.MOD_ADD, 'memberUid', account['login'])]
         ldapobject.modify_s(dn, attributes)
         # create account
@@ -141,7 +144,7 @@ def add_to_ldap(ldapobject, accounts):
         firstname = account['firstname'].encode('utf-8')
         lastname = account['lastname'].upper().encode('utf-8')
         cn = firstname + ' ' + lastname
-        dn = 'cn=%s,ou=People,' % cn + BASE
+        dn = 'cn=%s,ou=People,' % cn + base
         email = account['email'].encode('utf-8')
         password = passlib.hash.ldap_md5.encrypt(account['password'])
         attributes = [
@@ -170,14 +173,29 @@ def write_csv(accounts):
         print formatting % account
 
 
+import os
 import sys
-import codecs
+import getpass
 
-accounts = parse_psql_dump(csvfile)
+if len(sys.argv) > 2:
+    sys.exit('Usage: %s [PSQLDUMPFILE]' % os.path.basename(sys.argv[0]))
+elif len(sys.argv) < 2:
+    accounts = parse_psql_dump(sys.stdin)
+elif not os.path.isfile(sys.argv[1]):
+    sys.exit('File not found: %s' % sys.argv[1])
+else:
+    with open(sys.argv[1], 'rb') as psqlfile:
+        accounts = parse_psql_dump(psqlfile)
 
-host = 'ldap://127.0.0.1'
-username = 'cn=admin,dc=example,dc=com'
-password = 'XXXXXXXX'
+username = 'cn=admin,' + BASE
 ldapobject = ldap.initialize(host)
-ldapobject.simple_bind_s(username, password)
-add_to_ldap(ldapobject, accounts)
+while True:
+    password = getpass.getpass(prompt='LDAP administrator password? ')
+    try:
+        ldapobject.simple_bind_s(username, password)
+    except ldap.INVALID_CREDENTIALS:
+        continue
+    else:
+        break
+add_to_ldap(ldapobject, BASE, accounts)
+ldapobject.unbind_s()

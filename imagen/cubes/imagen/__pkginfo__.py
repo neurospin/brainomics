@@ -8,14 +8,15 @@ numversion = (0, 1, 0)
 version = '.'.join(str(num) for num in numversion)
 
 license = 'LGPL'
-author = 'LOGILAB S.A. (Paris, FRANCE)'
-author_email = 'contact@logilab.fr'
-description = 'Brainomics/Imagen'
-web = 'http://www.cubicweb.org/project/%s' % distname
+author = 'CEA (Saclay, FRANCE)'
+author_email = 'imagen.database@cea.fr'
+description = 'Imagen V2'
+web = 'https://imagen2.cea.fr'
 
-__depends__ =  {'cubicweb': '>= 3.16.1',
-                'cubicweb-brainomics': None,
-                'cubicweb-trustedauth': None,
+__depends__ =  {
+    'cubicweb': '>= 3.17.0',
+    'cubicweb-brainomics': '>= 0.7.1',
+    'cubicweb-trustedauth': None,
 }
 __recommends__ = {}
 
