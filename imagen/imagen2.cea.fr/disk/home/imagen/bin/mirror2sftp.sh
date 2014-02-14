@@ -15,3 +15,6 @@ rsync -rlt /neurospin/imagen/FU2/RAW/PSC2/QC /chroot/data/FU2/RAW/PSC2/
 
 # sftp_mirror
 rsync -rlt /neurospin/imagen/FU2/processed/sftp_mirror/ /chroot/data/FU2/processed
+
+# clean up
+chmod -R g-w,o-w /chroot/data
