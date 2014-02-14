@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 host = 'ldap://132.166.140.10'
-host = 'ldap://imagen2i.intra.cea.fr'
 BASE = 'dc=imagen2,dc=cea,dc=fr'
 
 
