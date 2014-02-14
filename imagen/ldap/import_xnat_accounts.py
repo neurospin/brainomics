@@ -135,7 +135,7 @@ def add_to_ldap(ldapobject, base, accounts):
     for account in accounts:
         uid += 1
         # add account to the restricted "partners" group
-        dn = 'cn=partners,ou=Group,' + base
+        dn = 'cn=partners,ou=Groups,' + base
         attributes = [(ldap.MOD_ADD, 'memberUid', account['login'])]
         ldapobject.modify_s(dn, attributes)
         # create account
