@@ -20,41 +20,58 @@
 from yams.buildobjs import (EntityType, RelationDefinition,
                             SubjectRelation, String, RichString,
                             BigInt, Int, Float, Boolean)
-
-from cubes.genomics.schema import GenomicPlatform
-from cubes.genomics.schema import Snp
-from cubes.genomics.schema import Gene
-from cubes.medicalexp.schema import Assessment
-from cubes.medicalexp.schema import concerned_by
+#
+#from cubes.genomics.schema import GenomicPlatform
+#from cubes.genomics.schema import Snp
+#from cubes.genomics.schema import Gene
+#from cubes.medicalexp.schema import Assessment
+#from cubes.medicalexp.schema import concerned_by
 # from cubes.medicalexp.schema import GenomicMeasure
 #from cubes.medicalexp.schema import Assessment
 #from cubes.medicalexp.schema import ProcessingRun
 #from cubes.medicalexp.schema import ScoreDefinition
 #from cubes.medicalexp.schema import ScoreValue
 
-
 # Remove identifier and add name
-GenomicPlatform.add_relation(String(maxsize=64, fulltextindexed=True),
-                             name='name')
-GenomicPlatform.remove_relation(name="identifier")
+#GenomicPlatform.add_relation(String(maxsize=64, fulltextindexed=True),
+#                             name='name')
+#GenomicPlatform.remove_relation(name="identifier")
 
-Snp.remove_relation(name="gene")
+# Snp.remove_relation(name="gene")
+# Gene.add_relation(SubjectRelation('Snp', cardinality='**'), name='genes')
 
-Gene.add_relation(SubjectRelation('Snp', cardinality='**'), name='genes')
-
-Gene.remove_relation(name="chromosomes")
-Gene.add_relation(SubjectRelation('Chromosome', cardinality='?*'),
-                  name='chromosome')
-
-Assessment.remove_relation(name='related_study')
-Assessment.add_relation(SubjectRelation('Study', cardinality='?*'),
-                        name='related_study')
-
-concerned_by.cardinality = "**"
+# One gene could have several genes, 
+# and one chromosome could have serveral genes
+# Don't change them
+#Gene.remove_relation(name="chromosomes")
+## change SubjectRelation('Chromosome', cardinality='?*').cardinality to "**"
+#Gene.add_relation(SubjectRelation('Chromosome', cardinality='?*'),
+#                  name='chromosome')
 
 ## It doesn't work
 # GenomicMeasure.remove_relation(name='concerns')
 # GenomicMeasure.add_relation(SubjectRelation('SubjectGroup', cardinality='?*'), name='concerns')
+
+
+
+#GenomicPlatform.add_relation(String(maxsize=64, fulltextindexed=True),
+#                             name='name')
+#GenomicPlatform.remove_relation(name="identifier")
+#
+#Snp.remove_relation(name="gene")
+#
+#Gene.add_relation(SubjectRelation('Snp', cardinality='**'), name='snps_genes')
+#
+#Gene.remove_relation(name="chromosomes")
+#Gene.add_relation(SubjectRelation('Chromosome', cardinality='?*'),
+#                  name='chromosome')
+#
+#Assessment.remove_relation(name='related_study')
+#Assessment.add_relation(SubjectRelation('Study', cardinality='?*'),
+#                        name='related_study')
+#
+#concerned_by.cardinality = "**"
+
 
 
 # Todo: Change cardinality of Snp

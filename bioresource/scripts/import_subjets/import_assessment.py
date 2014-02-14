@@ -8,6 +8,15 @@ Created on Fri Feb  7 09:13:32 2014
 import os, csv, glob, sys
 
 ############################################################################
+### Constants ##############################################################
+############################################################################
+
+PLATFORM_AFFYMETRIX_6_0 = u"Affymetrix_6.0"
+PLATFORM_ILLUMINA_610QUAD = u"Illu_610"
+PLATFORM_ILLUMINA_660W = u"Illu_660"
+
+
+############################################################################
 ### Tools ##################################################################
 ############################################################################
 
@@ -89,7 +98,6 @@ def get_subjects_fam(filename):
             subjects.append(subject)
     return subjects
 
-
 def get_subjects_fams(filename):
     subjects = []
     res = find_files(filename, ".fam")
@@ -142,13 +150,13 @@ def import_center():
 def get_genomic_platforms():
     platforms = []
     platform = {}
-    platform["name"] = u"Affymetrix_6.0"
+    platform["name"] = PLATFORM_AFFYMETRIX_6_0
     platforms.append(platform)
     platform = {}
-    platform["name"] = u"Illu_660"
+    platform["name"] = PLATFORM_ILLUMINA_660W
     platforms.append(platform)
     platform = {}
-    platform["name"] = u"Illu_610"
+    platform["name"] = PLATFORM_ILLUMINA_610QUAD
     platforms.append(platform)
     return platforms
 
@@ -170,17 +178,17 @@ def get_db_platform_from_name(db_platforms, name):
 def select_platform_from_filepath(filepath):
     platforms = get_genomic_platforms()
     if u"illumina_610quad" in filepath:
-        return get_platform_from_name(platforms, u"Illu_610")
+        return get_platform_from_name(platforms, PLATFORM_ILLUMINA_610QUAD)
     elif u"illumina_660w" in filepath:
-        return get_platform_from_name(platforms, u"Illu_660")
+        return get_platform_from_name(platforms, PLATFORM_ILLUMINA_660W)
     return None
 
 
 def select_db_platform_from_filepath(filepath, db_platforms):
     if u"illumina_610quad" in filepath:
-        return get_db_platform_from_name(db_platforms, u"Illu_610")
+        return get_db_platform_from_name(db_platforms, PLATFORM_ILLUMINA_610QUAD)
     elif u"illumina_660w" in filepath:
-        return get_db_platform_from_name(db_platforms, u"Illu_660")
+        return get_db_platform_from_name(db_platforms, PLATFORM_ILLUMINA_660W)
     return None
 
 
@@ -227,6 +235,14 @@ def import_cng_center_assessments(genomic_measures):
 ############################################################################
 ### GenomicMeasure #########################################################
 ############################################################################
+
+def select_db_genomic_measure_from_filepath(
+                                        db_genomic_measures,
+                                        filepath):
+    for db_genomic_measure in db_genomic_measures:
+        if db_genomic_measure.filepath == filepath:
+            return db_genomic_measure
+    return None
 
 
 def get_genomic_measures(genomic_platform_measure_path):
@@ -316,25 +332,23 @@ def import_studies(genomic_measures):
 
 
 def get_map_subjet_filename(filename):
-    map_subjet_filename = {}
+    map_subject_name_2_filepath = {}
     res = find_files(filename, ".fam")
     for item in res:
         sub_subjects = get_subjects_fam(item)
         for sub_subject in sub_subjects:
-            map_subjet_filename[sub_subject["identifier"]] = item
-    return map_subjet_filename
+            map_subject_name_2_filepath[sub_subject["identifier"]] = item
+    return map_subject_name_2_filepath
 
 
 def import_rel_related_groups_4_subject_and_subject_groups(
                                     db_subjects,
                                     db_subject_groups,
-                                    genomic_platform_measure_path):
-    map_subjet_filename = \
-        get_map_subjet_filename(genomic_platform_measure_path)
-    for subject_name in map_subjet_filename:
+                                    map_subject_name_2_filepath):
+    for subject_name in map_subject_name_2_filepath:
         db_subject = locate_db_subject(db_subjects, subject_name)
         db_subject_group = locate_db_subject_group(db_subject_groups,
-                                        map_subjet_filename[subject_name])
+                                        map_subject_name_2_filepath[subject_name])
         add_relation_safe(db_subject.eid,
                           "related_groups",
                           db_subject_group.eid)
@@ -387,15 +401,13 @@ def import_rel_holds_4_assessments_and_center(
 def import_rel_concerned_by_4_subject_and_assessments(
                                     db_subjects,
                                     db_assessments,
-                                    genomic_platform_measure_path):
-    map_subjet_filename = \
-        get_map_subjet_filename(genomic_platform_measure_path)
-    for subject_name in map_subjet_filename:
+                                    map_subject_name_2_filepath):
+    for subject_name in map_subject_name_2_filepath:
         db_subject = locate_db_subject(db_subjects,
                                        subject_name)
         db_assessment = locate_db_assessment(
                                 db_assessments,
-                                map_subjet_filename[subject_name])
+                                map_subject_name_2_filepath[subject_name])
         if (db_subject is not None) and (db_assessment is not None):
             add_relation_safe(db_subject.eid,
                               "concerned_by",
@@ -410,61 +422,94 @@ def import_rel_generates_4_assessments_and_genomic_measures(
                            "identifier",
                            "generates")
 
+
+def import_rel_concerns_4_genomic_measure_and_subjects(
+                                    db_genomic_measures,
+                                    db_subjects,
+                                    map_subject_name_2_filepath):
+    for db_subject in db_subjects:
+        filepath = map_subject_name_2_filepath[db_subject.identifier]
+        db_genomic_measure = select_db_genomic_measure_from_filepath(
+                                            db_genomic_measures,
+                                            filepath)
+        if (db_subject is not None) and (db_genomic_measure is not None):
+            add_relation_safe(db_subject.eid,
+                              "concerns",
+                              db_genomic_measure.eid)
+
+
 if __name__ == "__main__":
     root_path = "/neurospin/brainomics/2014_bioresource"
     genomic_platform_measure_path = os.path.join(
                                        root_path,
                                        "data",
                                        "genomic_platform_measure")
+    print "x1"
+    map_subject_name_2_filepath = \
+        get_map_subjet_filename(genomic_platform_measure_path)
+    print "x2"
     genomic_measures = get_genomic_measures(
                             genomic_platform_measure_path)
-
+    print "x3"
     db_subject_groups = import_subject_groups(
                             genomic_measures)
+    print "x4"
     db_subjects = import_subjects(
                             genomic_platform_measure_path)
+    print "x5"
     db_studies = import_studies(genomic_measures)
+    print "x6"
     db_genomic_measures = import_genomic_measures(
                             genomic_platform_measure_path)
+    print "x7"
     db_genomic_platforms = import_genomic_platforms()
+    print "x1"
     db_center = import_center()
     db_cng_center_assessments = import_cng_center_assessments(
                                     genomic_measures)
+    print "pt1"
     import_rel_related_groups_4_subject_and_subject_groups(
                 db_subjects,
                 db_subject_groups,
-                genomic_platform_measure_path)
-    import_rel_concerns_4_genomic_measures_and_subject_groups(
-                db_genomic_measures,
-                db_subject_groups)
+                map_subject_name_2_filepath)
+    print "pt2"
+#    import_rel_concerns_4_genomic_measures_and_subject_groups(
+#                db_genomic_measures,
+#                db_subject_groups)
     import_rel_related_study_4_genomic_measures_and_studies(
                 db_genomic_measures,
                 db_studies)
+    print "pt3"
     import_rel_platform_4_genomic_measures_and_genomic_platform(
                 db_genomic_measures,
                 db_genomic_platforms)
+    print "pt4"
     import_rel_holds_4_assessments_and_center(
                 db_center,
                 db_cng_center_assessments)
+    print "pt5"
     import_rel_concerned_by_4_subject_and_assessments(
                 db_subjects,
                 db_cng_center_assessments,
-                genomic_platform_measure_path)
+                map_subject_name_2_filepath)
+    print "pt6"
     import_rel_generates_4_assessments_and_genomic_measures(
                 db_cng_center_assessments,
                 db_genomic_measures)
+    print "pt7"
+    import_rel_concerns_4_genomic_measure_and_subjects(
+                db_subjects,
+                db_genomic_measures,
+                map_subject_name_2_filepath)
+    print "pt8"
+    # add relation from genomic measure to subjects
+    
     session.commit()
 
     """Import finished. Here you some rqls to test import
 Any X, Y where X is Subject, Y is Assessment, X concerned_by Y
-
 Any X, Y where X is Assessment, Y is GenomicMeasure, X generates Y
-
 Any X, Y where X is Center, Y is Assessment, X holds Y
-
-Any X, Y where X is GenomicMeasure, Y is GenomicPlatform
-, X platform Y
-
-Any X, Y where X is Subject, Y is SubjectGroup, X related_groups
- Y
+Any X, Y where X is GenomicMeasure, Y is GenomicPlatform, X platform Y
+Any X, Y where X is Subject, Y is SubjectGroup, X related_groups Y
     """
