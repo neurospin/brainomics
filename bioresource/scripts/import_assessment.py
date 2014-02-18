@@ -308,7 +308,7 @@ def get_studies(genomic_measures):
 
 
 def import_studies(genomic_measures):
-    db_study = {"name": u"GIMAGEN"}
+    study = {"name": u"GIMAGEN", "data_filepath": u""}
     db_study = create_entity_safe("Study",
                                    **study)
     db_studies = []
@@ -336,9 +336,9 @@ def import_rel_related_study_4_genomic_measures_and_studies(
     for db_genomic_measure in db_genomic_measures:
         db_genomic_measure_name = get_filename_no_extension(
                                     db_genomic_measure.filepath)
-                add_relation_safe(db_genomic_measure.eid,
-                                  "related_study",
-                                  db_studies[0].eid)
+        add_relation_safe(db_genomic_measure.eid,
+                          "related_study",
+                          db_studies[0].eid)
 
 
 def import_rel_platform_4_genomic_measures_and_genomic_platform(
@@ -414,7 +414,7 @@ def import_rel_related_study_4_assessment_and_study(
                                 db_assessments,
                                 db_studies):
     for db_assessment in db_assessments:
-        add_relation_safe(db_genomic_measure.eid,
+        add_relation_safe(db_assessment.eid,
                           "related_study",
                           db_studies[0].eid)
 

@@ -248,15 +248,15 @@ def import_genes_db(store,
                     chr_map):
     genes = import_genes(path_chromosomes_json, path_hg19_ref_gen_mate)
     for gene in genes:
-        if gene['chromosomes'] in chr_map:
-            chr_eid = chr_map[gene['chromosomes']]
-            gene.pop("chromosomes")
+        if gene['chromosome'] in chr_map:
+            chr_eid = chr_map[gene['chromosome']]
+            gene.pop("chromosome")
             gene = store.create_entity('Gene', **gene)
             store.relate(gene.eid,
                          'chromosomes',
                          chr_eid)
         else:
-            print "unknown chromosome %s in gene" % (gene['chromosomes'])
+            print "unknown chromosome %s in gene" % (gene['chromosome'])
     store.flush()
 
 
@@ -415,7 +415,7 @@ def flush_lines_into_db(input_lines,
                 if gene_eids != []:
                     for gene_eid in gene_eids:
                         store.relate(gene_eid,
-                                     'genes',
+                                     'gene',
                                      snp_db.eid)
             if isnp % store_flush_num == 0:
                 delta_time = datetime.datetime.now() - start_time
