@@ -23,6 +23,9 @@ from cubes.brainomics.importers.helpers import (get_image_info,
 class compute_opt:
     snps = "SNPS"
 
+############################################################################
+### Tools ##################################################################
+############################################################################
 
 def read_csv_col(filename, ncol, quote='"', spliter=","):
     """
@@ -66,6 +69,10 @@ def read_csv_col(filename, ncol, quote='"', spliter=","):
                 col_vals[i_line, i] = col_val[i].strip(quote)
             i_line = i_line + 1
     return col_vals
+
+############################################################################
+### RELATION From SNPs to platform  ########################################
+############################################################################
 
 
 def read_snps_human6xxw_quad_v1_h_bed(filename):
@@ -230,6 +237,29 @@ def find_ranges(sorted_sep_points, index_res, point_x):
     return index_res[pos]
 
 
+############################################################################
+### Subjects ###############################################################
+############################################################################
+
+
+def import_genes_db(store,
+                    path_chromosomes_json,
+                    path_hg19_ref_gen_mate,
+                    chr_map):
+    genes = import_genes(path_chromosomes_json, path_hg19_ref_gen_mate)
+    for gene in genes:
+        if gene['chromosomes'] in chr_map:
+            chr_eid = chr_map[gene['chromosomes']]
+            gene.pop("chromosomes")
+            gene = store.create_entity('Gene', **gene)
+            store.relate(gene.eid,
+                         'chromosomes',
+                         chr_eid)
+        else:
+            print "unknown chromosome %s in gene" % (gene['chromosomes'])
+    store.flush()
+
+
 def locate_genes(sorted_sep_points, index_res, snp_end_pos):
     """
     binary search gene
@@ -264,17 +294,6 @@ def import_chromosomes_db(store, path_chromosomes_json):
     chrs = import_chromosomes(path_chromosomes_json)
     for _chr in chrs:
         _chr = store.create_entity('Chromosome', **_chr)
-    store.flush()
-
-
-def import_genes_db(store,
-                    path_chromosomes_json,
-                    path_hg19_ref_gen_mate,
-                    chr_map):
-    genes = import_genes(path_chromosomes_json, path_hg19_ref_gen_mate)
-    for gene in genes:
-        gene['chromosome'] = chr_map[gene['chromosome']]
-        gene = store.create_entity('Gene', **gene)
     store.flush()
 
 
@@ -488,38 +507,6 @@ def import_ncbi_snp_mapper(mapper_config):
     return isnp
 
 
-###############################################################################
-### Genomics entities #########################################################
-###############################################################################
-# XXX These functions may be pushed in helpers, as they may be more general
-def import_genomic_measures(measure_path, genetics_basename):
-    """Import a genomic measures"""
-    g_measures = {}
-    # path to BED / BIM / FAM files
-    bed_path = os.path.join(measure_path, genetics_basename + '.bed')
-    bim_path = os.path.join(measure_path, genetics_basename + '.bim')
-    fam_path = os.path.join(measure_path, genetics_basename + '.fam')
-    # read FAM file as CSV file
-    fam_file = open(fam_path, 'rU')
-    fam_reader = csv.reader(fam_file, delimiter=' ')
-    # one subject per line
-    i = 0
-    for row in fam_reader:
-        print "row =", i
-        i = i + 1
-        subject_id = row[1]
-        genomic_measure = {}
-        genomic_measure['identifier'] = u'%s' % subject_id
-        genomic_measure['type'] = u'SNP'
-        genomic_measure['format'] = u'plink'
-        genomic_measure['filepath'] = unicode(bed_path)
-        genomic_measure['chip_serialnum'] = None
-        genomic_measure['completed'] = True
-        genomic_measure['valid'] = True
-        genomic_measure['platform'] = None
-        g_measures[subject_id] = genomic_measure
-    return g_measures
-
 
 ###############################################################################
 ### MAIN ######################################################################
@@ -559,6 +546,7 @@ if __name__ == '__main__':
     chr_map = get_name_map_eid(session,
                                "Chromosome",
                                "name")
+    print chr_map
     # Import Genes
     if sqlgen_store:
         import_genes_db(store,
