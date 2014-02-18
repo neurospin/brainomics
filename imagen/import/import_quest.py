@@ -58,9 +58,10 @@ QUESTIONS = dict(cnx.cursor().execute('Any I, X WHERE X is Question, X identifie
 QUESTION_POSSIBLE_ANSWERS = dict(cnx.cursor().execute('Any X, A WHERE X is Question, X possible_answers A'))
 
 
-def main(path, cnx)
+def main(path, cnx):
     print path
     print date
+    print 80 * '*'
 
     if os.path.isdir(path):
         for filename in os.listdir(path):
@@ -125,7 +126,7 @@ def insert_questionnaire(filename, cnx):
     print 'questionnaire = ', questionnaire
     print 'version = ', version
     try:
-        req = ("INSERT Questionnaire Q: Q name '%(a)s', "
+        req = ("INSERT Questionnaire Q: Q name '%(questionnaire)s', "
                "Q identifier '%(identifier)s', Q type '%(type)s', "
                "Q version '%(version)s', Q language '%(language)s', "
                "Q note_format 'text/html'"
@@ -135,9 +136,10 @@ def insert_questionnaire(filename, cnx):
                   'version': version,
                   'language': language}
                )
-        #print 'req = ', req
+        print 10 * 'POP'
+        print 'req = ', req
         res = cnx.cursor().execute(req)
-        #print 'res = ', res
+        print 'res = ', res
     except:
         cnx.rollback()
         print 'cannot insert Questionnaire %s' % filename[i+1:i+1+j]
@@ -312,6 +314,8 @@ def insert_questionnaire(filename, cnx):
                               'questionnaire': questionnaire}
                            )
                     question = cnx.cursor().execute(req)
+                    print 'question = %s'% question
+                    #print 'question[0] = %s'% question[0]
                     #print 'question[0][0] = ',question[0][0], 'possible_answers = ', possible_answers
                     QUESTIONS[identifier] = question[0][0]
                     question_eid = question[0][0]
@@ -349,4 +353,4 @@ def insert_questionnaire(filename, cnx):
 
 if __name__ == '__main__':
 
-    main(sys.argv, cnx)
+    main(sys.argv[1], cnx)
