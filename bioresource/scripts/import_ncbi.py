@@ -95,7 +95,7 @@ def read_snps_rsid_genome_wide_snp_6_na33_annot(
                     path_genome_wide_snp_6_na33_annot,
                     pattern="(.*)"):
     import re
-    res_set = read_csv_col(path_genome_wide_snp_6_na33_annot,[0,1])[1:]
+    res_set = read_csv_col(path_genome_wide_snp_6_na33_annot, [0,1])[1:]
     mask = np.array(len(res_set) * [False], bool)
     for i in xrange(len(res_set)):
         # i = 0
@@ -212,8 +212,8 @@ def range_index(ranges):
         higher = erange[1]
         associated_ranges = []
         for arange in ranges:
-            if ((arange[1] >= lower and arange[1] < higher) or \
-               (arange[2] > lower and arange[2] < higher)) or \
+            if ((arange[1] >= lower and arange[1] < higher) or
+               (arange[2] > lower and arange[2] < higher)) or
                (arange[1] <= lower and arange[2] >= higher):
                 associated_ranges.append(arange[0])
         index_res.append(associated_ranges)
