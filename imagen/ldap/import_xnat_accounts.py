@@ -2,9 +2,7 @@
 # -*- coding: utf-8 -*-
 
 host = 'ldap://132.166.140.10'
-host = 'ldap://imagen2i.intra.cea.fr'
 BASE = 'dc=imagen2,dc=cea,dc=fr'
-BASE = 'dc=example,dc=com'
 
 
 import csv
@@ -136,7 +134,7 @@ def add_to_ldap(ldapobject, base, accounts):
     for account in accounts:
         uid += 1
         # add account to the restricted "partners" group
-        dn = 'cn=partners,ou=Group,' + base
+        dn = 'cn=partners,ou=Groups,' + base
         attributes = [(ldap.MOD_ADD, 'memberUid', account['login'])]
         ldapobject.modify_s(dn, attributes)
         # create account
