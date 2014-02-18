@@ -105,6 +105,8 @@ Any X where X is Gene
 Any X where X is Chromosome
 Any X where X is GenomicPlatform
 Any X, Y where X is Gene, Y is Chromosome, X chromosomes Y
-
+Any X, Y where X is Snp, Y is Chromosome, X chromosome Y
+Any X, Y where X is Snp, Y is Gene, X gene Y
+Any X, Y where X is Snp, Y is GenomicPlatform, Y related_snps X
 ```
 
