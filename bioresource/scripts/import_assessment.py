@@ -308,12 +308,11 @@ def get_studies(genomic_measures):
 
 
 def import_studies(genomic_measures):
+    db_study = {"name": u"GIMAGEN"}
+    db_study = create_entity_safe("Study",
+                                   **study)
     db_studies = []
-    studies = get_studies(genomic_measures)
-    for study in studies:
-        db_study = create_entity_safe("Study",
-                                      **study)
-        db_studies.append(db_study)
+    db_studies.append(db_study)
     return db_studies
 
 ############################################################################
@@ -337,11 +336,9 @@ def import_rel_related_study_4_genomic_measures_and_studies(
     for db_genomic_measure in db_genomic_measures:
         db_genomic_measure_name = get_filename_no_extension(
                                     db_genomic_measure.filepath)
-        for db_study in db_studies:
-            if db_study.name == db_genomic_measure_name:
                 add_relation_safe(db_genomic_measure.eid,
                                   "related_study",
-                                  db_study.eid)
+                                  db_studies[0].eid)
 
 
 def import_rel_platform_4_genomic_measures_and_genomic_platform(
@@ -416,10 +413,10 @@ def import_rel_concerns_4_genomic_measure_and_subjects(
 def import_rel_related_study_4_assessment_and_study(
                                 db_assessments,
                                 db_studies):
-    import_rel_one_vs_one(db_assessments, "identifier",
-                          db_studies, "name",
-                          "related_study")
-
+    for db_assessment in db_assessments:
+        add_relation_safe(db_genomic_measure.eid,
+                          "related_study",
+                          db_studies[0].eid)
 
 if __name__ == "__main__":
     root_path = "/neurospin/brainomics/2014_bioresource"
