@@ -15,6 +15,7 @@ import csv
 import dicom
 import locale
 import tarfile
+import traceback
 from cubicweb import dbapi
 
 psc_center_file = '/neurospin/imagen/src/scripts/psc_tools/psc2_centre.csv'
@@ -81,7 +82,8 @@ def insert_dicomtarball(path, cnx, subject, series):
             cw_content = None
             print 'Could not find scan content type in dicom header'
         if (0x0028,0x0030) in dataset and (0x0018,0x0050) in dataset:
-            resolution = dataset[0x0028,0x0030].value.split('\\')
+            print 'voxelres %s'%dataset[0x0028,0x0030].value
+            resolution = dataset[0x0028,0x0030].value
             cw_voxelres_x = resolution[0]
             cw_voxelres_y = resolution[1]
             cw_voxelres_z = dataset[0x0018,0x0050].value
@@ -213,7 +215,7 @@ def insert_dicomtarball(path, cnx, subject, series):
            "D name N, D manufacturer '%(manufacturer)s', D model '%(model)s'"
            % {'manufacturer': cw_scanner_manufacturer, 'model': cw_scanner_model}
            )
-    devices = dict(c.cursor().execute(req))
+    devices = dict(cnx.cursor().execute(req))
     device = None
     if cw_scanner_text in devices:
         device = devices[cw_scanner_text]
@@ -237,19 +239,19 @@ def insert_dicomtarball(path, cnx, subject, series):
     try:
         req = "INSERT MRIData M, Scan S: M sequence '%(a)s'" % {'a': cw_scanSequence}
         if cw_voxelres_x is not None:
-            req += ', M voxel_res_x ' + cw_voxelres_x
+            req += ', M voxel_res_x %s' % cw_voxelres_x
         if cw_voxelres_y is not None:
-            req += ', M voxel_res_y ' + cw_voxelres_y
+            req += ', M voxel_res_y %s' % cw_voxelres_y
         if cw_voxelres_z is not None:
-            req += ', M voxel_res_z ' % cw_voxelres_z
+            req += ', M voxel_res_z %s' % cw_voxelres_z
         if cw_fov_x is not None:
-            req += ', M fov_x ' + cw_fov_x
+            req += ', M fov_x %s' % cw_fov_x
         if cw_fov_y is not None:
-            req += ', M fov_x ' + cw_fov_y
+            req += ', M fov_x %s' % cw_fov_y
         if cw_tr is not None:
-            req += ', M tr ' + cw_tr
+            req += ', M tr %s' % cw_tr
         if cw_te is not None:
-            req += ', M te ' + cw_te
+            req += ', M te %s' % cw_te
         #print 'req = ', req
         req += (", S has_data M, S identifier '%(d)s_%(a)s', "
                 "S label '%(d)s', S type '%(b)s', S format 'tar.gz', "
@@ -305,7 +307,7 @@ def insert_dicomtarball(path, cnx, subject, series):
                                    % {'a': subject, 'b': subject, 'c': series})
         print 'res = ', res
     except Exception as e:
-        c.rollback()
+        cnx.rollback()
         print 'Cannot insert MRIData or Scan'
         e_t, e_v, e_tb = sys.exc_info()
         print 'Exc', e_t, e_v, e_tb
