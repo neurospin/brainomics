@@ -95,3 +95,16 @@ $ split -l 1964281 /neurospin/brainomics/2014_bioresource/data/snps/cleaned_snp1
 ```
 $ source brainomics/bioresource/scripts/import_ncbi_part2.sh
 ```
+
+
+Test queries
+------------
+
+```
+Any X where X is Gene
+Any X where X is Chromosome
+Any X where X is GenomicPlatform
+Any X, Y where X is Gene, Y is Chromosome, X chromosomes Y
+
+```
+
