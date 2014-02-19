@@ -225,8 +225,8 @@ def range_index(ranges):
         higher = erange[1]
         associated_ranges = []
         for arange in ranges:
-            if ((arange[1] >= lower and arange[1] < higher) or
-               (arange[2] > lower and arange[2] < higher)) or
+            if ((arange[1] >= lower and arange[1] < higher) or\
+               (arange[2] > lower and arange[2] < higher)) or\
                (arange[1] <= lower and arange[2] >= higher):
                 associated_ranges.append(arange[0])
         index_res.append(associated_ranges)
