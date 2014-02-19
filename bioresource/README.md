@@ -98,8 +98,9 @@ $ split -l 1964281 /neurospin/brainomics/2014_bioresource/data/snps/cleaned_snp1
 $ source brainomics/bioresource/scripts/import_ncbi_part2.sh
 ```
 
+__Step 5 : Import other assessments__
 
-4: Import all the other GenomicMeasures, Assessments, Subjects, Study ("GIMAGEN"), Center ("CNG")
+Import GenomicMeasures, Assessments, Subjects, Study ("GIMAGEN"), Center ("CNG")
 
 
 ```
