@@ -18,7 +18,7 @@ hg clone http://hg.logilab.org/review/cubes/medicalexp
 
 Since the newest version is not stable, you need older version instead.
 
-I have tested my scripts on those versions:
+I have tested my scripts on those versions. You should use at least newer version than below (the schema always change, the scripts in this documents probably have to be updated manually):  
 
 ```
 * bootstrap     cubicweb-bootstrap-centos-version-0.4.0-1:cubicweb-bootstrap-debian-version-0.4.0-1:cubicweb-bootstrap-version-0.4.0
