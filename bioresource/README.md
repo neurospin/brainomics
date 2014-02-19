@@ -44,6 +44,8 @@ Install bioresource brainomics/bioresource/cubes/bioresource on the machine.
 How to import data
 ------------------
 
+There is a instance name in all the bash scripts (*.sh). You should change this name according to your machine configuration.
+
 __Step 1: Clean and Create Database for bioresource__
 
 ```
@@ -97,6 +99,14 @@ $ source brainomics/bioresource/scripts/import_ncbi_part2.sh
 ```
 
 
+4: Import all the other GenomicMeasures, Assessments, Subjects, Study ("GIMAGEN"), Center ("CNG")
+
+
+```
+$ cubicweb-ctl shell inst_bioresource import_assessment.py
+```
+
+
 Test queries
 ------------
 
@@ -108,5 +118,10 @@ Any X, Y where X is Gene, Y is Chromosome, X chromosomes Y
 Any X, Y where X is Snp, Y is Chromosome, X chromosome Y
 Any X, Y where X is Snp, Y is Gene, X gene Y
 Any X, Y where X is Snp, Y is GenomicPlatform, Y related_snps X
+
+Any X, Y where X is Subject, Y is Assessment, X concerned_by Y
+Any X, Y where X is Assessment, Y is GenomicMeasure, X generates Y
+Any X, Y where X is Center, Y is Assessment, X holds Y
+Any X, Y where X is GenomicMeasure, Y is GenomicPlatform, X platform Y
 ```
 
