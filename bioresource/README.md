@@ -18,7 +18,7 @@ hg clone http://hg.logilab.org/review/cubes/medicalexp
 
 Since the newest version is not stable, you need older version instead.
 
-I have tested my scripts on those versions:
+I have tested my scripts on those versions. You should use at least newer version than below (the schema always change, the scripts in this documents probably have to be updated manually):  
 
 ```
 * bootstrap     cubicweb-bootstrap-centos-version-0.4.0-1:cubicweb-bootstrap-debian-version-0.4.0-1:cubicweb-bootstrap-version-0.4.0
@@ -43,6 +43,8 @@ Install bioresource brainomics/bioresource/cubes/bioresource on the machine.
 
 How to import data
 ------------------
+
+There is a instance name in all the bash scripts (*.sh). You should change this name according to your machine configuration.
 
 __Step 1: Clean and Create Database for bioresource__
 
@@ -96,6 +98,15 @@ $ split -l 1964281 /neurospin/brainomics/2014_bioresource/data/snps/cleaned_snp1
 $ source brainomics/bioresource/scripts/import_ncbi_part2.sh
 ```
 
+__Step 5 : Import other assessments__
+
+Import GenomicMeasures, Assessments, Subjects, Study ("GIMAGEN"), Center ("CNG")
+
+
+```
+$ cubicweb-ctl shell inst_bioresource import_assessment.py
+```
+
 
 Test queries
 ------------
@@ -108,5 +119,10 @@ Any X, Y where X is Gene, Y is Chromosome, X chromosomes Y
 Any X, Y where X is Snp, Y is Chromosome, X chromosome Y
 Any X, Y where X is Snp, Y is Gene, X gene Y
 Any X, Y where X is Snp, Y is GenomicPlatform, Y related_snps X
+
+Any X, Y where X is Subject, Y is Assessment, X concerned_by Y
+Any X, Y where X is Assessment, Y is GenomicMeasure, X generates Y
+Any X, Y where X is Center, Y is Assessment, X holds Y
+Any X, Y where X is GenomicMeasure, Y is GenomicPlatform, X platform Y
 ```
 
