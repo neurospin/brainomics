@@ -44,7 +44,7 @@ Install bioresource brainomics/bioresource/cubes/bioresource on the machine.
 How to import data
 ------------------
 
-There is a instance name in all the bash scripts (*.sh). You should change this name according to your machine configuration.
+There is an instance name in all the bash scripts (*.sh). You should change this name according to your machine configuration.
 
 __Step 1: Clean and Create Database for bioresource__
 
