@@ -27,6 +27,19 @@ class compute_opt:
 ### Tools ##################################################################
 ############################################################################
 
+def create_entity_safe(entity_name, **entity):
+    db_entity = None
+    res = session.find_entities(entity_name, **entity)
+    is_existe = False
+    for i in res:
+        is_existe = True
+        db_entity = i
+        break
+    if not is_existe:
+        db_entity = session.create_entity(entity_name, **entity)
+    return db_entity
+
+
 def read_csv_col(filename, ncol, quote='"', spliter=","):
     """
     Example
@@ -251,7 +264,7 @@ def import_genes_db(store,
         if gene['chromosome'] in chr_map:
             chr_eid = chr_map[gene['chromosome']]
             gene.pop("chromosome")
-            gene = store.create_entity('Gene', **gene)
+            gene = create_entity_safe('Gene', **gene)
             store.relate(gene.eid,
                          'chromosomes',
                          chr_eid)
@@ -361,6 +374,9 @@ def extract_chr_name(chromosome_name):
     '''
     pattern = u'chr(.*?)_(.*)'
     res = re.search(pattern, chromosome_name)
+    if not res:
+        print "chromosome_name=", chromosome_name
+        raise ValueError("Unknown chromosome %s" % chromosome_name)
     ch_name = "chr" + res.groups()[0]
     return ch_name
 
@@ -414,9 +430,9 @@ def flush_lines_into_db(input_lines,
                                                  start_locate_genes_time
                 if gene_eids != []:
                     for gene_eid in gene_eids:
-                        store.relate(gene_eid,
+                        store.relate(snp_db.eid,
                                      'gene',
-                                     snp_db.eid)
+                                     gene_eid)
             if isnp % store_flush_num == 0:
                 delta_time = datetime.datetime.now() - start_time
                 minutes = float(delta_time.seconds) / float(60)
@@ -565,8 +581,8 @@ if __name__ == '__main__':
     platforms.append(platform)
     if sqlgen_store:
         for platform in platforms:
-            platform_db = store.create_entity('GenomicPlatform',
-                                              **platform)
+            platform_db = create_entity_safe('GenomicPlatform',
+                                                **platform)
         store.flush()
     platform_eids = get_name_map_eid(session, "GenomicPlatform", "name")
     platform_snps = {}
