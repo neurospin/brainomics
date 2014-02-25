@@ -42,13 +42,7 @@ rsync -rlt \
 # FU2 - processed
 rsync -rlt \
     /neurospin/imagen/FU2/processed/nifti \
-    /chroot/data/FU2/processed/
-
-rsync -rlt \
     /neurospin/imagen/FU2/processed/spmpreproc \
-    ${ROOT_TARGET}/FU2/processed/
-
-rsync -rlt \
     /neurospin/imagen/FU2/processed/spmstatsintra \
     ${ROOT_TARGET}/FU2/processed/
 
@@ -56,13 +50,7 @@ rsync -rlt \
 # FU2 - processed_ftp
 rsync -rlt \
     /neurospin/imagen/FU2/processed_ftp/nifti \
-    ${ROOT_TARGET}/FU2/processed/
-
-rsync -rlt \
     /neurospin/imagen/FU2/processed_ftp/spmpreproc \
-    ${ROOT_TARGET}/FU2/processed/
-
-rsync -rlt \
     /neurospin/imagen/FU2/processed_ftp/spmstatsintra \
     ${ROOT_TARGET}/FU2/processed/
 
