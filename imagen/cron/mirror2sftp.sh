@@ -33,12 +33,6 @@ rsync -rlt \
     ${ROOT_TARGET}/BL_FU1/RAW/PSC2/
 
 
-# FU1 - processed
-rsync -rlt \
-    /neurospin/imagen/processed/spmstatsintra \
-    ${ROOT_TARGET}/BL_FU1/processed/
-
-
 # FU2 - processed
 rsync -rlt \
     /neurospin/imagen/FU2/processed/nifti \
