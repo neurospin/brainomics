@@ -6,10 +6,16 @@ Source code used in the Brainomics/Imagen subproject.
 CubicWeb cubes specific to this Brainomics/Imagen project.
 
 ### export
-Script to export imaging + questionnaire baseline/FU1 metadata from the [XNAT server](https://imagen.cea.fr/) of the [Imagen project](http://www.imagen-europe.com/).
+Script to export imaging + questionnaire baseline/FU1 metadata from the
+[XNAT server](https://imagen.cea.fr/) of
+the [Imagen project](http://www.imagen-europe.com/).
 
 ### import
 Script to import Imagen FU2 data from /neurospin/imagen/FU2.
 
-### imagen2i.intra.cea.fr
-Imagen V2 test server, on the inner network of CEA.
+### ldap
+Machinery to move accounts from the [XNAT server](https://imagen.cea.fr/)
+to LDAP on the Imagen V2 server.
+
+### imagen2.partenaires.cea.fr
+Imagen V2 server machinery.
