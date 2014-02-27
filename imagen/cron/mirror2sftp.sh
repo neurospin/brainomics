@@ -17,20 +17,18 @@ ROOT_TARGET='/chroot/data'
 # 
 
 
-# QC - needs no anonymization
-rsync -rlt \
-    /neurospin/imagen/RAW/PSC2/QC \
-    ${ROOT_TARGET}/BL_FU1/RAW/PSC2/
-
+# FU2 - QC
+# needs no anonymization
 rsync -rlt \
     /neurospin/imagen/FU2/RAW/PSC2/QC \
     ${ROOT_TARGET}/FU2/RAW/PSC2/
 
 
-# Psytools - still anonymized by Scito
+# Psytools - FU2 data only!
+# still anonymized by Scito
 rsync -rlt \
-    /neurospin/imagen/RAW/PSC2/psytools \
-    ${ROOT_TARGET}/BL_FU1/RAW/PSC2/
+    /neurospin/imagen/RAW/PSC2/psytools/*FU2*.csv \
+    ${ROOT_TARGET}/FU2/RAW/PSC2/psytools/
 
 
 # FU2 - processed
