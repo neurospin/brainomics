@@ -1,4 +1,5 @@
 import sys
+from numpy import unique
 
 sys.path.append('/home/vf140245/gits/bioresources/python')
 import bioresourcesdb
@@ -34,12 +35,29 @@ for gene in gene_list:
     snps[gene] = BioresourcesDB.rql(req)
 
 # confront this list to the availabe data
-req = ('Any GM, N '
-        'WHERE GM is GenomicMeasure, GM identifier N')
-pl = BioresourcesDB.rql(req)
-pl
-req = ('Any G '
-        'WHERE G is GenomicPlatform')
-pl = BioresourcesDB.rql(req)
+req = ('Any GM, GP, I '
+        'WHERE GM is GenomicMeasure, GM platform GP, GP name I')
+req_ret = BioresourcesDB.rql(req)
+gpl_eid = unique([i[1] for i in req_ret if i[2].startswith('Ill')]).tolist()
+platform = dict()
+for eid in gpl_eid:
+    req=('Any N ' 
+         'WHERE GP is GenomicPlatform, '
+                'GP eid %(eid)d , GP name N'
+        %{'eid':eid})
+    name = BioresourcesDB.rql(req)[0][0]
+    req=('Any SN ' 
+         'WHERE GP is GenomicPlatform, '
+                'GP eid %(eid)d , GP related_snps S, S rs_id SN'
+        %{'eid':eid})
+    req_ret = [i[0] for i in BioresourcesDB.rql(req)]
+    platform[name] = req_ret
+print "Platform stats"
+for i in platform:
+    print "  %s Num SNPs %d"%(i,len(platform[i]))
+s = set(platform[platform.keys()[0]])
+for i in platform.keys()[1:]:
+    s = s.intersection(set(platform[i]))
+print "intersect %d"%len(s)
 
 
