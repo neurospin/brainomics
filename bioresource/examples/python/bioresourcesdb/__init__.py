@@ -6,15 +6,16 @@ import urllib
 import json
 
 
+_BIORESOURCE_DB_URL = 'http://is222241.intra.cea.fr:8080'
+_EXPORT_TYPE = 'json'
+
+
 class bioresourcedb_base(object):
     def studies(self):
         return [i[1] for i in self.rql('Any S,N  WHERE S is Study, S name N')]
 
 
 class bioresourcesdb_HTTP(bioresourcedb_base):
-    _BIORESOURCE_DB_URL = 'http://is222241.intra.cea.fr:8080'
-    _EXPORT_TYPE = 'json'
-
     def __init__(self, login=None, password=None, url=None):
         if url is not None:
             self.url = url
