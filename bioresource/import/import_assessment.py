@@ -43,7 +43,15 @@ def get_filepath_no_extension(filepath):
 
 def create_entity_safe(entity_name, **entity):
     db_entity = None
-    res = session.find_entities(entity_name, **entity)
+    #Patch for Subject who should be uniquely identified by identifier
+    res = []
+    if entity_name == 'Subject':
+        subject = dict()
+        subject['identifier'] = entity['identifier']
+        res = session.find_entities(entity_name, **subject)
+    else:
+        res = session.find_entities(entity_name, **entity)
+    #End of patch
     is_existe = False
     for i in res:
         is_existe = True
@@ -108,7 +116,7 @@ def get_subjects_fam(filename):
         for line in infile:
             subject = dict()
             words = line.split(" ")
-            subject["identifier"] = unicode(words[0])
+            subject["identifier"] = unicode('IMAGEN_%s' % words[0])
             gender_code = words[4]
             if gender_code in gender_map:
                 subject["gender"] = unicode(gender_map[gender_code])
