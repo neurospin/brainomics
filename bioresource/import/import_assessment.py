@@ -273,6 +273,7 @@ def get_genomic_measures(all_fam_files):
         filename = filepath.split("/")
         filename = filename[len(filename) - 1]
         measure = {}
+        measure["identifier"] = unicode(filename)
         measure["filepath"] = unicode(filepath)
         measure["type"] = u"snps"
         measure["format"] = u"plink"
