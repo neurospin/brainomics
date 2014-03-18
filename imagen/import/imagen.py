@@ -702,7 +702,7 @@ def import_neuroimaging(store, tree, experiment, study_eid, subject_eid, center_
         extres_eid = build_csv_external_resource(store, _id, all_scores, study_eid)
         if extres_eid:
             store.relate(assessment_eid, 'external_resources', extres_eid)
-            store.relate(extres_eid, 'related_study', study_eid)
+            store.relate(extres_eid, 'related_study', study_eid,  subjtype='ExternalResource')
 
     return assessment_eid
 
@@ -735,7 +735,7 @@ def import_behavioural(store, tree, experiment, study_eid, subject_eid, center_e
                                              study_eid)
     if extres_eid:
         store.relate(behavioural_run_eid, 'external_resources', extres_eid)
-        store.relate(extres_eid, 'related_study', study_eid)
+        store.relate(extres_eid, 'related_study', study_eid, subjtype='ExternalResource')
 
     # Files
     for extres_infos in iterate_external_resources(store, experiment, study_eid):
@@ -833,7 +833,7 @@ def build_psytool_experiment_run(store, tree, experiment, etype_run, subject_eid
                                  user_ident=user_ident,
                                  concerns=subject_eid,
                                  instance_of=experiment_eid)
-    store.relate(entity.eid, 'related_study', study_eid)
+    store.relate(entity.eid, 'related_study', study_eid, subjtype=etype_run)
     return entity.eid, age
 
 
