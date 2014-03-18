@@ -420,6 +420,11 @@ def build_scan_map(tree, scan, experiment, psc):
     identifier = file_uri
     index = identifier.find(psc)
     identifier = identifier[index:]
+    l = len(identifier)
+    ll = len(scan_type)
+    if (l+ll)>63:
+	i = 63-ll
+        identifier = identifier[-i:]
     attributes = {
         'identifier': '%(a)s_%(b)s' % {'a': scan_type, 'b': identifier},  # required attribute
         #'identifier': identifier,
@@ -478,6 +483,11 @@ def build_resource_scan_infos(resource, assessor, psc):
     identifier = format_filepath(resource.get('URI'))
     index = identifier.find(psc)
     identifier = identifier[index:]
+    l = len(identifier)
+    ll = len(unicode(assessor.get('%stype' % XSI)))
+    if (l+ll)>63:
+	i = 63-ll
+        identifier = identifier[-i:]
     return {'format': unicode(resource.get('format')),
             'identifier': '%(a)s_%(b)s' % {'a': unicode(assessor.get('%stype' % XSI)), 'b': identifier},
             #'identifier': identifier,
