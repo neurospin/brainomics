@@ -5,8 +5,9 @@ import sys
 from numpy import unique, vstack
 from datetime import datetime
 
-sys.path.append('/home/vf140245/gits/bioresources/python')
+sys.path.append('/home/vf140245/gits/brainomics/bioresource/examples/python')
 import bioresourcesdb
+#https://github.com/VincentFrouin/igutils.git
 from bioresourcesdb import BioresourcesDB
 sys.path.append('/home/vf140245/gits/igutils')
 import igutils as ig
@@ -132,8 +133,9 @@ for eid in gm_dir:
     snp_data[eid] = snp_data[eid][:,grandCommonSnpIndex[eid]]
 
 # je sais pas faire en boucle
-grand_snp_data = vstack((snp_data[127785], snp_data[127786], snp_data[127787]))
-grand_subject  = genemeasureSubj[127785] + genemeasureSubj[127786]  + genemeasureSubj[127787] 
+tmp = tuple(gm_dir.keys())
+grand_snp_data = vstack((snp_data[tmp[0]], snp_data[tmp[1]], snp_data[tmp[2]]))
+grand_subject  = genemeasureSubj[tmp[0]] + genemeasureSubj[tmp[1]]  + genemeasureSubj[tmp[2]] 
 gran_chip = []
 for eid in gm_dir:
     gran_chip += [gm_dir[eid]]*len(genemeasureSubj[eid])
