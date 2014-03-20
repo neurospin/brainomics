@@ -8,7 +8,6 @@ from datetime import datetime
 
 sys.path.append(os.path.join(os.path.dirname(__file__),
                              os.pardir, 'python'))
-import bioresourcesdb
 from bioresourcesdb import BioresourcesDB
 
 #https://github.com/VincentFrouin/igutils.git
@@ -36,11 +35,27 @@ BioresourcesDB.studies()
 start_time = datetime.now()
 
 def snps_in_gene(database, gene):
-    req = ("Any G, B, E, RS WHERE G name '%(gene)s', "
+    """Return all SNPs associated to a gene.
+
+    Parameters
+    ----------
+    database : ?
+        Bioresource database.
+
+    gene : unicode
+        Gene name.
+
+    Returns
+    -------
+    array_like
+        List of rsIDs in gene.
+
+    """
+    req = ("Any RS WHERE G name '%(gene)s', "
            "G start_position B, G stop_position E, "
            "S is Snp, S rs_id RS, S position SP HAVING SP > B, SP < E"
            % {'gene': gene})
-    return database.rql(req)
+    return [i[0] for i in database.rql(req)]
 
 
 genes = ('SERPINB1', 'KIF1B', 'PER3', 'UBR4')
@@ -49,17 +64,55 @@ for gene in genes:
     snps[gene] = snps_in_gene(BioresourcesDB, gene)
 
 
-# platforms with associated GenomicMeasure
-req = ("DISTINCT Any GP, N WHERE GM is GenomicMeasure, GM platform GP, GP name N")
-platforms_with_measures = BioresourcesDB.rql(req)
-# SNPs per platform
+def genomic_measures(database):
+    """Return all genomic measures in database.
+
+    Parameters
+    ----------
+    database : ?
+        Bioresource database.
+
+    Returns
+    -------
+    dict
+        Dictionary of genomic measures with measure eid as keys
+        and plaform name as values.
+
+    """
+    req = ("Any GM, N WHERE GM is GenomicMeasure, "
+           "GM platform GP, GP name N")
+    return {m[0]: m[1] for m in database.rql(req)}
+
+
+def snps_in_platform(database, platform):
+    """Return all SNPs measured by a platform.
+
+    Parameters
+    ----------
+    database : ?
+        Bioresource database.
+
+    platform : unicode
+        Platform name.
+
+    Returns
+    -------
+    array_like
+        List of rsIDs measured by platform.
+
+    """
+    req = ("Any RS WHERE GP is GenomicPlatform, "
+           "GP name '%(name)s', GP related_snps S, S rs_id RS"
+           % {'name': platform})
+    return [i[0] for i in database.rql(req)]
+
+
+# SNPs for platforms associated GenomicMeasure
+measures = genomic_measures(BioresourcesDB)
 platform = {}
-for p in platforms_with_measures:
-    if p[1].startswith('Illu'):
-        req = ("Any RS WHERE GP is GenomicPlatform, "
-               "GP eid '%(eid)s', GP related_snps S, S rs_id RS"
-               % {'eid': p[0]})
-        platform[p[1]] = [i[0] for i in BioresourcesDB.rql(req)]
+for p in set(measures.values()):
+    if p.startswith('Illu'):
+        platform[p] = snps_in_platform(BioresourcesDB, p)
 
 print 'Platform stats'
 intersection = None
@@ -69,14 +122,14 @@ for name, snps in platform.iteritems():
         intersection &= set(snps)
     else:
         intersection = set(snps)
-print 'intersection: %d SNPs' % len(intersection)
+print '  intersection: %d SNPs' % len(intersection)
 
 
 # consider the subjects
 #
-genemeasureSubj = dict()
-genemeasureFP = dict()
-for eid in gm_dir.keys():
+genemeasureSubj = {}
+genemeasureFP = {}
+for eid in measures.keys():
     req =('Any SN WHERE S is Subject, S identifier SN, '
           'S concerned_by AS, AS generates GM, GM eid %(eid)d'
          %{'eid':eid})
@@ -85,20 +138,20 @@ for eid in gm_dir.keys():
          %{'eid':eid})    
     genemeasureFP[eid] = BioresourcesDB.rql(req)[0][0]
 
-base_subject = dict()
-for eid in gm_dir:                                  #eid des genomic measures
+base_subject = {}
+for eid in measures.keys():
     base_subject[eid] = genemeasureSubj[eid]
 
-# focus on gene URB4
+# focus on gene UBR4
 # snps present sur la puce (doit lever les snp qui auraient disparus!!)
 #
-urb = dict()
-urb[u'Illu_660'] = set([i[3] for i in snps['UBR4']]).intersection(set(platform[u'Illu_660']))
-urb[u'Illu_610'] = set([i[3] for i in snps['UBR4']]).intersection(set(platform[u'Illu_610']))
-print "gene ubr4 sur puce Ill660", len(urb[u'Illu_660'])
-print "gene ubr4 sur puce Ill610", len(urb[u'Illu_610'])
+snps_in_ubr4 = snps_in_gene(BioresourcesDB, 'UBR4')
+ubr4 = {}
+for name, snps in platform.iteritems():
+    ubr4[name] = set(snps_in_ubr4) & set(platform[name])
+    print 'gene UBR4 sur puce %s: %d SNPs' % (name, len(ubr4[name]))
 
-print 'Request on a few gene: ', datetime.now() - start_time
+print 'Request on a few genes: ', datetime.now() - start_time
 
 start_time = datetime.now() 
 
