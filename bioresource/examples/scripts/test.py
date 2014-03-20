@@ -1,19 +1,22 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+import os
 import sys
 from numpy import unique, vstack
 from datetime import datetime
 
-sys.path.append('/home/vf140245/gits/brainomics/bioresource/examples/python')
+sys.path.append(os.path.join(os.path.dirname(__file__),
+                             os.pardir, 'python')
 import bioresourcesdb
-#https://github.com/VincentFrouin/igutils.git
 from bioresourcesdb import BioresourcesDB
+
+#https://github.com/VincentFrouin/igutils.git
 sys.path.append('/home/vf140245/gits/igutils')
 import igutils as ig
 
 
-BioresourcesDB.login('admin','admin')
+BioresourcesDB.login('admin', 'admin')
 BioresourcesDB.studies()
 
 #a = BioresourcesDB.rql('Any S,N  WHERE S is Study, S name N')
@@ -30,46 +33,44 @@ BioresourcesDB.studies()
 # get the snps availables reference 1000G hg19 dbSNP139
 # this is the reference snps available
 
-start_time =  datetime.now()
+start_time = datetime.now()
 
-gene_list = ['SERPINB1', 'KIF1B', 'PER3', 'UBR4']
-snps = dict()
-for gene in gene_list:
-    req = ('Any G,B,E,SN '
-           'WHERE G name "%(g)s", G start_position B, '
-                 'G stop_position E, S is Snp,  S rs_id SN, '
-                 'S position SP HAVING SP > B, SP < E'
-          %{'g':gene})
-    snps[gene] = BioresourcesDB.rql(req)
+def snps_in_gene(database, gene):
+    req = ("Any G, B, E, RS WHERE G name '%(gene)s', "
+           "G start_position B, G stop_position E, "
+           "S is Snp, S rs_id RS, S position SP HAVING SP > B, SP < E"
+           % {'gene': gene})
+    return database.rql(req)
 
-# confront this list to the availabe data
-req = ('Any GM, GP, I '
-        'WHERE GM is GenomicMeasure, GM platform GP, GP name I')
-req_ret = BioresourcesDB.rql(req)
-gm_dir = dict()
-for i in req_ret:
-    gm_dir[i[0]] = i[2]
-gpl_eid = unique([i[1] for i in req_ret if i[2].startswith('Ill')]).tolist()
-platform = dict()
-for eid in gpl_eid:
-    req=('Any N ' 
-         'WHERE GP is GenomicPlatform, '
-                'GP eid %(eid)d , GP name N'
-        %{'eid':eid})
-    name = BioresourcesDB.rql(req)[0][0]
-    req=('Any SN ' 
-         'WHERE GP is GenomicPlatform, '
-                'GP eid %(eid)d , GP related_snps S, S rs_id SN'
-        %{'eid':eid})
-    req_ret = [i[0] for i in BioresourcesDB.rql(req)]
-    platform[name] = req_ret
-print "Platform stats"
-for i in platform:
-    print "  %s Num SNPs %d"%(i,len(platform[i]))
-s = set(platform[platform.keys()[0]])
-for i in platform.keys()[1:]:
-    s = s.intersection(set(platform[i]))
-print "intersect %d"%len(s)
+
+genes = ('SERPINB1', 'KIF1B', 'PER3', 'UBR4')
+snps = {}
+for gene in genes:
+    snps[gene] = snps_in_gene(BioresourcesDB, gene)
+
+
+# platforms with associated GenomicMeasure
+req = ("DISTINCT Any GP, N WHERE GM is GenomicMeasure, GM platform GP, GP name N")
+platforms_with_measures = BioresourcesDB.rql(req)
+# SNPs per platform
+platform = {}
+for p in platforms_with_measures:
+    if p[1].startswith('Illu'):
+        req = ("Any RS WHERE GP is GenomicPlatform, "
+               "GP eid '%(eid)s', GP related_snps S, S rs_id RS"
+               % {'eid': p[0]})
+        platform[p[1]] = [i[0] for i in BioresourcesDB.rql(req)]
+
+print 'Platform stats'
+intersection = None
+for name, snps in platform.iteritems():
+    print '  %s: %d SNPs' % (name, len(snps))
+    if intersection:
+        intersection &= set(snps)
+    else:
+        intersection = set(snps)
+print 'intersection: %d SNPs' % len(intersection)
+
 
 # consider the subjects
 #
