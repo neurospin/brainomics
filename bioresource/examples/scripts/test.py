@@ -21,18 +21,19 @@ BioresourcesDB.studies()
 #a = BioresourcesDB.rql('Any S,N  WHERE S is Study, S name N')
 #gene='KIF1B'
 #req = 'Any G,B,E,SN WHERE G name "%(g)s", G start_position B, G stop_position E, S is Snp,  S rs_id SN ,S position SP HAVING SP > B, SP < E'%{'g':gene}
-#a = BioresourcesDB.rql(req)          
- 
- 
+#a = BioresourcesDB.rql(req)
+
+
 #gene_list = [
 #'CFB','S1PR4','DLGAP2','FBXL14','CDK7','LY6G6C','LY6G6E','LPCAT1',
 #'C16orf59','SYT8','LOC728613','SFTA2','FKBP1A','LOC100508120',
-#'UBOX5-AS1','HAGH','PCSK4','HN1L','GUSBP3','CSNK1G2','SERPINB1'] 
+#'UBOX5-AS1','HAGH','PCSK4','HN1L','GUSBP3','CSNK1G2','SERPINB1']
 
 # get the snps availables reference 1000G hg19 dbSNP139
 # this is the reference snps available
 
 start_time = datetime.now()
+
 
 def snps_in_gene(database, gene):
     """Return all SNPs associated to a gene.
@@ -130,12 +131,12 @@ print '  intersection: %d SNPs' % len(intersection)
 genemeasureSubj = {}
 genemeasureFP = {}
 for eid in measures.keys():
-    req =('Any SN WHERE S is Subject, S identifier SN, '
-          'S concerned_by AS, AS generates GM, GM eid %(eid)d'
-         %{'eid':eid})
+    req = ('Any SN WHERE S is Subject, S identifier SN, '
+           'S concerned_by AS, AS generates GM, GM eid %(eid)d'
+           % {'eid': eid})
     genemeasureSubj[eid] = [i[0]  for i in BioresourcesDB.rql(req)]
-    req =('Any FP WHERE GM  eid %(eid)d, GM filepath FP'
-         %{'eid':eid})    
+    req = ('Any FP WHERE GM  eid %(eid)d, GM filepath FP'
+           % {'eid': eid})
     genemeasureFP[eid] = BioresourcesDB.rql(req)[0][0]
 
 base_subject = {}
@@ -153,16 +154,16 @@ for name, snps in platform.iteritems():
 
 print 'Request on a few genes: ', datetime.now() - start_time
 
-start_time = datetime.now() 
+start_time = datetime.now()
 
-snp_data=dict()
-genotypeCommonSnp = dict()
-for eid in gm_dir:
+snp_data = {}
+genotypeCommonSnp = {}
+for eid in measures.keys():
     genotype = ig.Geno(genemeasureFP[eid])
     genotypeSnp = genotype.snpList().tolist()
     genotypeCommonSnp[eid] = list(set(genotypeSnp).intersection(set([str(i) for i in urb[gm_dir[eid]]])))
     genotype.setOrderedSubsetIndiv([str(i) for i in genemeasureSubj[eid]])
-    snp_data[eid] = genotype.snpGenotypeByName(genotypeCommonSnp[eid])    
+    snp_data[eid] = genotype.snpGenotypeByName(genotypeCommonSnp[eid])
     print 'Reading/Parsing genofile: ', datetime.now() - start_time
     start_time = datetime.now()
 
@@ -184,22 +185,21 @@ for eid in gm_dir:
     grandCommonSnpIndex[eid] = [genotypeCommonSnp[eid].index(i) for i in grandCommonSnp]
 
 for eid in gm_dir:
-    snp_data[eid] = snp_data[eid][:,grandCommonSnpIndex[eid]]
+    snp_data[eid] = snp_data[eid][:, grandCommonSnpIndex[eid]]
 
 # je sais pas faire en boucle
 tmp = tuple(gm_dir.keys())
 grand_snp_data = vstack((snp_data[tmp[0]], snp_data[tmp[1]], snp_data[tmp[2]]))
-grand_subject  = genemeasureSubj[tmp[0]] + genemeasureSubj[tmp[1]]  + genemeasureSubj[tmp[2]] 
+grand_subject = genemeasureSubj[tmp[0]] + genemeasureSubj[tmp[1]] + genemeasureSubj[tmp[2]]
 gran_chip = []
 for eid in gm_dir:
-    gran_chip += [gm_dir[eid]]*len(genemeasureSubj[eid])
+    gran_chip += [gm_dir[eid]] * len(genemeasureSubj[eid])
 
 
 print 'Reordering/subseting data: ', datetime.now() - start_time
- 
+
 print 'Grand SNP data (grand_snp_data):', grand_snp_data.shape
 print 'Grand Subject Ordered List(grand_subject):', len(grand_subject)
 print 'Data collated from GenomicMeasures:'
 for eid in gm_dir:
-    print '     [%s]\n     hybridized on chip %s'%(genemeasureFP[eid], gm_dir[eid])
-
+    print '     [%s]\n     hybridized on chip %s' % (genemeasureFP[eid], gm_dir[eid])
