@@ -7,7 +7,7 @@ from numpy import unique, vstack
 from datetime import datetime
 
 sys.path.append(os.path.join(os.path.dirname(__file__),
-                             os.pardir, 'python')
+                             os.pardir, 'python'))
 import bioresourcesdb
 from bioresourcesdb import BioresourcesDB
 
