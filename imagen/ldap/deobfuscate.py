@@ -1,6 +1,11 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-password = raw_input('obfuscated password: ')
-g =2
-print ''.join([unichr(g ^ ord(x)) for x in password])
+import sys
+
+obfuscated = raw_input('obfuscated password: ')
+obfuscated = obfuscated.decode(sys.stdin.encoding)
+
+g = 2
+password = ''.join([unichr(g ^ ord(x)) for x in obfuscated])
+print password.encode(sys.stdout.encoding)
