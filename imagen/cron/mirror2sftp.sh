@@ -24,11 +24,24 @@ rsync -rlt \
     ${ROOT_TARGET}/FU2/RAW/PSC2/
 
 
-# Psytools - FU2 data only!
+# Psytools - FU2 only!
 # still anonymized by Scito
 rsync -rlt \
     /neurospin/imagen/RAW/PSC2/psytools/*FU2*.csv \
     ${ROOT_TARGET}/FU2/RAW/PSC2/psytools/
+
+# Psytools - except FU2!
+# had been anonymized by Scito
+rsync -rlt \
+    /neurospin/imagen/RAW/PSC2/psytools/*.csv \
+    ${ROOT_TARGET}/IMAGEN/RAW/PSC2/psytools/
+rm -f ${ROOT_TARGET}/IMAGEN/RAW/PSC2/psytools/*FU2*.csv
+
+# DAWBA
+# had been anonymized by Scito
+rsync -rlt \
+    /neurospin/imagen/RAW/PSC2/dawba/*.csv \
+    ${ROOT_TARGET}/IMAGEN/RAW/PSC2/dawba/
 
 
 # clean up
