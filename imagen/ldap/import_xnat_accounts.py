@@ -1,8 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-host = 'ldap://imagen2i.intra.cea.fr'
-host = 'ldap://imagen2.cea.fr'
 BASE = 'dc=imagen2,dc=cea,dc=fr'
 
 SKIP_LOGIN = set((
@@ -137,38 +135,68 @@ def parse_psql_dump(psqlfile):
 
 import ldap
 import passlib.hash
+import logging
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.DEBUG)
 
-def add_to_ldap(ldapobject, base, accounts):
+def sync_ldap(ldapobject, base, accounts):
     uid = 3000  # attempt to avoid messing with existing accounts
     gid = 100  # group "users" by default
+
+    # existing LDAP accounts (UTF-8 strings in data received from LDAP)
+    dn = 'ou=People,' + base
+    ldap_people = ldapobject.search_s(dn, ldap.SCOPE_ONELEVEL)
+    dn = 'cn=partners,ou=Groups,' + base
+    ldap_partners = ldapobject.search_s(dn, ldap.SCOPE_BASE)[0][1]
+    if 'memberUid' in ldap_partners:
+        ldap_partners = ldap_partners['memberUid']
+    else:
+        ldap_partners = None
+    for dn, entry in ldap_people:
+        login = entry['uid'][0]
+        logger.debug('Checking existing LDAP account: ' + login.decode('utf-8'))
+        if login.decode('utf-8') not in [x['login'] for x in accounts]:
+            logger.warn('Account will be deleted: ' + login.decode('utf-8'))
+            ### delete LDAP account and remove from "partners"
+        elif login not in ldap_partners:
+            logger.error('Account not in "partners": ' + login.decode('utf-8'))
+    # updated collection of accounts
     for account in accounts:
         uid += 1
-        # add account to the restricted "partners" group
-        dn = 'cn=partners,ou=Groups,' + base
-        attributes = [(ldap.MOD_ADD, 'memberUid', account['login'].encode('utf-8'))]
-        ldapobject.modify_s(dn, attributes)
-        # create account
         login = account['login'].encode('utf-8')
+        # add account to the restricted "partners" group
+        if ldap_partners and login in ldap_partners:
+            logger.debug('Account already in "partners": ' + login.decode('utf-8'))
+        else:
+            logger.info('Account will be added to "partners": ' + login.decode('utf-8'))
+            dn = 'cn=partners,ou=Groups,' + base
+            attributes = [(ldap.MOD_ADD, 'memberUid', login)]
+            ldapobject.modify_s(dn, attributes)
+        # create or update LDAP account
         firstname = account['firstname'].encode('utf-8')
         lastname = account['lastname'].upper().encode('utf-8')
         cn = firstname + ' ' + lastname
         dn = 'cn=%s,ou=People,' % cn + base
-        email = account['email'].encode('utf-8')
-        password = passlib.hash.ldap_md5.encrypt(account['password']).encode('utf-8')
-        attributes = [
-            ('objectClass', ('top', 'person', 'inetOrgPerson', 'posixAccount')),
-            ('cn', (cn,)),
-            ('givenName', (firstname,)),
-            ('sn', (lastname,)),
-            ('mail', (email,)),
-            ('uid', (login,)),
-            ('uidNumber', (str(uid),)),
-            ('gidNumber', (str(gid),)),
-            ('homeDirectory', ('/home/' + login,)),
-            ('userPassword', (password,)),
-            ('loginShell', ('/bin/false',)),
-        ]
-        ldapobject.add_s(dn, attributes)
+        if dn in [x[0] for x in ldap_people]:
+            logger.debug('Account already in LDAP: ' + login.decode('utf-8'))
+        else:
+            logger.info('Account will be added to LDAP: ' + login.decode('utf-8'))
+            email = account['email'].encode('utf-8')
+            password = passlib.hash.ldap_md5.encrypt(account['password']).encode('utf-8')
+            attributes = (
+                ('objectClass', ('top', 'person', 'inetOrgPerson', 'posixAccount')),
+                ('cn', (cn,)),
+                ('givenName', (firstname,)),
+                ('sn', (lastname,)),
+                ('mail', (email,)),
+                ('uid', (login,)),
+                ('uidNumber', (str(uid),)),
+                ('gidNumber', (str(gid),)),
+                ('homeDirectory', ('/home/' + login,)),
+                ('userPassword', (password,)),
+                ('loginShell', ('/bin/false',)),
+            )
+            ldapobject.add_s(dn, attributes)
 
 
 def write_csv(accounts):
@@ -190,21 +218,21 @@ import getopt
 if __name__ == "__main__":
     try:
         opts, args = getopt.getopt(sys.argv[1:],
-                                   'd:f:l',
-                                   ['database=', 'file=', 'ldap'])
+                                   'f:l:d',
+                                   ['file=', 'ldap=', 'dump'])
     except getopt.GetoptError as err:
         print >> sys.stderr, str(err)
         sys.exit(2)
-    database = None
     psqlfile = None
     ldaphost = None
+    dump = None
     for o, a in opts:
-        if o in ('-d', "--database"):
-            database = a
-        elif o in ('-f', "--file"):
+        if o in ('-f', "--file"):
             psqlfile = a
         elif o in ("-l", "--ldap"):
-            ldaphost = True
+            ldaphost = a
+        elif o in ("-d", "--dump"):
+            dump = True
         else:
             assert False, "unhandled option"
 
@@ -212,12 +240,14 @@ if __name__ == "__main__":
     if psqlfile:
         with open(psqlfile, 'rb') as f:
             accounts = parse_psql_dump(f)
-    elif database:
-        accounts = None  ##########
+    else:  # read from stdin
+        accounts = parse_psql_dump(sys.stdin)
 
+    if dump:
+        write_csv(accounts)
     if ldaphost:
         username = 'cn=admin,' + BASE
-        ldapobject = ldap.initialize(host)
+        ldapobject = ldap.initialize(ldaphost)
         while True:
             password = getpass.getpass(prompt='LDAP administrator password? ')
             try:
@@ -226,7 +256,5 @@ if __name__ == "__main__":
                 continue
             else:
                 break
-        add_to_ldap(ldapobject, BASE, accounts)
+        sync_ldap(ldapobject, BASE, accounts)
         ldapobject.unbind_s()
-    else:
-        write_csv(accounts)
