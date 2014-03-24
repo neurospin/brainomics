@@ -423,7 +423,7 @@ def build_scan_map(tree, scan, experiment, psc):
     l = len(identifier)
     ll = len(scan_type)
     if (l+ll)>63:
-	i = 63-ll
+    i = 63-ll
         identifier = identifier[-i:]
     attributes = {
         'identifier': '%(a)s_%(b)s' % {'a': scan_type, 'b': identifier},  # required attribute
@@ -486,7 +486,7 @@ def build_resource_scan_infos(resource, assessor, psc):
     l = len(identifier)
     ll = len(unicode(assessor.get('%stype' % XSI)))
     if (l+ll)>63:
-	i = 63-ll
+    i = 63-ll
         identifier = identifier[-i:]
     return {'format': unicode(resource.get('format')),
             'identifier': '%(a)s_%(b)s' % {'a': unicode(assessor.get('%stype' % XSI)), 'b': identifier},
