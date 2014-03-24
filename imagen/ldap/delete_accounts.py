@@ -13,7 +13,7 @@ def delete_from_ldap(ldapobject, base):
     for dn, attrs in ldapobject.search_s(dn, ldap.SCOPE_ONELEVEL, filterstr, []):
         ldapobject.delete_s(dn)
     # remove all accounts from the restricted "partners" group
-    dn = 'cn=partners,ou=Group,' + base
+    dn = 'cn=partners,ou=Groups,' + base
     attributes = [(ldap.MOD_DELETE, 'memberUid', None)]
     ldapobject.modify_s(dn, attributes)
 
