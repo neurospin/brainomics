@@ -32,9 +32,9 @@ rsync -rlt \
 # Psytools - except FU2!
 # had been anonymized by Scito
 rsync -rlt \
+    --exclude '*FU2*.csv' \
     /neurospin/imagen/RAW/PSC2/psytools/*.csv \
     ${ROOT_TARGET}/IMAGEN/RAW/PSC2/psytools/
-rm -f ${ROOT_TARGET}/IMAGEN/RAW/PSC2/psytools/*FU2*.csv
 
 # DAWBA
 # had been anonymized by Scito
