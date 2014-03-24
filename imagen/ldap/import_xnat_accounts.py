@@ -137,7 +137,6 @@ import ldap
 import passlib.hash
 import logging
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.DEBUG)
 
 
 def sync_ldap(ldapobject, base, accounts):
@@ -145,7 +144,7 @@ def sync_ldap(ldapobject, base, accounts):
     gid = 100  # group "users" by default
 
     # XNAT logins
-    logins = set([x['login'] for x in accounts])
+    xnat_logins = set([x['login'] for x in accounts])
 
     # retrieve list of LDAP accounts
     people = ldapobject.search_s('ou=People,' + base, ldap.SCOPE_ONELEVEL)
@@ -161,7 +160,7 @@ def sync_ldap(ldapobject, base, accounts):
     for dn, entry in people:
         login = entry['uid'][0]
         logger.debug('Check LDAP account: ' + login.decode('utf-8'))
-        if login.decode('utf-8') not in logins:
+        if login.decode('utf-8') not in xnat_logins:
             logger.warn('Delete LDAP account: ' + login.decode('utf-8'))
             ldapobject.delete_s(dn)
             if login in partners:
