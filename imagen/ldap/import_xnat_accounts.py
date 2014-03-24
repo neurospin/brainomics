@@ -139,48 +139,61 @@ import logging
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
+
 def sync_ldap(ldapobject, base, accounts):
     uid = 3000  # attempt to avoid messing with existing accounts
     gid = 100  # group "users" by default
 
-    # existing LDAP accounts (UTF-8 strings in data received from LDAP)
-    dn = 'ou=People,' + base
-    ldap_people = ldapobject.search_s(dn, ldap.SCOPE_ONELEVEL)
-    dn = 'cn=partners,ou=Groups,' + base
-    ldap_partners = ldapobject.search_s(dn, ldap.SCOPE_BASE)[0][1]
-    if 'memberUid' in ldap_partners:
-        ldap_partners = ldap_partners['memberUid']
+    # XNAT logins
+    logins = set([x['login'] for x in accounts])
+
+    # retrieve list of LDAP accounts
+    people = ldapobject.search_s('ou=People,' + base, ldap.SCOPE_ONELEVEL)
+    # retrieve members of LDAP group "partners"
+    dn_partners = 'cn=partners,ou=Groups,' + base
+    partners = ldapobject.search_s(dn_partners, ldap.SCOPE_BASE)[0][1]
+    if 'memberUid' in partners:
+        partners = partners['memberUid']
     else:
-        ldap_partners = None
-    for dn, entry in ldap_people:
+        partners = None
+
+    # discard LDAP accounts missing from XNAT accounts
+    for dn, entry in people:
         login = entry['uid'][0]
-        logger.debug('Checking existing LDAP account: ' + login.decode('utf-8'))
-        if login.decode('utf-8') not in [x['login'] for x in accounts]:
-            logger.warn('Account will be deleted: ' + login.decode('utf-8'))
-            ### delete LDAP account and remove from "partners"
-        elif login not in ldap_partners:
-            logger.error('Account not in "partners": ' + login.decode('utf-8'))
-    # updated collection of accounts
+        logger.debug('Check LDAP account: ' + login.decode('utf-8'))
+        if login.decode('utf-8') not in logins:
+            logger.warn('Delete LDAP account: ' + login.decode('utf-8'))
+            ldapobject.delete_s(dn)
+            if login in partners:
+                attributes = (ldap.MOD_DELETE,'memberUid',login)
+                ldapobject.modify_s(dn_partners, (attributes,))
+        elif login not in partners:
+            logger.error('LDAP account missing from LDAP group "partners": '
+                         + login.decode('utf-8'))
+            attributes = (ldap.MOD_ADD, 'memberUid', login)
+            ldapobject.modify_s(dn_partners, (attributes,))
+
+    # sync LDAP accounts with XNAT accounts
     for account in accounts:
-        uid += 1
         login = account['login'].encode('utf-8')
+        logger.debug('Process XNAT account: ' + login.decode('utf-8'))
+        uid += 1
         # add account to the restricted "partners" group
-        if ldap_partners and login in ldap_partners:
+        if partners and login in partners:
             logger.debug('Account already in "partners": ' + login.decode('utf-8'))
         else:
             logger.info('Account will be added to "partners": ' + login.decode('utf-8'))
-            dn = 'cn=partners,ou=Groups,' + base
-            attributes = [(ldap.MOD_ADD, 'memberUid', login)]
-            ldapobject.modify_s(dn, attributes)
+            attributes = (ldap.MOD_ADD, 'memberUid', login)
+            ldapobject.modify_s(dn_groups, (attributes,))
         # create or update LDAP account
-        firstname = account['firstname'].encode('utf-8')
-        lastname = account['lastname'].upper().encode('utf-8')
-        cn = firstname + ' ' + lastname
-        dn = 'cn=%s,ou=People,' % cn + base
-        if dn in [x[0] for x in ldap_people]:
-            logger.debug('Account already in LDAP: ' + login.decode('utf-8'))
+        if login in [entry['uid'][0] for dn, entry in people]:
+            logger.debug('XNAT account already in LDAP: ' + login.decode('utf-8'))
         else:
             logger.info('Account will be added to LDAP: ' + login.decode('utf-8'))
+            firstname = account['firstname'].encode('utf-8')
+            lastname = account['lastname'].upper().encode('utf-8')
+            cn = firstname + ' ' + lastname
+            dn = 'cn=%s,ou=People,' % cn + base
             email = account['email'].encode('utf-8')
             password = passlib.hash.ldap_md5.encrypt(account['password']).encode('utf-8')
             attributes = (
