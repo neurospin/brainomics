@@ -137,7 +137,7 @@ import ldap
 import passlib.hash
 import logging
 logger = logging.getLogger(__name__)
-
+logging.basicConfig(level=logging.DEBUG)
 
 def sync_ldap(ldapobject, base, accounts):
     """Sync LDAP with accounts.
@@ -192,6 +192,12 @@ def sync_ldap(ldapobject, base, accounts):
     for account in accounts:
         login = account['login'].encode('utf-8')
         logger.debug('Process XNAT account: ' + login.decode('utf-8'))
+        firstname = account['firstname'].encode('utf-8')
+        lastname = account['lastname'].upper().encode('utf-8')
+        cn = firstname + ' ' + lastname
+        dn = 'cn=%s,ou=People,' % cn + base
+        email = account['email'].encode('utf-8')
+        password = passlib.hash.ldap_md5.encrypt(account['password']).encode('utf-8')
         uid += 1
         # add account to the restricted "partners" group
         if partners and login in partners:
@@ -199,23 +205,14 @@ def sync_ldap(ldapobject, base, accounts):
         else:
             logger.info('Account will be added to "partners": ' + login.decode('utf-8'))
             attributes = (ldap.MOD_ADD, 'memberUid', login)
-            ldapobject.modify_s(dn_groups, (attributes,))
+            ldapobject.modify_s(dn_partners, (attributes,))
         # create or update LDAP account
-        if login in [entry['uid'][0] for dn, entry in people]:
+        if login in [e['uid'][0] for d, e in people]:
             logger.debug('XNAT account already in LDAP: ' + login.decode('utf-8'))
+        elif dn in [d for d, e in people]:
+            logger.error('XNAT account already in LDAP: ' + dn.decode('utf-8'))
         else:
             logger.info('Account will be added to LDAP: ' + login.decode('utf-8'))
-            firstname = account['firstname'].encode('utf-8')
-            lastname = account['lastname'].upper().encode('utf-8')
-            cn = firstname + ' ' + lastname
-            dn = 'cn=%s,ou=People,' % cn + base
-
-            if dn in [dn for dn, entry in people]:
-                logger.error('XNAT account already in LDAP: ' + cn.decode('utf-8'))
-
-
-            email = account['email'].encode('utf-8')
-            password = passlib.hash.ldap_md5.encrypt(account['password']).encode('utf-8')
             attributes = (
                 ('objectClass', ('top', 'person', 'inetOrgPerson', 'posixAccount')),
                 ('cn', (cn,)),
