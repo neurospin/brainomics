@@ -140,6 +140,22 @@ logger = logging.getLogger(__name__)
 
 
 def sync_ldap(ldapobject, base, accounts):
+    """Sync LDAP with accounts.
+
+    Parameters
+    ----------
+    ldapobject : LDAPObject_
+        A find operation must have already been performed on this object.
+
+    base: str
+        DN entry to use as root for all operations.
+
+    accounts: iterable
+        Each element in accounts should be a dictionary.
+
+    .. _LDAPObject: http://www.python-ldap.org/doc/html/ldap.html#ldapobject-classes
+
+    """
     uid = 3000  # attempt to avoid messing with existing accounts
     gid = 100  # group "users" by default
 
@@ -193,6 +209,11 @@ def sync_ldap(ldapobject, base, accounts):
             lastname = account['lastname'].upper().encode('utf-8')
             cn = firstname + ' ' + lastname
             dn = 'cn=%s,ou=People,' % cn + base
+
+            if dn in [dn for dn, entry in people]:
+                logger.error('XNAT account already in LDAP: ' + cn.decode('utf-8'))
+
+
             email = account['email'].encode('utf-8')
             password = passlib.hash.ldap_md5.encrypt(account['password']).encode('utf-8')
             attributes = (
@@ -212,6 +233,14 @@ def sync_ldap(ldapobject, base, accounts):
 
 
 def write_csv(accounts):
+    """Dump accounts to stdout.
+
+    Parameters
+    ----------
+    accounts: iterable
+        Each element in accounts should be a dictionary.
+
+    """
     columns = {}
     for account in accounts:
         for key, value in account.items():
