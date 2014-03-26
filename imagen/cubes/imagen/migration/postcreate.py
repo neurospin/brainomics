@@ -144,7 +144,7 @@ def _create_or_update_ldap_data_source(session):
     else:
         req = "INSERT CWsource X:"
         for attribute, value in _LDAP_ATTRIBUTES.iteritems():
-            req += " %(attribute)s '%(value)s'," % {'attribute': attribute, 'value': value}
+            req += " X %(attribute)s '%(value)s'," % {'attribute': attribute, 'value': value}
         req = req[:-1]
     rset = session.execute(req)
 
