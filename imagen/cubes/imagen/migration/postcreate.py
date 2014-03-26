@@ -142,10 +142,11 @@ def _create_or_update_ldap_data_source(session):
         req = req[:-1]
         req += " WHERE X is CWSource, X name '%(name)s'" % {'name': name}
     else:
-        req = "INSERT CWsource X:"
+        req = "INSERT CWSource X:"
         for attribute, value in _LDAP_ATTRIBUTES.iteritems():
             req += " X %(attribute)s '%(value)s'," % {'attribute': attribute, 'value': value}
         req = req[:-1]
+        print 'req %s' % req
     rset = session.execute(req)
 
 
