@@ -146,7 +146,6 @@ def _create_or_update_ldap_data_source(session):
         for attribute, value in _LDAP_ATTRIBUTES.iteritems():
             req += " X %(attribute)s '%(value)s'," % {'attribute': attribute, 'value': value}
         req = req[:-1]
-        print 'req %s' % req
     rset = session.execute(req)
 
 
