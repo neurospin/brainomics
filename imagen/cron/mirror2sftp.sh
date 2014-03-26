@@ -42,6 +42,13 @@ rsync -rlt \
     /neurospin/imagen/RAW/PSC2/dawba/*.csv \
     ${ROOT_TARGET}/IMAGEN/RAW/PSC2/dawba/
 
+# statistics for faces task + swea preprocessing
+mkdir -p ${ROOT_TARGET}/IMAGEN/processed/spmstatsintra
+( cd /neurospin/imagen/processed/spmstatsintra ; tar cf - \
+    */*/EPI_faces/swea/job_spmstatsintra_*.m \
+    */*/EPI_faces/swea/SPM.mat.gz \
+) | ( cd ${ROOT_TARGET}/IMAGEN/processed/spmstatsintra ; tar xf - )
+
 
 # clean up
 chmod -R g-w,o-w ${ROOT_TARGET}
