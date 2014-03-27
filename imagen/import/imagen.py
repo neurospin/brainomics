@@ -621,8 +621,8 @@ def build_freesurfer_analysis(store, tree, assessor, study_eid, subject_eid):
                         if isinstance(region_score, etree._Comment):
                             continue
                         value = region_score.text.strip()
-                        _name = '%s - %s'
-                        % (name, region_score.tag.split('}')[-1])
+                        _name = '%s - %s' % (name, region_score.tag.split(
+                        '}')[-1])
                         if value and _name:
                             attrs = build_score_value_infos(
                             store, _name, value, u'Freesurfer - Volumetric')
@@ -638,8 +638,8 @@ def build_freesurfer_analysis(store, tree, assessor, study_eid, subject_eid):
                 if isinstance(surface, etree._Comment):
                     continue
                 if surface.tag != '%sregions' % FREESURFER:
-                    name = hemisphere.get('name') + '_'
-                    + surface.tag.split('}')[-1]
+                    name = hemisphere.get('name') + '_' + surface.tag.split(
+                    '}')[-1]
                     value = surface.text.strip()
                     if value and name:
                         attrs = build_score_value_infos(
@@ -650,8 +650,8 @@ def build_freesurfer_analysis(store, tree, assessor, study_eid, subject_eid):
                 else:
                     # Regions
                     for region in surface.getchildren():
-                        name = hemisphere.get('name') + '_'
-                        + region.get('name')
+                        name = hemisphere.get('name') + '_' + region.get(
+                        'name')
                         for region_score in region.getchildren():
                             if isinstance(region_score, etree._Comment):
                                 continue
