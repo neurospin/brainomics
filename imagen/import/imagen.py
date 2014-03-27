@@ -265,17 +265,20 @@ def iterate_external_resources(store, experiment, study_eid):
     from an experiment node
     """
     added_files = set()
-    for resource in experiment.findall('%(a)sresources/%(a)sresource' % {'a': XNAT}):
+    for resource in experiment.findall('%(a)sresources/%(a)sresource'
+        % {'a': XNAT}):
         filepath = format_filepath(resource.get('URI'))
         if filepath and filepath not in added_files:
             added_files.add(filepath)
-            yield {'name': resource.get('label'), 'filepath': filepath, 'related_study': study_eid}
+            yield {'name': resource.get('label'), 'filepath': filepath,
+            'related_study': study_eid}
     # From Files
     for resource in experiment.findall('%(a)sFiles/%(a)sfile' % {'a': IMAGEN}):
         filepath = format_filepath(resource.get('file_name'))
         if filepath and filepath not in added_files:
             added_files.add(filepath)
-            yield {'name': filepath, 'filepath': filepath, 'related_study': study_eid}
+            yield {'name': filepath, 'filepath': filepath, 'related_study':
+            study_eid}
 
 
 def iterate_investigators(node):
@@ -301,7 +304,8 @@ def iterate_score_value_infos(store, node, category, base_tag=XNAT):
             scores.append((node_name, node.text.strip()))
     else:
         # Use attributes
-        scores.extend((node_name + '_' + key, value) for key, value in node.items()
+        scores.extend((node_name + '_' + key, value) for key,
+        value in node.items()
                       if key not in XNAT_TAGS_SKIPPED)
     for name, value in scores:
         yield build_score_value_infos(store, name, value, category)
@@ -319,19 +323,22 @@ def build_score_value_infos(store, name, value, category=u'various',
     if name in SCORE_DEFS:
         entity_eid = SCORE_DEFS[name]
     else:
-        #print 'ScoreDefinition = ', name, category, _type, unit, possible_values
+        #print 'ScoreDefinition = ',name,category, _type,unit,possible_values
         entity = session.create_entity('ScoreDefinition',
                                        name=unicode(name),
                                        category=unicode(category),
                                        type=unicode(_type),
                                        unit=unicode(unit),
-                                       possible_values=unicode(possible_values))
+                                       possible_values=unicode(possible_values)
+        )
         #print 'entity = ', entity, entity.eid
-        #scoredef = dict(session.execute('Any I, X WHERE X is ScoreDefinition, X name I'))
+        #scoredef = dict(session.execute('Any I, X WHERE X is ScoreDefinition,
+        #X name I'))
         #print 'scoredef = ', scoredef
         #session.flush()
         #session.commit()
-        #scoredef = dict(session.execute('Any I, X WHERE X is ScoreDefinition, X name I'))
+        #scoredef = dict(session.execute('Any I, X WHERE X is ScoreDefinition,
+        #X name I'))
         #print 'scoredef = ', scoredef
         SCORE_DEFS[name] = entity.eid
         entity_eid = entity.eid
@@ -382,12 +389,13 @@ def build_csv_external_resource(store, file_id, all_scores, study_eid):
 ###############################################################################
 ### GENOMICS EXPERIMENT #######################################################
 ###############################################################################
-def import_genomics_scores(store, tree, experiment, study_eid, subject_eid, center_eid):
+def import_genomics_scores(store, tree, experiment, study_eid, subject_eid,
+center_eid):
     """Import genomics scores
     """
     # Create assessment
-    measure_eid = import_generic_test_run(store, experiment, study_eid, subject_eid,
-                                          _type=u'genomics')
+    measure_eid = import_generic_test_run(store, experiment, study_eid,
+    subject_eid, _type=u'genomics')
     assessment_eid = create_assessment_for_experiment(store, experiment, None,
                                                       study_eid, subject_eid,
                                                       center_eid, measure_eid)
@@ -404,7 +412,8 @@ def build_scan_map(tree, scan, experiment, psc):
     """
     scan_id = unicode(scan.get('ID'))
     scan_type = unicode(scan.get('type'))
-    for assessor_file in experiment.findall('%(a)sassessors/%(a)sassessor' % {'a': XNAT}):
+    for assessor_file in experiment.findall('%(a)sassessors/%(a)sassessor'
+    % {'a': XNAT}):
         if assessor_file.get('type') == scan_type:
             _file = assessor_file.find('%(a)sout/%(a)sfile' % {'a': XNAT})
             break
@@ -422,11 +431,12 @@ def build_scan_map(tree, scan, experiment, psc):
     identifier = identifier[index:]
     l = len(identifier)
     ll = len(scan_type)
-    if (l+ll)>63:
-    i = 63-ll
+    if (l + ll) > 63:
+        i = 63 - ll
         identifier = identifier[-i:]
     attributes = {
-        'identifier': '%(a)s_%(b)s' % {'a': scan_type, 'b': identifier},  # required attribute
+        'identifier': '%(a)s_%(b)s' % {'a': scan_type, 'b': identifier},
+        # required attribute
         #'identifier': identifier,
         'label': scan_type,  # required attribute ### infer from type?
         'type': unicode(_type),  # required attribute
@@ -454,19 +464,22 @@ def build_scan_data_map(store, tree, scan):
         parameters = find[0]
         # MRIData
         for seq_name in ('sequence', 'scanSequence', 'seqVariant', 'acqType'):
-            scan_infos.setdefault('sequence', []).append(get_node_text(parameters,
-                                                                       '%s%s' % (XNAT, seq_name)))
-        scan_infos['sequence'] = unicode('/'.join([s for s in scan_infos['sequence'] if s]))
+            scan_infos.setdefault('sequence', []).append(get_node_text(
+            parameters, '%s%s' % (XNAT, seq_name)))
+        scan_infos['sequence'] = unicode(
+        '/'.join([s for s in scan_infos['sequence'] if s]))
         voxelres = parameters.findall('%svoxelRes' % XNAT)
         if voxelres:
             for axis in ('x', 'y', 'z'):
-                scan_infos['voxel_res_%s' % axis] = float(voxelres[0].get(axis))
+                scan_infos['voxel_res_%s' % axis] = float(
+                voxelres[0].get(axis))
         fov = parameters.findall('%sfov' % XNAT)
         if fov:
             for axis in ('x', 'y'):
                 scan_infos['fov_%s' % axis] = float(fov[0].get(axis))
         for attr in ('tr', 'te'):
-            scan_infos['%s' % attr] = get_node_text(parameters, '%s%s' % (XNAT, attr), float)
+            scan_infos['%s' % attr] = get_node_text(parameters, '%s%s'
+            % (XNAT, attr), float)
     else:
         print 'Data type %s not implemented' % scan_type
         raise
@@ -477,7 +490,8 @@ def build_resource_scan_infos(resource, assessor, psc):
     """Build scan infos from an assessor and a resource
     """
     if unicode(assessor.get('base_scan_type')):
-        label = u'%s_%s' % (unicode(assessor.get('base_scan_type')), assessor.get('%stype' % XSI))
+        label = u'%s_%s' % (unicode(assessor.get('base_scan_type')),
+        assessor.get('%stype' % XSI))
     else:
         label = assessor.get('%stype' % XSI)
     identifier = format_filepath(resource.get('URI'))
@@ -485,14 +499,16 @@ def build_resource_scan_infos(resource, assessor, psc):
     identifier = identifier[index:]
     l = len(identifier)
     ll = len(unicode(assessor.get('%stype' % XSI)))
-    if (l+ll)>63:
-    i = 63-ll
+    if (l + ll) > 63:
+        i = 63 - ll
         identifier = identifier[-i:]
     return {'format': unicode(resource.get('format')),
-            'identifier': '%(a)s_%(b)s' % {'a': unicode(assessor.get('%stype' % XSI)), 'b': identifier},
+            'identifier': '%(a)s_%(b)s' % {'a': unicode(
+            assessor.get('%stype' % XSI)), 'b': identifier},
             #'identifier': identifier,
             'label': label,
-            'type': unicode(SCAN_TYPES.get(assessor.get('%stype' % XSI), 'raw fMRI')),
+            'type': unicode(SCAN_TYPES.get(assessor.get('%stype' % XSI),
+            'raw fMRI')),
             'filepath': format_filepath(resource.get('URI'))}
 
 
@@ -503,7 +519,8 @@ def import_neuroimaging_raw_scan(store, tree, experiment, scan,
     """
     # Classical case - Iterate over scans
     if not device_eid:
-        device_eid = import_device(store, tree, experiment, center_eid, center_id)
+        device_eid = import_device(store, tree, experiment, center_eid,
+        center_id)
     scan_infos = build_scan_map(tree, scan, experiment, psc)
     if not scan_infos:
         return
@@ -529,13 +546,15 @@ def import_neuroimaging_raw_scan(store, tree, experiment, scan,
         ##### TOFIX not sure that this code is ever run
 #        fent_eid = store.create_entity('FileEntry',
 #                                        name=unicode(filepath.get('content')),
-#                                        filepath=format_filepath(filepath.get('URI'))).eid
+#                                        filepath=format_filepath(
+#                                        filepath.get('URI'))).eid
 #        fset_eid = store.create_entity('FileSet',
-#                                         name=unicode(filepath.get('content')),
-#                                         format=filepath.get('format')).eid
+#                                        name=unicode(filepath.get('content')),
+#                                        format=filepath.get('format')).eid
         ext_eid = store.create_entity('ExternalResource',
                                       name=unicode(filepath.get('content')),
-                                      filepath=format_filepath(filepath.get('URI')),
+                                      filepath=format_filepath(filepath.get(
+                                      'URI')),
                                       related_study=study_eid).eid
 #        store.relate(fset_eid, 'file_entries', fent_eid)
 #        store.relate(scan_eid, 'external_resources', fset_eid)
@@ -563,30 +582,35 @@ def build_freesurfer_analysis(store, tree, assessor, study_eid, subject_eid):
     # Add files
     for extres_infos in iterate_external_resources(store, assessor, study_eid):
         if extres_infos.get('filepath'):
-            #TOFIX quick workaround to fix the external_resource FileSet modifications
+            #TOFIX quick workaround to fix the external_resource FileSet
+            #modifications
             #keep_filepath = extres_infos.pop('filepath')
             extres_infos['format'] = 'ascii'
 #            extres_eid = store.create_entity('FileSet', **extres_infos).eid
-#            fent_infos = {'filepath':keep_filepath, 'name':extres_infos.get('name')}
+#            fent_infos = {'filepath':keep_filepath,
+#            'name':extres_infos.get('name')}
 #            fent_eid = store.create_entity('FileEntry', **fent_infos).eid
 #            store.relate(extres_eid , 'file_entries', fent_eid)
 #            store.relate(measure.eid, 'external_resources', extres_eid)
 #            store.relate(extres_eid, 'related_study', study_eid)
             ext_eid = store.create_entity('ExternalResource',
-                                          name=unicode(extres_infos.get('name')),
+                                          name=unicode(
+                                          extres_infos.get('name')),
                                           filepath=extres_infos['filepath'],
                                           related_study=study_eid).eid
             store.relate(measure.eid, 'external_resources', ext_eid)
 
     # Add scores - Volumetric
-    volumetrics = assessor.find('%(fs)smeasures/%(fs)svolumetric' % {'fs': FREESURFER})
+    volumetrics = assessor.find('%(fs)smeasures/%(fs)svolumetric'
+    % {'fs': FREESURFER})
     if volumetrics is not None:
         for volumetric in volumetrics.getchildren():
             if volumetric.tag != '%sregions' % FREESURFER:
                 name = volumetric.tag.split('}')[-1]
                 value = volumetric.text.strip()
                 if value and name:
-                    attrs = build_score_value_infos(store, name, value, u'Freesurfer - Volumetric')
+                    attrs = build_score_value_infos(
+                    store, name, value, u'Freesurfer - Volumetric')
                     attrs['measure'] = measure.eid
                     score_eid = store.create_entity('ScoreValue', **attrs).eid
             else:
@@ -597,55 +621,72 @@ def build_freesurfer_analysis(store, tree, assessor, study_eid, subject_eid):
                         if isinstance(region_score, etree._Comment):
                             continue
                         value = region_score.text.strip()
-                        _name = '%s - %s' % (name, region_score.tag.split('}')[-1])
+                        _name = '%s - %s'
+                        % (name, region_score.tag.split('}')[-1])
                         if value and _name:
-                            attrs = build_score_value_infos(store, _name, value, u'Freesurfer - Volumetric')
+                            attrs = build_score_value_infos(
+                            store, _name, value, u'Freesurfer - Volumetric')
                             attrs['measure'] = measure.eid
-                            score_eid = store.create_entity('ScoreValue', **attrs).eid
+                            score_eid = store.create_entity(
+                            'ScoreValue', **attrs).eid
     # Add scores - Surface
-    surfaces = assessor.find('%(fs)smeasures/%(fs)ssurface' % {'fs': FREESURFER})
+    surfaces = assessor.find(
+    '%(fs)smeasures/%(fs)ssurface' % {'fs': FREESURFER})
     if surfaces is not None:
         for hemisphere in surfaces.getchildren():
             for surface in hemisphere.getchildren():
                 if isinstance(surface, etree._Comment):
                     continue
                 if surface.tag != '%sregions' % FREESURFER:
-                    name = hemisphere.get('name') + '_' + surface.tag.split('}')[-1]
+                    name = hemisphere.get('name') + '_'
+                    + surface.tag.split('}')[-1]
                     value = surface.text.strip()
                     if value and name:
-                        attrs = build_score_value_infos(store, name, value, u'Freesurfer - Surface')
+                        attrs = build_score_value_infos(
+                        store, name, value, u'Freesurfer - Surface')
                         attrs['measure'] = measure.eid
-                        score_eid = store.create_entity('ScoreValue', **attrs).eid
+                        score_eid = store.create_entity(
+                        'ScoreValue', **attrs).eid
                 else:
                     # Regions
                     for region in surface.getchildren():
-                        name = hemisphere.get('name') + '_' + region.get('name')
+                        name = hemisphere.get('name') + '_'
+                        + region.get('name')
                         for region_score in region.getchildren():
                             if isinstance(region_score, etree._Comment):
                                 continue
                             value = region_score.text.strip()
-                            _name = '%s - %s' % (name, region_score.tag.split('}')[-1])
+                            _name = '%s - %s' % (name, region_score.tag.split(
+                            '}')[-1])
                             if value and _name:
-                                attrs = build_score_value_infos(store, _name, value, u'Freesurfer - Surface')
+                                attrs = build_score_value_infos(store, _name,
+                                value, u'Freesurfer - Surface')
                                 attrs['measure'] = measure.eid
-                                score_eid = store.create_entity('ScoreValue', **attrs).eid
+                                score_eid = store.create_entity(
+                                'ScoreValue', **attrs).eid
     return measure.eid
 
 
-def import_neuroimaging(store, tree, experiment, study_eid, subject_eid, center_eid, center_id, psc):
+def import_neuroimaging(store, tree, experiment, study_eid, subject_eid,
+center_eid, center_id, psc):
     """Import a neuroimaging assessment from an experiment node"""
     # Create assessment
-    assessment_eid = create_assessment_for_experiment(store, experiment, None,  # TODO: None->age?
-                                                      study_eid, subject_eid, center_eid)
+    assessment_eid = create_assessment_for_experiment(store, experiment, None,
+# TODO: None->age?
+                                                      study_eid, subject_eid,
+                                                      center_eid)
     # Create device
     device_eid = import_device(store, tree, experiment, center_eid, center_id)
     # Generate data from experiment
     seen_scan_types = {}
     for scan in experiment.findall('%(a)sscans/%(a)sscan' % {'a': XNAT}):
-        # Create a scan with an external resource (raw data) and a filepath (nii file)
+        # Create a scan with an external resource (raw data) and a filepath
+        #(nii file)
         data_scan = import_neuroimaging_raw_scan(store, tree, experiment, scan,
-                                                 assessment_eid, study_eid, subject_eid,
-                                                 center_eid, device_eid, center_id, psc)
+                                                 assessment_eid, study_eid,
+                                                 subject_eid,
+                                                 center_eid, device_eid,
+                                                 center_id, psc)
         if data_scan:
             _type, eid = data_scan
             if _type and eid:
@@ -654,22 +695,29 @@ def import_neuroimaging(store, tree, experiment, study_eid, subject_eid, center_
             _type, eid = None, None
     # Generate other scans (e.g. beta map) and measures (e.g. badrpData)
     all_scores = []
-    for assessor in experiment.findall('%(a)sassessors/%(a)sassessor' % {'a': XNAT}):
+    for assessor in experiment.findall('%(a)sassessors/%(a)sassessor'
+    % {'a': XNAT}):
         if assessor.get('type', None) in seen_scan_types:
             # This scan has already been related earlier
             continue
         if assessor.get('%stype' % XSI) in FREESURFER_TYPES:
-            measure_eid = build_freesurfer_analysis(store, tree, assessor, study_eid, subject_eid)
-            store.relate(assessment_eid, 'generates', measure_eid, subjtype='Assessment')
+            measure_eid = build_freesurfer_analysis(
+            store, tree, assessor, study_eid, subject_eid)
+            store.relate(
+            assessment_eid, 'generates', measure_eid, subjtype='Assessment')
             continue
-        resource = assessor.findall('%(a)sresources/%(a)sresource' % {'a': XNAT})
+        resource = assessor.findall('%(a)sresources/%(a)sresource'
+        % {'a': XNAT})
         if resource:
             # This is a scan file - Create it and relate it to a processing run
-            assessor_scan_infos = build_resource_scan_infos(resource[0], assessor, psc)
+            assessor_scan_infos = build_resource_scan_infos(
+            resource[0], assessor, psc)
             assessor_scan_infos['concerns'] = subject_eid
             if assessor.get('number'):
-                assessor_scan_infos['position_acquisition'] = int(assessor.get('number'))
-            if not assessor_scan_infos.get('label') or not assessor_scan_infos.get('filepath'):
+                assessor_scan_infos['position_acquisition'] = int(assessor.get(
+                'number'))
+            if not assessor_scan_infos.get(
+            'label') or not assessor_scan_infos.get('filepath'):
                 continue
             assessor_scan_infos['related_study'] = study_eid
             # MRI Data - Use get_image_info ?
@@ -677,26 +725,34 @@ def import_neuroimaging(store, tree, experiment, study_eid, subject_eid, center_
             assessor_scan_infos['has_data'] = mri_eid
             #debug
             #print 'assessor_scan_infos', assessor_scan_infos
-            #TOFIX quick workaround to fix the external_resource FileSet modifications
+            #TOFIX quick workaround to fix the external_resource FileSet
+            #modifications
             #keep_filepath = assessor_scan_infos.pop('filepath')
             #print 'POP01 %s'%assessor_scan_infos['filepath']
-            assessor_scan_eid = store.create_entity('Scan', **assessor_scan_infos).eid
+            assessor_scan_eid = store.create_entity(
+            'Scan', **assessor_scan_infos).eid
             #TOFIX here use label to generate name
-#            fset_eid = store.create_entity('FileSet', name=assessor_scan_infos.get('label'),
+#            fset_eid = store.create_entity(
+#            'FileSet', name=assessor_scan_infos.get('label'),
 #                         format=assessor_scan_infos.get('format')).eid
-#            fent_eid = store.create_entity('FileEntry', name=assessor_scan_infos.get('label'),
+#            fent_eid = store.create_entity(
+#            'FileEntry', name=assessor_scan_infos.get('label'),
 #                         filepath=keep_filepath).eid
 #            store.relate(fset_eid, 'file_entries', fent_eid )
 #            store.relate(assessor_scan_eid, 'external_resources', fset_eid)
             ext_eid = store.create_entity('ExternalResource',
-                                          name=assessor_scan_infos.get('label'),
-                                          filepath=assessor_scan_infos['filepath'],
+                                          name=assessor_scan_infos.get(
+                                          'label'),
+                                          filepath=assessor_scan_infos[
+                                          'filepath'],
                                           related_study=study_eid).eid
             store.relate(assessor_scan_eid, 'external_resources', ext_eid)
-            store.relate(assessment_eid, 'generates', assessor_scan_eid, subjtype='Assessment')
+            store.relate(assessment_eid, 'generates', assessor_scan_eid,
+            subjtype='Assessment')
         else:
             # This xml node only contains scores, e.g. badrpData
-            scan_eid = seen_scan_types.get(assessor.get('base_scan_type', None))
+            scan_eid = seen_scan_types.get(assessor.get(
+            'base_scan_type', None))
             if scan_eid:
                 # There is a scan related to the measure
                 pass
@@ -705,14 +761,16 @@ def import_neuroimaging(store, tree, experiment, study_eid, subject_eid, center_
                 scores = dict(assessor.items())
                 if scores:
                     all_scores.append(scores)
-        # XXX MISSING BEHAVIOURAL DATA, e.g. xsi:type="behavioural:face_taskData
+        #XXX MISSING BEHAVIOURAL DATA, e.g. xsi:type="behavioural:face_taskData
     # Write the CSV scores
     if all_scores:
         _id = unicode(experiment.attrib['ID']) + '_' + 'image_scores'
-        extres_eid = build_csv_external_resource(store, _id, all_scores, study_eid)
+        extres_eid = build_csv_external_resource(store, _id, all_scores,
+        study_eid)
         if extres_eid:
             store.relate(assessment_eid, 'external_resources', extres_eid)
-            store.relate(extres_eid, 'related_study', study_eid,  subjtype='ExternalResource')
+            store.relate(extres_eid, 'related_study', study_eid,
+            subjtype='ExternalResource')
 
     return assessment_eid
 
@@ -728,7 +786,8 @@ def iterate_behavioural_trials(experiment, xml_ns):
                     if key not in XNAT_TAGS_SKIPPED or key == 'ID'])
 
 
-def import_behavioural(store, tree, experiment, study_eid, subject_eid, center_eid):
+def import_behavioural(
+store, tree, experiment, study_eid, subject_eid, center_eid):
     """Import a behavioural (as a type of psytool experiment)
     """
     # Create behavioural data
@@ -737,36 +796,46 @@ def import_behavioural(store, tree, experiment, study_eid, subject_eid, center_e
                                   'Questionnaire', 'QuestionnaireRun',
                                   study_eid)
     # Create questions/answers
-    build_question_answer_infos(store, experiment, behavioural_eid, behavioural_run_eid, psytool_type)
-    # Create trials file in a two steps procedure to merge possibly different keys
+    build_question_answer_infos(
+    store, experiment, behavioural_eid, behavioural_run_eid, psytool_type)
+    # Create trials file in a two steps procedure to merge possibly different
+    # keys
     _id = unicode(experiment.attrib['ID'])
     extres_eid = build_csv_external_resource(store, _id,
-                                             iterate_behavioural_trials(experiment, PSYTOOL),
+                                             iterate_behavioural_trials(
+                                             experiment, PSYTOOL),
                                              study_eid)
     if extres_eid:
         store.relate(behavioural_run_eid, 'external_resources', extres_eid)
-        store.relate(extres_eid, 'related_study', study_eid, subjtype='ExternalResource')
+        store.relate(extres_eid, 'related_study', study_eid,
+        subjtype='ExternalResource')
 
     # Files
-    for extres_infos in iterate_external_resources(store, experiment, study_eid):
+    for extres_infos in iterate_external_resources(
+    store, experiment, study_eid):
         if extres_infos.get('filepath'):
-            #TOFIX quick workaround to fix the external_resource FileSet modifications
+            #TOFIX quick workaround to fix the external_resource FileSet
+            #modifications
             #keep_filepath = extres_infos.pop('filepath')
             extres_infos['format'] = 'ascii'
 #            extres_eid = store.create_entity('FileSet', **extres_infos).eid
-#            fent_infos = {'filepath':keep_filepath, 'name':extres_infos.get('name')}
+#            fent_infos = {'filepath':keep_filepath, 'name':extres_infos.get(
+#            'name')}
 #            fent_eid = store.create_entity('FileEntry', **fent_infos).eid
 #            store.relate(extres_eid , 'file_entries', fent_eid)
-#            store.relate(behavioural_run_eid, 'external_resources', extres_eid)
+#            store.relate(
+#            behavioural_run_eid, 'external_resources', extres_eid)
 #            store.relate(extres_eid, 'related_study', study_eid)
             ext_eid = store.create_entity('ExternalResource',
-                                          name=unicode(extres_infos.get('name')),
+                                          name=unicode(
+                                          extres_infos.get('name')),
                                           filepath=extres_infos['filepath'],
                                           related_study=study_eid).eid
             store.relate(behavioural_run_eid, 'external_resources', ext_eid)
     # Relate to an assessment
     assessment_eid = create_assessment_for_experiment(store, experiment, age,
-                                                      study_eid, subject_eid, center_eid,
+                                                      study_eid,
+                                                      subject_eid, center_eid,
                                                       behavioural_run_eid)
     return behavioural_run_eid
 
@@ -803,7 +872,8 @@ def build_psytool_experiment(store, tree, experiment, etype):
     return entity.eid, psytool_type
 
 
-def build_psytool_experiment_run(store, tree, experiment, etype_run, subject_eid, experiment_eid, study_eid):
+def build_psytool_experiment_run(store, tree, experiment, etype_run,
+subject_eid, experiment_eid, study_eid):
     """Retrieve ExperimentRun attributes from a Psytools run
 
     Discard metadata describing the experiment, only keep date relating
@@ -834,7 +904,8 @@ def build_psytool_experiment_run(store, tree, experiment, etype_run, subject_eid
         find = experiment.xpath(path, namespaces=nsmap)
         age = int(find[0].text) if find else None
     #identifier build to assume its unicity
-    experiment_id = '''%(a)s_%(b)s_%(c)s''' % {'a': experiment_id, 'b': age, 'c': iteration}
+    experiment_id = '''%(a)s_%(b)s_%(c)s''' % {'a': experiment_id, 'b': age,
+    'c': iteration}
     experiment_id = experiment_id.upper()
     entity = store.create_entity(etype_run,
                                  identifier=experiment_id,
@@ -847,15 +918,18 @@ def build_psytool_experiment_run(store, tree, experiment, etype_run, subject_eid
     return entity.eid, age
 
 
-def import_pystool_experiment(store, tree, experiment, subject_eid, exp_etype, etype_run, study_eid):
+def import_pystool_experiment(store, tree, experiment, subject_eid, exp_etype,
+etype_run, study_eid):
     """Import all types of psytool experiments (questionnaire/behavioural)"""
     # Create experiment metadata - if not already created by a different
     # run of the same experiment
-    experiment_eid, psytool_type = build_psytool_experiment(store, tree, experiment, exp_etype)
+    experiment_eid, psytool_type = build_psytool_experiment(
+    store, tree, experiment, exp_etype)
     # Create experiment data specific to this experiment run, relate to
     # experiment metadata
     # Retrieve the age of subject at the time of experiment
-    experiment_run_eid, age = build_psytool_experiment_run(store, tree, experiment,
+    experiment_run_eid, age = build_psytool_experiment_run(store,
+                                                           tree, experiment,
                                                            etype_run,
                                                            subject_eid,
                                                            experiment_eid,
@@ -863,13 +937,16 @@ def import_pystool_experiment(store, tree, experiment, subject_eid, exp_etype, e
     return experiment_run_eid, experiment_eid, age, psytool_type
 
 
-def build_question_answer_infos(store, experiment, questionnaire_eid, questionnaire_run_eid, psytool_type):
+def build_question_answer_infos(store, experiment, questionnaire_eid,
+questionnaire_run_eid, psytool_type):
     """Iterate over questions and answers for a questionnaire
     """
-    _type = experiment.attrib['%stype' % XSI].replace('psytool:', '').split('_')[0]
+    _type = experiment.attrib['%stype' % XSI].replace(
+    'psytool:', '').split('_')[0]
     # Construct questions from children
     ind = 0
-    data = [(child.tag.split('}')[-1], child.text) for child in experiment.getchildren()]
+    data = [(child.tag.split(
+    '}')[-1], child.text) for child in experiment.getchildren()]
     # Construct questions from attributes
     data.extend(experiment.items())
     for key, value in data:
@@ -884,7 +961,8 @@ def build_question_answer_infos(store, experiment, questionnaire_eid, questionna
             except ValueError:
                 # keep string as int, use possible_answers
                 if value.find(US) > 0:
-                    raise Exception('Uuuh? (...\x1e, \x1f are Record Seprator and Unit Separator...)')
+                    raise Exception('''Uuuh? (...\x1e, \x1f are Record Seprator
+                    and Unit Separator...)''')
                 possible_answers = unicode(value)
                 value = 0
                 _type = u'text'
@@ -894,50 +972,63 @@ def build_question_answer_infos(store, experiment, questionnaire_eid, questionna
                 question_eid = QUESTIONS[identifier]
                 # Update possible answer
                 if possible_answers:
-                    old_possible_answers = (QUESTION_POSSIBLE_ANSWERS[question_eid] or u'').split(US)
+                    old_possible_answers = (
+                    QUESTION_POSSIBLE_ANSWERS[question_eid] or u'').split(US)
                     if possible_answers not in old_possible_answers:
                         old_possible_answers += (possible_answers,)
-                        QUESTION_POSSIBLE_ANSWERS[question_eid] = US.join(old_possible_answers)
+                        QUESTION_POSSIBLE_ANSWERS[question_eid] = US.join(
+                        old_possible_answers)
                     value = old_possible_answers.index(possible_answers)
             else:
-                question = store.create_entity('Question', identifier=identifier,
-                                               text=unicode(key), position=ind,
-                                               type=_type,
-                                               questionnaire=questionnaire_eid,
-                                               possible_answers=possible_answers)
+                question = store.create_entity('Question',
+                                              identifier=identifier,
+                                              text=unicode(key), position=ind,
+                                              type=_type,
+                                              questionnaire=questionnaire_eid,
+                                              possible_answers=possible_answers
+                )
                 QUESTIONS[identifier] = question.eid
                 question_eid = question.eid
                 QUESTION_POSSIBLE_ANSWERS[question_eid] = possible_answers
             # Answer
             answer = store.create_entity('Answer', value=value,
-                                         questionnaire_run=questionnaire_run_eid,
-                                         question=question_eid)
+            questionnaire_run=questionnaire_run_eid, question=question_eid)
             ind += 1
 
 
-def import_questionnaire(store, tree, experiment, study_eid, subject_eid, center_eid):
+def import_questionnaire(store, tree, experiment, study_eid, subject_eid,
+center_eid):
     """Import a questionnaire (as a type of psytool experiment)"""
     # Create questionnaire
     questionnaire_run_eid, questionnaire_eid, age, psytool_type = \
         import_pystool_experiment(store, tree, experiment, subject_eid,
-                                  'Questionnaire', 'QuestionnaireRun', study_eid)
+                                  'Questionnaire', 'QuestionnaireRun',
+                                  study_eid)
     # Create questions/answers
-    build_question_answer_infos(store, experiment, questionnaire_eid, questionnaire_run_eid, psytool_type)
+    build_question_answer_infos(store, experiment, questionnaire_eid,
+    questionnaire_run_eid, psytool_type)
     # Create external resources
-    for extres_infos in iterate_external_resources(store, experiment, study_eid):
+    for extres_infos in iterate_external_resources(
+    store, experiment, study_eid):
         if extres_infos.get('filepath'):
-            extres_eid = store.create_entity('ExternalResource', **extres_infos).eid
-            store.relate(questionnaire_run_eid, 'external_resources', extres_eid)
+            extres_eid = store.create_entity(
+            'ExternalResource', **extres_infos).eid
+            store.relate(
+            questionnaire_run_eid, 'external_resources', extres_eid)
             store.relate(extres_eid, 'related_study', study_eid)
     # Relate to an assessment
     assessment_eid = create_assessment_for_experiment(store, experiment, age,
-                                                      study_eid, subject_eid, center_eid,
+                                                      study_eid, subject_eid,
+                                                      center_eid,
                                                       questionnaire_run_eid)
     # Files
-    for extres_infos in iterate_external_resources(store, experiment, study_eid):
+    for extres_infos in iterate_external_resources(
+    store, experiment, study_eid):
         if extres_infos.get('filepath'):
-            extres_eid = store.create_entity('ExternalResource', **extres_infos).eid
-            store.relate(questionnaire_run_eid, 'external_resources', extres_eid)
+            extres_eid = store.create_entity(
+            'ExternalResource', **extres_infos).eid
+            store.relate(
+            questionnaire_run_eid, 'external_resources', extres_eid)
             store.relate(extres_eid, 'related_study', study_eid)
     return questionnaire_run_eid
 
@@ -945,7 +1036,8 @@ def import_questionnaire(store, tree, experiment, study_eid, subject_eid, center
 ###############################################################################
 ### GENERIC ASSESSMENT / EXPERIMENT ###########################################
 ###############################################################################
-def import_generic_test_run(store, experiment, study_eid, subject_eid, _type=None):
+def import_generic_test_run(
+store, experiment, study_eid, subject_eid, _type=None):
     """Import a generic measure from an experiment node
     """
     # Create the GenericTest if it does not exist
@@ -969,12 +1061,13 @@ def import_generic_test_run(store, experiment, study_eid, subject_eid, _type=Non
     for score_value_infos in iterate_score_value_infos(store, experiment,
                                                        _type or u'generic'):
         score_value_infos['measure'] = measure.eid
-        score_value_eid = store.create_entity('ScoreValue', **score_value_infos).eid
+        score_value_eid = store.create_entity(
+        'ScoreValue', **score_value_infos).eid
     return measure.eid
 
 
 def create_assessment_for_experiment(store, experiment, age, study_eid,
-                                     subject_eid, center_eid, measure_eid=None):
+                                    subject_eid, center_eid, measure_eid=None):
     """Create an assessment and required relations from and experiment
 
     Arguments:
@@ -996,21 +1089,26 @@ def create_assessment_for_experiment(store, experiment, age, study_eid,
                                          #age_for_assessment=age,
                                          age_of_subject=age,
                                          timepoint=unicode('BL/FU1'),
-                                         #protocols=unicode(experiment.get('%stype' % XSI)),
+                                         #protocols=unicode(
+                                         #experiment.get('%stype' % XSI)),
                                          related_study=study_eid).eid
     # Create relations
     protocol_eid = store.create_entity('Protocol',
-                                       identifier=unicode(experiment.get('%stype' % XSI)),
+                                       identifier=unicode(experiment.get(
+                                       '%stype' % XSI)),
                                        related_study=study_eid).eid
     store.relate(assessment_eid, 'protocols', protocol_eid)
     store.relate(subject_eid, 'concerned_by', assessment_eid)
     store.relate(center_eid, 'holds', assessment_eid)
     if measure_eid:
-        store.relate(assessment_eid, 'generates', measure_eid, subjtype='Assessment')
+        store.relate(assessment_eid, 'generates', measure_eid,
+        subjtype='Assessment')
     # Files
-    for extres_infos in iterate_external_resources(store, experiment, study_eid):
+    for extres_infos in iterate_external_resources(
+    store, experiment, study_eid):
         if extres_infos.get('filepath'):
-            #TOFIX quick workaround to fix the external_resource FileSet modifications
+            #TOFIX quick workaround to fix the external_resource FileSet
+            #modifications
             extres_infos['format'] = 'ascii'
             fent_infos = {'filepath': extres_infos.get('filepath'),
                           'name': extres_infos.get('name')}
@@ -1020,9 +1118,10 @@ def create_assessment_for_experiment(store, experiment, age, study_eid,
 #            store.relate(fset_eid, 'file_entries', fent_eid)
 #            store.relate(assessment_eid, 'external_resources', fset_eid)
             ext_eid = store.create_entity('ExternalResource',
-                                          name=unicode(extres_infos.get('name')),
-                                          filepath=extres_infos.get('filepath'),
-                                          related_study=study_eid).eid
+                                         name=unicode(
+                                         extres_infos.get('name')),
+                                         filepath=extres_infos.get('filepath'),
+                                         related_study=study_eid).eid
             store.relate(assessment_eid, 'external_resources', ext_eid)
     # Investigators
     for investigator_infos in iterate_investigators(experiment):
@@ -1030,42 +1129,53 @@ def create_assessment_for_experiment(store, experiment, age, study_eid,
         if lastname in INVESTIGATORS:
             investigator_eid = INVESTIGATORS[lastname]
         else:
-            investigator_eid = store.create_entity('Investigator', identifier=lastname,
+            investigator_eid = store.create_entity('Investigator',
+                                                   identifier=lastname,
                                                    lastname=lastname).eid
         store.relate(assessment_eid, 'conducted_by', investigator_eid)
     return assessment_eid
 
 
-def import_quality_report(store, tree, experiment, study_eid, subject_eid, center_eid):
+def import_quality_report(
+store, tree, experiment, study_eid, subject_eid, center_eid):
     """Import the quality report assessment from an experiment node
     """
-    measure_eid = import_generic_test_run(store, experiment, study_eid, subject_eid)
-    assessment_eid = create_assessment_for_experiment(store, experiment, None,  # TODO: None->age
+    measure_eid = import_generic_test_run(
+    store, experiment, study_eid, subject_eid)
+    assessment_eid = create_assessment_for_experiment(store, experiment, None,
+# TODO: None->age
                                                       study_eid, subject_eid,
                                                       center_eid, measure_eid)
     for _type in XNAT_TAGS_SUBJECT_INFOS:
         for child in experiment.findall('%s%s' % (IMAGEN, _type)):
-            for score_value_infos in iterate_score_value_infos(store, child, u'qualityreport',
-                                                               base_tag=IMAGEN):
+            for score_value_infos in iterate_score_value_infos(store, child,
+                                                              u'qualityreport',
+                                                              base_tag=IMAGEN):
                 score_value_infos['measure'] = measure_eid
-                score_value_eid = store.create_entity('ScoreValue', **score_value_infos).eid
+                score_value_eid = store.create_entity(
+                'ScoreValue', **score_value_infos).eid
     return assessment_eid
 
 
-def import_generic_subject_assessments(store, tree, experiment, study_eid, subject_eid, center_eid):
+def import_generic_subject_assessments(
+store, tree, experiment, study_eid, subject_eid, center_eid):
     """Import generic assessments infos for various data of a subject,
     such as raw package, clinical rate, ... as Questionnaires
     """
-    testrun_eid = import_questionnaire(store, tree, experiment, study_eid, subject_eid, center_eid)
+    testrun_eid = import_questionnaire(
+    store, tree, experiment, study_eid, subject_eid, center_eid)
     # Construct scores from relations - Multiples responses
-    for relation in experiment.findall('%(p)srelations/%(p)srelation' % {'p': PSYTOOL}):
+    for relation in experiment.findall('%(p)srelations/%(p)srelation'
+    % {'p': PSYTOOL}):
         # XXX More generic ? Missing information ?
         key = unicode(relation.get('relation'))
         value = unicode(relation.get('disorder'))
         if key != 'None' and value != 'None':
-            score_value_infos = build_score_value_infos(store, key, value, category=u'relations')
+            score_value_infos = build_score_value_infos(
+            store, key, value, category=u'relations')
             score_value_infos['measure'] = testrun_eid
-            score_value_eid = store.create_entity('ScoreValue', **score_value_infos).eid
+            score_value_eid = store.create_entity(
+            'ScoreValue', **score_value_infos).eid
     return testrun_eid
 
 
@@ -1083,13 +1193,15 @@ def import_center(store, tree):
     root = tree.getroot()
     nsmap = root.nsmap
     # Center id
-    path = '//xnat:experiment[@xsi:type="imagen:imagenSubjectVariablesData"]/@ImagingCentreID'
+    path = '''//xnat:experiment[@xsi:type="imagen:imagenSubjectVariablesData"]
+    /@ImagingCentreID'''
     find = root.xpath(path, namespaces=nsmap)
     identifier = unicode(find[0]) if find else u''
     if not identifier:
         return
     # Center city
-    path = '//xnat:experiment[@xsi:type="imagen:imagenSubjectVariablesData"]/@ImagingCentreCity'
+    path = '''//xnat:experiment[@xsi:type="imagen:imagenSubjectVariablesData"]
+    /@ImagingCentreCity'''
     find = root.xpath(path, namespaces=nsmap)
     if find and identifier:
         city = unicode(find[0])
@@ -1116,7 +1228,9 @@ def import_study(store, tree, filepath):
     if name in STUDIES:
         return STUDIES[name]
     entity = store.create_entity('Study', name=name,
-                                 #uri are absolute filepath so study data_filepath prefix for all path should be set to ''
+                                 #uri are absolute filepath so study
+                                 #data_filepath prefix for all path should be
+                                 #set to ''
                                  data_filepath=u'',
                                  #data_filepath=filepath,
                                  description=u'Imagen XNAT data')
@@ -1184,7 +1298,8 @@ def import_subject(store, tree):
     entity = store.create_entity('Subject', identifier=identifier,
                                  gender=gender, handedness=handedness)
                                  #,code_in_study=code_in_study)
-    #res = session.execute('''INSERT Subject S: S identifier \'%(a)s\', S gender \'%(b)s\', S handedness \'%(c)s\'
+    #res = session.execute('''INSERT Subject S: S identifier \'%(a)s\',
+    #S gender \'%(b)s\', S handedness \'%(c)s\'
     #'''%{'a': identifier, 'b': gender, 'c': handedness})
     SUBJECTS[identifier] = entity.eid
     #print 'res %s'%res[0][0]
@@ -1201,17 +1316,22 @@ def import_demographics(store, tree, subject_eid):
         return
     for child in demographics[0].getchildren():
         if child.tag not in('%sgender' % XNAT, '%shandedness' % XNAT):
-            for score_value_infos in iterate_score_value_infos(store, child, u'demographics'):
-                score_value_eid = store.create_entity('ScoreValue', **score_value_infos).eid
+            for score_value_infos in iterate_score_value_infos(
+            store, child, u'demographics'):
+                score_value_eid = store.create_entity(
+                'ScoreValue', **score_value_infos).eid
                 store.relate(subject_eid, 'related_infos', score_value_eid)
 
 
-def import_subject_additional_infos(store, experiment, study_eid, subject_eid, center_eid):
+def import_subject_additional_infos(
+store, experiment, study_eid, subject_eid, center_eid):
     """Import subject additional infos (e.g. cyclePhaseInfo)
     """
     name = experiment.get('project', u'additional_infos')
-    for score_value_infos in iterate_score_value_infos(store, experiment, name):
-        score_value_eid = store.create_entity('ScoreValue', **score_value_infos).eid
+    for score_value_infos in iterate_score_value_infos(
+    store, experiment, name):
+        score_value_eid = store.create_entity(
+        'ScoreValue', **score_value_infos).eid
         store.relate(subject_eid, 'related_infos', score_value_eid)
 
 
@@ -1247,7 +1367,8 @@ def import_device(store, tree, experiment, center_eid, center_id):
             center_id = c.identifier
     #TOFIX No need to add an identifier field in Device entity
     #TOFIX this is a proposal using the serialnum instead
-    # identifier='%(a)s_%(b)s_%(c)s_%(d)s'%{'a':name, 'b':manufacturer, 'c':model, 'd':center_id}
+    # identifier='%(a)s_%(b)s_%(c)s_%(d)s'
+    #%{'a':name, 'b':manufacturer, 'c':model, 'd':center_id}
     # if identifier in DEVICES:
     #     return DEVICES[identifier]
     # entity = store.create_entity('Device', identifier=identifier,
@@ -1256,8 +1377,10 @@ def import_device(store, tree, experiment, center_eid, center_id):
     #                             hosted_by=center_eid, model=model)
     # DEVICES[identifier] = entity.eid
     # return entity.eid
-    #serialnum = unicode(hashlib.sha1('%(a)s_%(b)s_%(c)s_%(d)s' % {'a': name, 'b': manufacturer, 'c': model, 'd': center_id}).hexdigest())
-    serialnum = unicode('%(a)s_%(b)s_%(c)s_%(d)s' % {'a': name, 'b': manufacturer, 'c': model, 'd': center_id})
+    #serialnum = unicode(hashlib.sha1('%(a)s_%(b)s_%(c)s_%(d)s'
+    #% {'a': name, 'b': manufacturer, 'c': model, 'd': center_id}).hexdigest())
+    serialnum = unicode('%(a)s_%(b)s_%(c)s_%(d)s'
+    % {'a': name, 'b': manufacturer, 'c': model, 'd': center_id})
     if serialnum in DEVICES:
         ret_eid = DEVICES[serialnum]
     else:
@@ -1295,32 +1418,29 @@ def import_imagen_file(store, xml_file, filepath):
         experiment_type = find[0]
         if experiment_type == 'imagen:qualityReportData':
             assessment_eid = import_quality_report(store, tree, experiment,
-                                                   study_eid, subject_eid, center_eid)
+            study_eid, subject_eid, center_eid)
         elif experiment_type in XNAT_TAGS_SUBJECT_ADDITIONAL_INFOS:
             assessment_eid = import_subject_additional_infos(store, experiment,
-                                                             study_eid, subject_eid, center_eid)
+            study_eid, subject_eid, center_eid)
         elif experiment_type in XNAT_TAGS_GENERIC_ASSESSMENT_RESOURCES_ONLY:
-            assessment_eid = create_assessment_for_experiment(store, experiment, None,
-                                                              study_eid, subject_eid, center_eid)
+            assessment_eid = create_assessment_for_experiment(
+            store, experiment, None, study_eid, subject_eid, center_eid)
         elif experiment_type in XNAT_TAGS_GENERIC_ASSESSMENT:
-            testrun_eid = import_generic_subject_assessments(store, tree, experiment,
-                                                             study_eid, subject_eid, center_eid)
+            testrun_eid = import_generic_subject_assessments(
+            store, tree, experiment, study_eid, subject_eid, center_eid)
         elif experiment_type in XNAT_TAGS_QUESTIONNAIRE:
             measure_eid = import_questionnaire(store, tree, experiment,
-                                               study_eid, subject_eid, center_eid)
+            study_eid, subject_eid, center_eid)
         elif experiment_type in XNAT_TAGS_NEUROIMAGING:
-            #psc=os.path.split(os.path.split(os.path.split(os.path.split(os.path.abspath(xml_file))[0])[0])[0])[1]
             psc = rescue_psc_from_xml_file_path(xml_file)
-            #debug
-            #print 'psc = ', psc
             assessment_eid = import_neuroimaging(store, tree, experiment,
-                                                 study_eid, subject_eid, center_eid, center_id, psc)
+            study_eid, subject_eid, center_eid, center_id, psc)
         elif experiment_type in XNAT_TAGS_BEHAVIOURAL:
             measure_eid = import_behavioural(store, tree, experiment,
-                                             study_eid, subject_eid, center_eid)
+            study_eid, subject_eid, center_eid)
         elif experiment_type in XNAT_TAG_GENOMICS_SCORES:
             measure_eid = import_genomics_scores(store, tree, experiment,
-                                                 study_eid, subject_eid, center_eid)
+            study_eid, subject_eid, center_eid)
         else:
             print '!!! UNKNOWN EXPERIMENT --->', experiment_type
             continue
@@ -1340,15 +1460,24 @@ CENTERS = dict(session.execute('Any I, X WHERE X is Center, X identifier I'))
 #DEVICES = dict(session.execute('Any I, X WHERE X is Device, X identifier I'))
 DEVICES = dict(session.execute('Any I, X WHERE X is Device, X serialnum I'))
 STUDIES = dict(session.execute('Any I, X WHERE X is Study, X name I'))
-GENERIC_TESTS = dict(session.execute('Any I, X WHERE X is GenericTest, X identifier I'))
-SCORE_DEFS = dict(session.execute('Any I, X WHERE X is ScoreDefinition, X name I'))
-INVESTIGATORS = dict(session.execute('Any I, X WHERE X is Investigator, X identifier I'))
-EXPERIMENTS = dict(session.execute('Any I, X WHERE X is IN (Questionnaire, GenericTest), X identifier I'))
-QUESTIONS = dict(session.execute('Any I, X WHERE X is Question, X identifier I'))
-QUESTION_POSSIBLE_ANSWERS = dict(session.execute('Any X, A WHERE X is Question, X possible_answers A'))
-REGIONS = dict(session.execute('Any I, X WHERE X is AnatomicalRegion, X name I'))
-PROCESSING_RUNS = dict(session.execute('Any I, X WHERE X is ProcessingRun, X name I'))
-RELATED_PROCESSING = set([(e[0], e[1]) for e in session.execute('Any X, Y WHERE X related_processing Y')])
+GENERIC_TESTS = dict(session.execute(
+'Any I, X WHERE X is GenericTest, X identifier I'))
+SCORE_DEFS = dict(session.execute(
+'Any I, X WHERE X is ScoreDefinition, X name I'))
+INVESTIGATORS = dict(session.execute(
+'Any I, X WHERE X is Investigator, X identifier I'))
+EXPERIMENTS = dict(session.execute(
+'Any I, X WHERE X is IN (Questionnaire, GenericTest), X identifier I'))
+QUESTIONS = dict(session.execute(
+'Any I, X WHERE X is Question, X identifier I'))
+QUESTION_POSSIBLE_ANSWERS = dict(session.execute(
+'Any X, A WHERE X is Question, X possible_answers A'))
+REGIONS = dict(session.execute(
+'Any I, X WHERE X is AnatomicalRegion, X name I'))
+PROCESSING_RUNS = dict(session.execute(
+'Any I, X WHERE X is ProcessingRun, X name I'))
+RELATED_PROCESSING = set([(e[0], e[1]) for e in session.execute(
+'Any X, Y WHERE X related_processing Y')])
 OUTPUT_FOLDER = None
 
 
@@ -1398,10 +1527,12 @@ if __name__ == '__main__':
         store.flush()
     store.commit()
     # Update gender - Take gender from the QR
-    rset = rql('Any S, V WHERE SD is ScoreDefinition, SD category %(c)s, SD name %(n)s, SV definition SD, '
-               'SV measure M, M concerns S, SV text V',
+    rset = rql('Any S, V WHERE SD is ScoreDefinition, SD category %(c)s,'
+    'SD name %(n)s, SV definition SD, SV measure M, M concerns S, SV text V',
                {'n': 'Adolescent_Gender', 'c': 'qualityreport'})
     for seid, g in rset:
         if g.lower() in ('male', 'female'):
-            session.execute('SET X gender %(g)s WHERE X eid %(e)s', {'e': seid, 'g': g.lower()})
+            session.execute(
+            'SET X gender %(g)s WHERE X eid %(e)s',
+            {'e': seid, 'g': g.lower()})
     session.commit()
