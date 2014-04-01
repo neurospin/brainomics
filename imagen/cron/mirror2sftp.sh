@@ -50,6 +50,12 @@ mkdir -p ${ROOT_TARGET}/IMAGEN/processed/spmstatsintra
 ) | ( cd ${ROOT_TARGET}/IMAGEN/processed/spmstatsintra ; tar xf - )
 
 
+# FU2 - aMRI
+# needs no anonymization
+rsync -rlt \
+    /neurospin/imagen/FU2/processed/nifti \
+    ${ROOT_TARGET}/FU2/processed/
+
 # clean up
 chmod -R g-w,o-w ${ROOT_TARGET}
 find ${ROOT_TARGET} -type f -exec chmod -x {} \;
