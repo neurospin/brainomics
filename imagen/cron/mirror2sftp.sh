@@ -34,20 +34,20 @@ rsync -rlt \
 rsync -rlt \
     --exclude '*FU2*.csv' \
     /neurospin/imagen/RAW/PSC2/psytools/*.csv \
-    ${ROOT_TARGET}/IMAGEN/RAW/PSC2/psytools/
+    ${ROOT_TARGET}/BL_FU1/RAW/PSC2/psytools/
 
 # DAWBA
 # had been anonymized by Scito
 rsync -rlt \
     /neurospin/imagen/RAW/PSC2/dawba/*.csv \
-    ${ROOT_TARGET}/IMAGEN/RAW/PSC2/dawba/
+    ${ROOT_TARGET}/BL_FU1/RAW/PSC2/dawba/
 
 # statistics for faces task + swea preprocessing
-mkdir -p ${ROOT_TARGET}/IMAGEN/processed/spmstatsintra
+mkdir -p ${ROOT_TARGET}/BL_FU1/processed/spmstatsintra
 ( cd /neurospin/imagen/processed/spmstatsintra ; tar cf - \
     */*/EPI_faces/swea/job_spmstatsintra_*.m \
     */*/EPI_faces/swea/SPM.mat.gz \
-) | ( cd ${ROOT_TARGET}/IMAGEN/processed/spmstatsintra ; tar xf - )
+) | ( cd ${ROOT_TARGET}/BL_FU1/processed/spmstatsintra ; tar xf - )
 
 
 # FU2 - aMRI
