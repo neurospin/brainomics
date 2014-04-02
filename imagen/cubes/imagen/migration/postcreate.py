@@ -117,7 +117,7 @@ group-attrs-map=%(group-attrs-map)s"""
 
 
 def _escape_rql(request):
-    return request.replace('\\', '\\\\').replace('"', '\\"').replace("'", "\\'")
+    return request.replace('\\', '\\\\').replace("'", "\\'")
 
 
 _LDAP_ATTRIBUTES = {
