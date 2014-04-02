@@ -56,6 +56,31 @@ rsync -rlt \
     /neurospin/imagen/FU2/processed/nifti \
     ${ROOT_TARGET}/FU2/processed/
 
+# genetics
+mkdir -p ${ROOT_TARGET}/BL_FU1/genetic/qc/imput/610/Mach_HapMap
+rsync -rlt \
+    /neurospin/imagen/genetic/qc/imput/610/Mach_HapMap/chroms \
+    /neurospin/imagen/genetic/qc/imput/610/Mach_HapMap/plink \
+    ${ROOT_TARGET}/BL_FU1/genetic/qc/imput/610/Mach_HapMap/
+mkdir -p ${ROOT_TARGET}/BL_FU1/genetic/qc/imput/610/Mach_1kG
+rsync -rlt \
+    /neurospin/imagen/genetic/qc/imput/610/Mach_1kG/chroms \
+    ${ROOT_TARGET}/BL_FU1/genetic/qc/imput/610/Mach_1kG/
+mkdir -p ${ROOT_TARGET}/BL_FU1/genetic/qc/imput/660/Mach_HapMap
+rsync -rlt \
+    /neurospin/imagen/genetic/qc/imput/660/Mach_HapMap/chroms \
+    /neurospin/imagen/genetic/qc/imput/660/Mach_HapMap/plink \
+    ${ROOT_TARGET}/BL_FU1/genetic/qc/imput/660/Mach_HapMap/
+mkdir -p ${ROOT_TARGET}/BL_FU1/genetic/qc/imput/union/Mach_1kG
+rsync -rlt \
+    /neurospin/imagen/genetic/qc/imput/union/Mach_1kG/chroms \
+    ${ROOT_TARGET}/BL_FU1/genetic/qc/imput/union/Mach_1kG/
+mkdir -p ${ROOT_TARGET}/BL_FU1/genetic/qc/imput/union/Mach_HapMap
+rsync -rlt \
+    /neurospin/imagen/genetic/qc/imput/union/Mach_HapMap/plink \
+    ${ROOT_TARGET}/BL_FU1/genetic/qc/imput/union/Mach_HapMap/
+
+
 # clean up
 chmod -R g-w,o-w ${ROOT_TARGET}
 find ${ROOT_TARGET} -type f -exec chmod -x {} \;
