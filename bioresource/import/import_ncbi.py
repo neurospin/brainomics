@@ -575,9 +575,9 @@ if __name__ == '__main__':
     platforms = []
     platform = {'name': u'Affymetrix_6.0'}
     platforms.append(platform)
-    platform = {'name': u'Illu_660'}
+    platform = {'name': u'Illumina_660'}
     platforms.append(platform)
-    platform = {'name': u'Illu_610'}
+    platform = {'name': u'Illumina_610'}
     platforms.append(platform)
     if sqlgen_store:
         for platform in platforms:
@@ -589,9 +589,9 @@ if __name__ == '__main__':
     affymetrix_6_0_snps = read_snps_rsid_genome_wide_snp_6_na33_annot(
                                 path_genome_wide_snp_6_na33_annot)
     platform_snps[u'Affymetrix_6.0'] = affymetrix_6_0_snps
-    platform_snps[u'Illu_660'] = read_snps_human6xxw_quad_v1_h_bed(
+    platform_snps[u'Illumina_660'] = read_snps_human6xxw_quad_v1_h_bed(
                                     path_human660w_quad_v1_h)
-    platform_snps[u'Illu_610'] = read_snps_human6xxw_quad_v1_h_bed(
+    platform_snps[u'Illumina_610'] = read_snps_human6xxw_quad_v1_h_bed(
                                     path_human610_quadv1_h)
     if selected_opt == compute_opt.snps:
         sys.stdout.write("Processing SNPs...\n")
