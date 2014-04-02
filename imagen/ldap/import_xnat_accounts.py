@@ -133,11 +133,25 @@ def parse_psql_dump(psqlfile):
     return accounts
 
 
+def find_existing_uid_dn(people, uid, dn):
+    uid_exists = False
+    dn_exists = False
+    for d, e in people:
+        if e['uid'][0] == uid:
+            uid_exists = True
+            dn_exists = True
+            break
+        if d == dn:
+            dn_exists = True
+    return uid_exists, dn_exists
+
+
 import ldap
 import passlib.hash
 import logging
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
+
 
 def sync_ldap(ldapobject, base, accounts):
     """Sync LDAP with accounts.
@@ -156,8 +170,8 @@ def sync_ldap(ldapobject, base, accounts):
     .. _LDAPObject: http://www.python-ldap.org/doc/html/ldap.html#ldapobject-classes
 
     """
-    uid = 3000  # attempt to avoid messing with existing accounts
-    gid = 999   # group 'partners' by default
+    UID_NUMBER = 3000  # avoid messing with UID numbers < 3000
+    GID_NUMBER = 999   # group 'partners' by default
 
     # XNAT logins
     xnat_logins = set([x['login'] for x in accounts])
@@ -165,7 +179,13 @@ def sync_ldap(ldapobject, base, accounts):
     # retrieve list of LDAP accounts
     people = ldapobject.search_s('ou=People,' + base, ldap.SCOPE_ONELEVEL)
 
-    # discard LDAP accounts missing from XNAT accounts
+    # find existing UID numbers
+    uid_numbers = set()
+    for dn, entry in people:
+        uid_number = entry['uidNumber'][0]
+        uid_numbers.add(uid_number)
+
+    # discard LDAP accounts missing a matching XNAT account
     for dn, entry in people:
         login = entry['uid'][0]
         logger.debug('Check LDAP account: ' + login.decode('utf-8'))
@@ -175,36 +195,58 @@ def sync_ldap(ldapobject, base, accounts):
 
     # sync LDAP accounts with XNAT accounts
     for account in accounts:
-        login = account['login'].encode('utf-8')
-        logger.debug('Process XNAT account: ' + login.decode('utf-8'))
-        firstname = account['firstname'].encode('utf-8')
-        lastname = account['lastname'].upper().encode('utf-8')
-        cn = firstname + ' ' + lastname
-        dn = 'cn=%s,ou=People,' % cn + base
-        email = account['email'].encode('utf-8')
-        password = passlib.hash.ldap_md5.encrypt(account['password']).encode('utf-8')
-        uid += 1
-        # create or update LDAP account
-        if login in [e['uid'][0] for d, e in people]:
-            logger.debug('XNAT account already in LDAP: ' + login.decode('utf-8'))
-        elif dn in [d for d, e in people]:
-            logger.error('XNAT account already in LDAP: ' + dn.decode('utf-8'))
+        x_login = account['login'].encode('utf-8')
+        logger.debug('Process XNAT account: ' + x_login.decode('utf-8'))
+        x_firstname = account['firstname'].encode('utf-8')
+        x_lastname = account['lastname'].upper().encode('utf-8')
+        x_cn = x_firstname + ' ' + x_lastname
+        x_dn = 'cn=%s,ou=People,' % x_cn + base
+        x_email = account['email'].encode('utf-8')
+        x_password = passlib.hash.ldap_md5.encrypt(account['password']).encode('utf-8')
+        # is there an account with identical 'x_uid' or 'x_dn' in LDAP?
+        uid_exists, dn_exists = find_existing_uid_dn(people, x_login, x_dn)
+        # modify existing or create new LDAP account
+        if uid_exists:
+            logger.info('Modifying account: ' + x_login.decode('utf-8'))
+            attributes = (
+                # would require modrdn_s() instead
+                # (ldap.MOD_REPLACE, 'cn', (x_cn,)),
+                (ldap.MOD_REPLACE, 'givenName', (x_firstname,)),
+                (ldap.MOD_REPLACE, 'sn', (x_lastname,)),
+                (ldap.MOD_REPLACE, 'mail', (x_email,)),
+                (ldap.MOD_REPLACE, 'gidNumber', (str(GID_NUMBER),)),
+                (ldap.MOD_REPLACE, 'homeDirectory', ('/home/' + x_login,)),
+                (ldap.MOD_REPLACE, 'userPassword', (x_password,)),
+                (ldap.MOD_REPLACE, 'loginShell', ('/bin/false',)),
+            )
+            ldapobject.modify_s(x_dn, attributes)
         else:
-            logger.info('Account will be added to LDAP: ' + login.decode('utf-8'))
+            # delete existing account with identical 'dn' but different 'uid'
+            if dn_exists:
+                logger.error('Account already in LDAP: ' + x_dn.decode('utf-8'))
+                logger.info('Deleting account: ' + x_dn.decode('utf-8'))
+                ldapobject.delete_s(x_dn)
+            # find a free UID number above UID_NUMBER
+            uid_number = UID_NUMBER
+            while uid_number in uid_numbers:
+                uid_number += 1
+            uid_numbers.add(uid_number)
+            # create new account
+            logger.info('Adding account: ' + x_login.decode('utf-8'))
             attributes = (
                 ('objectClass', ('top', 'person', 'inetOrgPerson', 'posixAccount')),
-                ('cn', (cn,)),
-                ('givenName', (firstname,)),
-                ('sn', (lastname,)),
-                ('mail', (email,)),
-                ('uid', (login,)),
-                ('uidNumber', (str(uid),)),
-                ('gidNumber', (str(gid),)),
-                ('homeDirectory', ('/home/' + login,)),
-                ('userPassword', (password,)),
+                ('cn', (x_cn,)),
+                ('givenName', (x_firstname,)),
+                ('sn', (x_lastname,)),
+                ('mail', (x_email,)),
+                ('uid', (x_login,)),
+                ('uidNumber', (str(uid_number),)),
+                ('gidNumber', (str(GID_NUMBER),)),
+                ('homeDirectory', ('/home/' + x_login,)),
+                ('userPassword', (x_password,)),
                 ('loginShell', ('/bin/false',)),
             )
-            ldapobject.add_s(dn, attributes)
+            ldapobject.add_s(x_dn, attributes)
 
 
 def write_csv(accounts):
