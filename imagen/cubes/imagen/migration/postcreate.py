@@ -26,6 +26,7 @@ set_property('ui.site-title', "Imagen V2")
 
 
 _LDAP_CONFIGURATION_DETAILS = {
+    'synchronization-interval': u'1min',
     'data-cnx-dn': u'cn=admin,dc=imagen2,dc=cea,dc=fr',
     'data-cnx-password': u'kelbordel',
     'user-base-dn': u'ou=People,dc=imagen2,dc=cea,dc=fr',
@@ -44,7 +45,7 @@ synchronize=yes
 
 # Interval in seconds between synchronization with the external source (default
 # to 5 minutes, must be >= 1 min).
-synchronization-interval=5min
+synchronization-interval=%(synchronization-interval)s
 
 # Maximum time allowed for a synchronization to be run. Exceeded that time, the
 # synchronization will be considered as having failed and not properly released
