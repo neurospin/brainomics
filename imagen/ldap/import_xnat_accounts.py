@@ -157,20 +157,13 @@ def sync_ldap(ldapobject, base, accounts):
 
     """
     uid = 3000  # attempt to avoid messing with existing accounts
-    gid = 100  # group "users" by default
+    gid = 999   # group 'partners' by default
 
     # XNAT logins
     xnat_logins = set([x['login'] for x in accounts])
 
     # retrieve list of LDAP accounts
     people = ldapobject.search_s('ou=People,' + base, ldap.SCOPE_ONELEVEL)
-    # retrieve members of LDAP group "partners"
-    dn_partners = 'cn=partners,ou=Groups,' + base
-    partners = ldapobject.search_s(dn_partners, ldap.SCOPE_BASE)[0][1]
-    if 'memberUid' in partners:
-        partners = partners['memberUid']
-    else:
-        partners = None
 
     # discard LDAP accounts missing from XNAT accounts
     for dn, entry in people:
@@ -179,14 +172,6 @@ def sync_ldap(ldapobject, base, accounts):
         if login.decode('utf-8') not in xnat_logins:
             logger.warn('Delete LDAP account: ' + login.decode('utf-8'))
             ldapobject.delete_s(dn)
-            if login in partners:
-                attributes = (ldap.MOD_DELETE,'memberUid',login)
-                ldapobject.modify_s(dn_partners, (attributes,))
-        elif login not in partners:
-            logger.error('LDAP account missing from LDAP group "partners": '
-                         + login.decode('utf-8'))
-            attributes = (ldap.MOD_ADD, 'memberUid', login)
-            ldapobject.modify_s(dn_partners, (attributes,))
 
     # sync LDAP accounts with XNAT accounts
     for account in accounts:
@@ -199,13 +184,6 @@ def sync_ldap(ldapobject, base, accounts):
         email = account['email'].encode('utf-8')
         password = passlib.hash.ldap_md5.encrypt(account['password']).encode('utf-8')
         uid += 1
-        # add account to the restricted "partners" group
-        if partners and login in partners:
-            logger.debug('Account already in "partners": ' + login.decode('utf-8'))
-        else:
-            logger.info('Account will be added to "partners": ' + login.decode('utf-8'))
-            attributes = (ldap.MOD_ADD, 'memberUid', login)
-            ldapobject.modify_s(dn_partners, (attributes,))
         # create or update LDAP account
         if login in [e['uid'][0] for d, e in people]:
             logger.debug('XNAT account already in LDAP: ' + login.decode('utf-8'))
