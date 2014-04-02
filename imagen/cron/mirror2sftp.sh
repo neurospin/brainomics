@@ -47,8 +47,9 @@ mkdir -p ${ROOT_TARGET}/BL_FU1/processed/spmstatsintra
 ( cd /neurospin/imagen/processed/spmstatsintra ; tar cf - \
     */*/EPI_faces/swea/job_spmstatsintra_*.m \
     */*/EPI_faces/swea/SPM.mat.gz \
+    */*/EPI_stop_signal/swea/job_spmstatsintra_*.m \
+    */*/EPI_stop_signal/swea/SPM.mat.gz \
 ) | ( cd ${ROOT_TARGET}/BL_FU1/processed/spmstatsintra ; tar xf - )
-
 
 # FU2 - aMRI
 # needs no anonymization
