@@ -49,7 +49,7 @@ There is an instance name in all the bash scripts (*.sh). You should change this
 __Step 1: Clean and Create Database for bioresource__
 
 ```
-$ source brainomics/bioresource/scripts/clean_and_build_db.sh
+$ source brainomics/bioresource/import/clean_and_build_db.sh
 ```
 
 This step is used to clean your cubicweb instance and database, and then build a new instance.
@@ -57,7 +57,7 @@ This step is used to clean your cubicweb instance and database, and then build a
 __Step 2 : Import chromosome, gene, platform information into database.__
 
 ```
-$ source brainomics/bioresource/scripts/import_ncbi_part1.sh
+$ source brainomics/bioresource/import/import_ncbi_part1.sh
 ```
 
 __Step 3 : Clean ncbi snps file__
@@ -67,7 +67,7 @@ thre are some duplicated snps (the same rsxxxxx) and snps with unkown chromosome
 this script is used to clean up snps. 
 
 ```
-$ python brainomics/bioresource/scripts/clean_ncbi_duplicated_snp_data.py
+$ python brainomics/bioresource/import/clean_ncbi_duplicated_snp_data.py
 ```
 
 This script will produce "/neurospin/brainomics/2014_bioresource/data/snps/cleaned_snp138Common.txt"
@@ -95,7 +95,7 @@ $ split -l 1964281 /neurospin/brainomics/2014_bioresource/data/snps/cleaned_snp1
 
 
 ```
-$ source brainomics/bioresource/scripts/import_ncbi_part2.sh
+$ source brainomics/bioresource/import/import_ncbi_part2.sh
 ```
 
 __Step 5 : Import other assessments__
