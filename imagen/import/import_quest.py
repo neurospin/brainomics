@@ -50,6 +50,7 @@ from cubicweb import dbapi
 #date is unused
 t = time.gmtime()
 date = datetime.date(t.tm_year, t.tm_mon, t.tm_mday).isoformat()[:10]
+count = 0
 
 cnx = dbapi.connect('zmqpickle-tcp://127.0.0.1:8181', login='admin', password='admin')
 
@@ -63,7 +64,7 @@ def main(path, cnx):
     print path
     print date
     print 80 * '*'
-
+    print 'count = %s' % count
     if os.path.isdir(path):
         for filename in os.listdir(path):
             if os.path.splitext(filename)[1] == '.csv':
@@ -74,15 +75,19 @@ def main(path, cnx):
     # Update all questions
     for eid, pa in QUESTION_POSSIBLE_ANSWERS.iteritems():
         #Escape \, " and ' in possible_answer value
-        #if pa and pa is not 'None':
-            #pa = pa.replace("\\", "\\\\")
-            #pa = pa.replace('"', '\\"')
-            #pa = pa.replace("'", "\\'")
+        if pa and pa is not 'None':
+            pa = pa.replace("\\", "\\\\")
+            pa = pa.replace('"', '\\"')
+            pa = pa.replace("'", "\\'")
             #debug
             #print 'pa', pa, 'eid', eid
-        cnx.cursor().execute("SET X possible_answers '%(pa)s' "
-                           "WHERE X eid %(eid)s"
-                           % {'eid': eid, 'pa': pa})
+            req = ("SET X possible_answers '%(pa)s' WHERE X eid %(eid)s"
+            % {'eid': eid, 'pa': pa})
+            print 'req = %s' % req
+            res = cnx.cursor().execute(req)
+            print 'res = %s' % res
+    print 80 * '*'
+    print '%s QuestionnaireRun inserted' % count
     cnx.commit()
         
         
@@ -114,7 +119,7 @@ def create_entity_safe(entity_name, **entity):
 def insert_questionnaire(filename, cnx):
     #for i in subjects:
     #    print i, subjects[i]
-
+    global count
     i = filename.find('-')
     j = filename[i+1:].find('-')
     print filename[i+1:i+1+j]
@@ -202,6 +207,7 @@ def insert_questionnaire(filename, cnx):
                     #print position, 'Q : ',l[7],', Answer : ',l[8],', time : ',l[10]
                 #else a new subject is treated and the question position index is reset to 0
                 else:
+                    count = count + 1
                     old_subject = subject
                     old_iter = iteration
                     position = 0
@@ -222,10 +228,10 @@ def insert_questionnaire(filename, cnx):
                         if l[11] == 't':
                             valid = True
                         quest['valid'] = valid
-                    #print 'create QuestionnaireRun'
+                    print 'create QuestionnaireRun'
                     res_quest = create_entity_safe('QuestionnaireRun', **quest)
-                    #print 'res %s' % res_quest
-                    #print 'End create QuestionnaireRun'
+                    print 'res %s' % res_quest
+                    print 'End create QuestionnaireRun'
                     if not res_quest:
                         print 'cannot insert QuestionnaireRun %(a)s%(b)s_%(c)s' % {'a': filename[i+1:i+1+j], 'b': subject[0:12], 'c': age}
                     else:
@@ -234,10 +240,10 @@ def insert_questionnaire(filename, cnx):
                             asses['age_of_subject'] = age
                         asses['identifier'] = assessment_id
                         asses['timepoint'] = u'FU2'
-                        #print 'create Assessment'
+                        print 'create Assessment'
                         res_asses = create_entity_safe('Assessment', **asses)
-                        #print 'res %s' % res_asses 
-                        #print 'End create Assessment'
+                        print 'res %s' % res_asses 
+                        print 'End create Assessment'
                         if not res_asses:
                             print 'cannot insert Assessment for QuestionnaireRun %(a)s%(b)s_%(c)s' % {'a': filename[i+1:i+1+j], 'b': subject[0:12], 'c': age}
                         else:
@@ -382,7 +388,10 @@ def insert_questionnaire(filename, cnx):
                 #    traceback.print_tb(e_tb)
                 #print 'End of line'
     #commit must be done here to avoid insertion of current question/answer be rollbacked by a next rollback() method call
-    cnx.commit()
+                if (count % 100 == 0):
+                    cnx.commit()
+                    print 80 * '*'
+                    print 'already %s QuestionnaireRun inserted' % count
     print 'End of csv file'
     csvfile.close()
 
