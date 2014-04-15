@@ -12,8 +12,8 @@ import os, csv, glob, sys
 ############################################################################
 
 PLATFORM_AFFYMETRIX_6_0 = u"Affymetrix_6.0"
-PLATFORM_ILLUMINA_610QUAD = u"Illu_610"
-PLATFORM_ILLUMINA_660W = u"Illu_660"
+PLATFORM_ILLUMINA_610QUAD = u"Illumina_610"
+PLATFORM_ILLUMINA_660W = u"Illumina_660"
 
 
 ############################################################################
