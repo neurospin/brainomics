@@ -427,6 +427,7 @@ def build_scan_map(tree, scan, experiment, psc):
     file_format = unicode(_file.get('format'))
     _type = SCAN_TYPES.get(scan_type, 'raw fMRI')
     identifier = file_uri
+    print 'build_scan_map: identifier %s' % identifier
     index = identifier.find(psc)
     identifier = identifier[index:]
     l = len(identifier)
@@ -495,6 +496,10 @@ def build_resource_scan_infos(resource, assessor, psc):
     else:
         label = assessor.get('%stype' % XSI)
     identifier = format_filepath(resource.get('URI'))
+    print 'build_resource_scan_info: identifier %s' % identifier
+    #ugly fix for malformated resource which does not have URI
+    if not identifier:
+        return {'identifier': None}
     index = identifier.find(psc)
     identifier = identifier[index:]
     l = len(identifier)
@@ -740,15 +745,17 @@ center_eid, center_id, psc):
 #                         filepath=keep_filepath).eid
 #            store.relate(fset_eid, 'file_entries', fent_eid )
 #            store.relate(assessor_scan_eid, 'external_resources', fset_eid)
-            ext_eid = store.create_entity('ExternalResource',
+            #Create ExternalResource entity if assessor_scan_infos is filled
+            if assessor_scan_infos.get('identifier'):
+                ext_eid = store.create_entity('ExternalResource',
                                           name=assessor_scan_infos.get(
                                           'label'),
                                           filepath=assessor_scan_infos[
                                           'filepath'],
                                           related_study=study_eid).eid
-            store.relate(assessor_scan_eid, 'external_resources', ext_eid)
-            store.relate(assessment_eid, 'generates', assessor_scan_eid,
-            subjtype='Assessment')
+                store.relate(assessor_scan_eid, 'external_resources', ext_eid)
+                store.relate(assessment_eid, 'generates', assessor_scan_eid,
+                subjtype='Assessment')
         else:
             # This xml node only contains scores, e.g. badrpData
             scan_eid = seen_scan_types.get(assessor.get(
@@ -851,6 +858,8 @@ def build_psytool_experiment(store, tree, experiment, etype):
 
     Returns a map of Experiment attributes, ready to be fed to the store.
     """
+    #debug
+    print 'build_psytool_experiment'
     path = '@xsi:type'
     root = tree.getroot()
     nsmap = root.nsmap
@@ -881,6 +890,8 @@ subject_eid, experiment_eid, study_eid):
 
     Returns a map of ExperimentRun attributes, ready to be fed to the store.
     """
+    #debug
+    print 'build_psytool_experiment_run'
     path = '@ID'
     root = tree.getroot()
     nsmap = root.nsmap
@@ -895,6 +906,8 @@ subject_eid, experiment_eid, study_eid):
     path = 'psytool:completed'
     find = experiment.xpath(path, namespaces=nsmap)
     completed = bool(find[0].text) if find else None
+    #debug
+    print 'experiment_id = %s' % experiment_id
     path = 'psytool:processed_age_for_test'
     find = experiment.xpath(path, namespaces=nsmap)
     if find:
@@ -906,6 +919,8 @@ subject_eid, experiment_eid, study_eid):
     #identifier build to assume its unicity
     experiment_id = '''%(a)s_%(b)s_%(c)s''' % {'a': experiment_id, 'b': age,
     'c': iteration}
+    #debug
+    print 'identifier = %s' % experiment_id
     experiment_id = experiment_id.upper()
     entity = store.create_entity(etype_run,
                                  identifier=experiment_id,
@@ -923,6 +938,8 @@ etype_run, study_eid):
     """Import all types of psytool experiments (questionnaire/behavioural)"""
     # Create experiment metadata - if not already created by a different
     # run of the same experiment
+    #debug
+    print 'import_psytool_experiment'
     experiment_eid, psytool_type = build_psytool_experiment(
     store, tree, experiment, exp_etype)
     # Create experiment data specific to this experiment run, relate to
@@ -1000,6 +1017,8 @@ def import_questionnaire(store, tree, experiment, study_eid, subject_eid,
 center_eid):
     """Import a questionnaire (as a type of psytool experiment)"""
     # Create questionnaire
+    #debug
+    print 'import_questionnaire %(a)s, %(b)s, %(c)s' % {'a':experiment, 'b': subject_eid, 'c': center_eid}
     questionnaire_run_eid, questionnaire_eid, age, psytool_type = \
         import_pystool_experiment(store, tree, experiment, subject_eid,
                                   'Questionnaire', 'QuestionnaireRun',
@@ -1313,6 +1332,8 @@ def import_demographics(store, tree, subject_eid):
     """
     demographics = tree.getroot().findall('%sdemographics' % XNAT)
     if not demographics:
+        #debug
+        print 'No demographics'
         return
     for child in demographics[0].getchildren():
         if child.tag not in('%sgender' % XNAT, '%shandedness' % XNAT):
@@ -1409,13 +1430,23 @@ def import_imagen_file(store, xml_file, filepath):
     subject_eid = import_subject(store, tree)
     store.relate(subject_eid, 'related_studies', study_eid)
     # Import assessments
+    #debug
+    print 'import_demographics'
     import_demographics(store, tree, subject_eid)
     # Import experiments
     path = '/xnat:Subject/xnat:experiments/xnat:experiment'
     find = root.xpath(path, namespaces=nsmap)
+    #159 Subjects have a different path
+    if len(find)<1:
+        path = '/imagen:Imagen_subject/xnat:experiments/xnat:experiment'
+        find = root.xpath(path, namespaces=nsmap)
+    #debug    
+    print 'import_experiments %s' % find
     for experiment in find:
         find = experiment.xpath('@xsi:type', namespaces=nsmap)
         experiment_type = find[0]
+        #debug
+        print 'experiment_type %s' % experiment_type
         if experiment_type == 'imagen:qualityReportData':
             assessment_eid = import_quality_report(store, tree, experiment,
             study_eid, subject_eid, center_eid)
