@@ -528,6 +528,7 @@ def import_neuroimaging_raw_scan(store, tree, experiment, scan,
         center_id)
     scan_infos = build_scan_map(tree, scan, experiment, psc)
     if not scan_infos:
+        print "NO SCAN_INFOS"
         return
     scan_infos['concerns'] = subject_eid
     scan_infos['related_study'] = study_eid
@@ -544,6 +545,7 @@ def import_neuroimaging_raw_scan(store, tree, experiment, scan,
     #TOFIX  pop filepath for now so that the mapping will not raise an error
     #scan_infos.pop('filepath')
     scan_eid = store.create_entity('Scan', **scan_infos).eid
+    #print "scan_eid %s" % scan_eid
     store.relate(assessment_eid, 'generates', scan_eid, subjtype='Assessment')
     # Add external resource
     filepath = scan.findall('%sfile' % XNAT)[0]
@@ -858,8 +860,6 @@ def build_psytool_experiment(store, tree, experiment, etype):
 
     Returns a map of Experiment attributes, ready to be fed to the store.
     """
-    #debug
-    print 'build_psytool_experiment'
     path = '@xsi:type'
     root = tree.getroot()
     nsmap = root.nsmap
@@ -890,8 +890,6 @@ subject_eid, experiment_eid, study_eid):
 
     Returns a map of ExperimentRun attributes, ready to be fed to the store.
     """
-    #debug
-    print 'build_psytool_experiment_run'
     path = '@ID'
     root = tree.getroot()
     nsmap = root.nsmap
@@ -906,8 +904,6 @@ subject_eid, experiment_eid, study_eid):
     path = 'psytool:completed'
     find = experiment.xpath(path, namespaces=nsmap)
     completed = bool(find[0].text) if find else None
-    #debug
-    print 'experiment_id = %s' % experiment_id
     path = 'psytool:processed_age_for_test'
     find = experiment.xpath(path, namespaces=nsmap)
     if find:
@@ -919,8 +915,6 @@ subject_eid, experiment_eid, study_eid):
     #identifier build to assume its unicity
     experiment_id = '''%(a)s_%(b)s_%(c)s''' % {'a': experiment_id, 'b': age,
     'c': iteration}
-    #debug
-    print 'identifier = %s' % experiment_id
     experiment_id = experiment_id.upper()
     entity = store.create_entity(etype_run,
                                  identifier=experiment_id,
@@ -938,8 +932,6 @@ etype_run, study_eid):
     """Import all types of psytool experiments (questionnaire/behavioural)"""
     # Create experiment metadata - if not already created by a different
     # run of the same experiment
-    #debug
-    print 'import_psytool_experiment'
     experiment_eid, psytool_type = build_psytool_experiment(
     store, tree, experiment, exp_etype)
     # Create experiment data specific to this experiment run, relate to
@@ -1017,8 +1009,6 @@ def import_questionnaire(store, tree, experiment, study_eid, subject_eid,
 center_eid):
     """Import a questionnaire (as a type of psytool experiment)"""
     # Create questionnaire
-    #debug
-    print 'import_questionnaire %(a)s, %(b)s, %(c)s' % {'a':experiment, 'b': subject_eid, 'c': center_eid}
     questionnaire_run_eid, questionnaire_eid, age, psytool_type = \
         import_pystool_experiment(store, tree, experiment, subject_eid,
                                   'Questionnaire', 'QuestionnaireRun',
@@ -1036,10 +1026,9 @@ center_eid):
             questionnaire_run_eid, 'external_resources', extres_eid)
             store.relate(extres_eid, 'related_study', study_eid)
     # Relate to an assessment
-    assessment_eid = create_assessment_for_experiment(store, experiment, age,
-                                                      study_eid, subject_eid,
-                                                      center_eid,
-                                                      questionnaire_run_eid)
+    assessment_eid = create_assessment_for_experiment(
+    store, experiment, age, study_eid, subject_eid, center_eid,
+    questionnaire_run_eid)
     # Files
     for extres_infos in iterate_external_resources(
     store, experiment, study_eid):
@@ -1332,7 +1321,6 @@ def import_demographics(store, tree, subject_eid):
     """
     demographics = tree.getroot().findall('%sdemographics' % XNAT)
     if not demographics:
-        #debug
         print 'No demographics'
         return
     for child in demographics[0].getchildren():
@@ -1430,23 +1418,17 @@ def import_imagen_file(store, xml_file, filepath):
     subject_eid = import_subject(store, tree)
     store.relate(subject_eid, 'related_studies', study_eid)
     # Import assessments
-    #debug
-    print 'import_demographics'
     import_demographics(store, tree, subject_eid)
     # Import experiments
     path = '/xnat:Subject/xnat:experiments/xnat:experiment'
     find = root.xpath(path, namespaces=nsmap)
     #159 Subjects have a different path
-    if len(find)<1:
+    if len(find) < 1:
         path = '/imagen:Imagen_subject/xnat:experiments/xnat:experiment'
         find = root.xpath(path, namespaces=nsmap)
-    #debug    
-    print 'import_experiments %s' % find
     for experiment in find:
         find = experiment.xpath('@xsi:type', namespaces=nsmap)
         experiment_type = find[0]
-        #debug
-        print 'experiment_type %s' % experiment_type
         if experiment_type == 'imagen:qualityReportData':
             assessment_eid = import_quality_report(store, tree, experiment,
             study_eid, subject_eid, center_eid)
