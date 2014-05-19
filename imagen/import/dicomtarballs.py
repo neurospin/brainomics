@@ -30,9 +30,11 @@ def insert_dicomtarball(path, cnx, subject, series):
 
     studies = dict(cnx.cursor().execute('Any N, S WHERE S is Study, S name N'))
 
-    centers = dict(cnx.cursor().execute('Any I, C WHERE C is Center, C identifier I'))
+    centers = dict(cnx.cursor().execute(
+    'Any I, C WHERE C is Center, C identifier I'))
 
-    subjects = dict(cnx.cursor().execute('Any I, S WHERE S is Subject, S identifier I'))
+    subjects = dict(cnx.cursor().execute(
+    'Any I, S WHERE S is Subject, S identifier I'))
 
     subject_eid = None
     if 'IMAGEN_' + subject in subjects:
@@ -43,114 +45,121 @@ def insert_dicomtarball(path, cnx, subject, series):
 
     date = None
     tarball = tarfile.open(path)
-    file1 = tarball.extractfile('./1.dcm')
-    dataset = dicom.read_file(file1)
+    file1 = tarball.extractfile(tarball.getnames()[1])
+    dataset = None
+    try:
+        dataset = dicom.read_file(file1)
+    except Exception:
+        print "Error while reading %s" % tarball.getnames()[1]
+        tarball.close()
+        return
     tarball.close()
 
-    if (0x0020,0x0011) in dataset:
-        cw_scan_id = dataset[0x0020,0x0011].value
+    if (0x0020, 0x0011) in dataset:
+        cw_scan_id = dataset[0x0020, 0x0011].value
         #cw_scan_type = None
         #scan.set('type', serie)
         cw_scan_type = series
         #scan.set('type', dcm_header['0008']['103e'])
         #print 'Could not set scan type'
-        if (0x0008,0x0070) in dataset:
-            cw_scanner_manufacturer = dataset[0x0008,0x0070].value
+        if (0x0008, 0x0070) in dataset:
+            cw_scanner_manufacturer = dataset[0x0008, 0x0070].value
         else:
             cw_scanner_manufacturer = None
             print 'Could not find scanner manufacturer in dicom header'
-        if (0x0008,0x1090) in dataset:
-            cw_scanner_model = dataset[0x0008,0x1090].value
+        if (0x0008, 0x1090) in dataset:
+            cw_scanner_model = dataset[0x0008, 0x1090].value
         else:
             cw_scanner_model = None
             print 'Could not find scanner model in dicom header'
-        if (0x0008,0x1010) in dataset:
-            cw_scanner_text = dataset[0x0008,0x1010].value
+        if (0x0008, 0x1010) in dataset:
+            cw_scanner_text = dataset[0x0008, 0x1010].value
         else:
             cw_scanner_text = 'None'
             print 'Could not find scanner id in dicom header'
-        if (0x0008,0x1070) in dataset:
-            cw_operator = dataset[0x0008,0x1070].value
+        if (0x0008, 0x1070) in dataset:
+            cw_operator = dataset[0x0008, 0x1070].value
         else:
             cw_operator = None
             print 'Could not find operator name in dicom header'
         cw_uri = path.decode(locale.getpreferredencoding())
 
-        if (0x0008,0x103e) in dataset:
-            cw_content = dataset[0x0008,0x103e].value + '_RAW'
+        if (0x0008, 0x103e) in dataset:
+            cw_content = dataset[0x0008, 0x103e].value + '_RAW'
         else:
             cw_content = None
             print 'Could not find scan content type in dicom header'
-        if (0x0028,0x0030) in dataset and (0x0018,0x0050) in dataset:
-            print 'voxelres %s'%dataset[0x0028,0x0030].value
-            resolution = dataset[0x0028,0x0030].value
+        if (0x0028, 0x0030) in dataset and (0x0018, 0x0050) in dataset:
+            print 'voxelres %s' % dataset[0x0028, 0x0030].value
+            resolution = dataset[0x0028, 0x0030].value
             cw_voxelres_x = resolution[0]
             cw_voxelres_y = resolution[1]
-            cw_voxelres_z = dataset[0x0018,0x0050].value
+            cw_voxelres_z = dataset[0x0018, 0x0050].value
         else:
             cw_voxelres_x = None
             cw_voxelres_y = None
             cw_voxelres_z = None
             print 'Could not find voxel resolution infos in dicom header'
-        if (0x0028,0x0010) in dataset and (0x0028,0x0011) in dataset:
-            cw_fov_x = dataset[0x0028,0x0010].value
-            cw_fov_y = dataset[0x0028,0x0011].value
+        if (0x0028, 0x0010) in dataset and (0x0028, 0x0011) in dataset:
+            cw_fov_x = dataset[0x0028, 0x0010].value
+            cw_fov_y = dataset[0x0028, 0x0011].value
         else:
             cw_fov_x = None
             cw_fov_y = None
             print 'Could not find FoV infos in dicom header'
-        if (0x0018,0x0080) in dataset:
-            cw_tr = dataset[0x0018,0x0080].value
+        if (0x0018, 0x0080) in dataset:
+            cw_tr = dataset[0x0018, 0x0080].value
         else:
             cw_tr = None
             print 'Could not find TR in dicom header'
-        if (0x0018,0x0081) in dataset:
-            cw_te = dataset[0x0018,0x0081].value
+        if (0x0018, 0x0081) in dataset:
+            cw_te = dataset[0x0018, 0x0081].value
         else:
             cw_te = None
             print 'Could not find TE in dicom header'
-        if (0x0018,0x0024) in dataset:
-            cw_sequence = dataset[0x0018,0x0024].value
+        if (0x0018, 0x0024) in dataset:
+            cw_sequence = dataset[0x0018, 0x0024].value
         else:
             cw_sequence = None
             print 'Could not find sequence in dicom header'
-        if (0x0008,0x0031) in dataset:
-            st = dataset[0x0008,0x0031].value
-            cw_scanTime = st[0:2]+':'+st[2:4]+':'+st[4:6]
+        if (0x0008, 0x0031) in dataset:
+            st = dataset[0x0008, 0x0031].value
+            cw_scanTime = st[0:2] + ':' + st[2:4] + ':' + st[4:6]
         else:
             cw_scanTime = None
             print 'Could not find scan time in dicom header'
-        if (0x0008,0x0008) in dataset:
-            cw_imageType = dataset[0x0008,0x0008].value
+        if (0x0008, 0x0008) in dataset:
+            cw_imageType = dataset[0x0008, 0x0008].value
         else:
             cw_imageType = None
             print 'Could not find image type in dicom header'
-        if (0x0018,0x0020) in dataset:
-            #dataset[0x0018,0x0020].value might be a list
-            cw_scanSequence = '\\\\'.join(dataset[0x0018,0x0020].value)
+        if (0x0018, 0x0020) in dataset:
+            #dataset[0x0018, 0x0020].value might be a list
+            cw_scanSequence = '\\\\'.join(dataset[0x0018, 0x0020].value)
         else:
             cw_scanSequence = None
             print 'Could not find scan sequence in dicom header'
-        if (0x0018,0x0021) in dataset:
-            cw_seqVariant = dataset[0x0018,0x0021].value
+        if (0x0018, 0x0021) in dataset:
+            cw_seqVariant = dataset[0x0018, 0x0021].value
         else:
             cw_seqVariant = None
             print 'Could not find sequence variant in dicom header'
-        if (0x0018,0x0023) in dataset:
-            cw_acqType = dataset[0x0018,0x0023].value
+        if (0x0018, 0x0023) in dataset:
+            cw_acqType = dataset[0x0018, 0x0023].value
         else:
             cw_acqType = None
             print 'Could not find acquisition type in dicom header'
-        if (0x0018,0x1030) in dataset:
-            cw_protocol = dataset[0x0018,0x1030].value
+        if (0x0018, 0x1030) in dataset:
+            cw_protocol = dataset[0x0018, 0x1030].value
         else:
             cw_protocol = None
             print 'Could not find protocol in dicom header'
         #Default date
         scan_date = '1900-01-01'
-        if (0x0008,0x0022) in dataset:
-            scan_date = dataset[0x0008,0x0022].value
+        if (0x0008, 0x0022) in dataset:
+            scan_date = dataset[0x0008, 0x0022].value
             if len(scan_date) == 8:
+                print "scan_date %s" % scan_date
                 scan_date = scan_date[:4] + '-' + scan_date[4:6] + '-' + scan_date[6:]
         else:
             print 'Could not read date from dicom header'
@@ -158,16 +167,19 @@ def insert_dicomtarball(path, cnx, subject, series):
     else:
         print 'Could not set scan id from dicom tag (0020:0011)'
     print "====="
-    print [# Scan
+    print [
+           #Scan
            cw_scan_id, cw_scan_type,
-           # Device
+           #Device
            cw_scanner_manufacturer, cw_scanner_model, cw_scanner_text,
            cw_operator,
            cw_uri,
            cw_content,
-           # MRIData
-           cw_voxelres_x, cw_voxelres_y, cw_voxelres_z, cw_fov_x, cw_fov_y, cw_tr, cw_te, cw_sequence,
-           cw_scanTime, cw_imageType, cw_scanSequence, cw_seqVariant, cw_acqType, cw_protocol, scan_date]
+           #MRIData
+           cw_voxelres_x, cw_voxelres_y, cw_voxelres_z, cw_fov_x,
+           cw_fov_y, cw_tr, cw_te, cw_sequence,
+           cw_scanTime, cw_imageType, cw_scanSequence, cw_seqVariant,
+           cw_acqType, cw_protocol, scan_date]
 
     study_eid = None
     if 'Imagen' in studies:
@@ -181,7 +193,8 @@ def insert_dicomtarball(path, cnx, subject, series):
         except:
             cnx.rollback()
             print 'Cannot insert Study'
-        studies = dict(cnx.cursor().execute('Any N, S WHERE S is Study, S name N'))
+        studies = dict(cnx.cursor().execute(
+        'Any N, S WHERE S is Study, S name N'))
         study_eid = studies['Imagen']
 
     try:
@@ -191,7 +204,8 @@ def insert_dicomtarball(path, cnx, subject, series):
                "X concerned_by A WHERE S is Study, C is Center, "
                "X is Subject, S name 'Imagen', "
                "C identifier '%(d)s', X identifier 'IMAGEN_%(e)s'"
-               % {'a': subject, 'b': date, 'd': psc_center[subject], 'e': subject, 'f': series}
+               % {'a': subject, 'b': date, 'd': psc_center[subject],
+               'e': subject, 'f': series}
                )
         print 'req = ', req
         res = cnx.cursor().execute(req)
@@ -204,7 +218,8 @@ def insert_dicomtarball(path, cnx, subject, series):
         req = ("SET A protocols P Where A is Assessment, "
                "P is Protocol, P identifier '%(protocol)s', "
                "A identifier '%(series)s_%(subject)s"
-               % {'protocol': cw_protocol, 'subject': subject, 'series': series}
+               % {'protocol': cw_protocol, 'subject': subject,
+               'series': series}
                )
         res = cnx.cursor().execute()
     except:
@@ -213,7 +228,8 @@ def insert_dicomtarball(path, cnx, subject, series):
 
     req = ("Any N, D WHERE D is Device, "
            "D name N, D manufacturer '%(manufacturer)s', D model '%(model)s'"
-           % {'manufacturer': cw_scanner_manufacturer, 'model': cw_scanner_model}
+           % {'manufacturer': cw_scanner_manufacturer,
+           'model': cw_scanner_model}
            )
     devices = dict(cnx.cursor().execute(req))
     device = None
@@ -237,7 +253,8 @@ def insert_dicomtarball(path, cnx, subject, series):
             cnx.rollback()
             print 'Cannot insert Device'
     try:
-        req = "INSERT MRIData M, Scan S: M sequence '%(a)s'" % {'a': cw_scanSequence}
+        req = "INSERT MRIData M, Scan S: M sequence '%(a)s'" % {
+        'a': cw_scanSequence}
         if cw_voxelres_x is not None:
             req += ', M voxel_res_x %s' % cw_voxelres_x
         if cw_voxelres_y is not None:
@@ -264,25 +281,33 @@ def insert_dicomtarball(path, cnx, subject, series):
         cnx.cursor().execute(req)
 
         ##### TOFIX not sure that this code is ever run
-        #req = '''INSERT FileEntry F: F name \'%(a)s\', F filepath \'%(b)s\''''%{'a': series, 'b': cw_uri}
+        #req = '''INSERT FileEntry F: F name \'%(a)s\',
+        #F filepath \'%(b)s\''''%{'a': series, 'b': cw_uri}
         #res = cnx.cursor().execute(req)
         #fe_eid = res[0][0]
-        #req = '''INSERT FileSet F: F name \'%(a)s\', F format \'%(b)s\''''%{'a': series, 'b': 'DICOM COMPRESSED'}
+        #req = '''INSERT FileSet F: F name \'%(a)s\', F format \'%(b)s\''''%{
+        #'a': series, 'b': 'DICOM COMPRESSED'}
         #res = cnx.cursor().execute(req)
         #fs_eid = res[0][0]
-        #res = cnx.cursor().execute('''SET S file_entries E Where S is FileSet, E is FileEntry, S eid \'%(a)s\', E eid \'%(b)s\'
+        #res = cnx.cursor().execute('''SET S file_entries E Where S is FileSet,
+        #E is FileEntry, S eid \'%(a)s\', E eid \'%(b)s\'
         #''' % {'a': fs_eid, 'b': fe_eid})
-        #res = cnx.cursor().execute('''SET S external_resources F Where S is Scan, F is FileSet, S identifier \'%(a)s_%(b)s\', F eid \'%(c)s\'
+        #res = cnx.cursor().execute(
+        #'''SET S external_resources F Where S is Scan, F is FileSet,
+        #S identifier \'%(a)s_%(b)s\', F eid \'%(c)s\'
         #''' % {'a': series, 'b': subject, 'c': fs_eid})
-        #res = cnx.cursor().execute('''SET F related_study S Where S is Study, F is FileSet, S name \'Imagen\', F eid \'%(a)s\'
+        #res = cnx.cursor().execute('''SET F related_study S Where S is Study,
+        #F is FileSet, S name \'Imagen\', F eid \'%(a)s\'
         #''' % {'a': fs_eid})
-        req = ("INSERT ExternalResource E: E name '%(a)s', E filepath '%(b)s', "
+        req = ("INSERT ExternalResource E: E name '%(a)s',"
+               "E filepath '%(b)s', "
                "E related_study S Where S is Study, S name 'Imagen'"
                % {'a': series, 'b': cw_uri}
                )
         res = cnx.cursor().execute(req)
         ext_eid = res[0][0]
-        res = cnx.cursor().execute("SET S external_resources E Where S is Scan, "
+        res = cnx.cursor().execute(
+        "SET S external_resources E Where S is Scan, "
                                    "E is ExternalResource, "
                                    "S identifier '%(a)s_%(b)s', "
                                    "E eid '%(c)s'"
@@ -298,7 +323,11 @@ def insert_dicomtarball(path, cnx, subject, series):
                                    "D is Device, "
                                    "S identifier '%(g)s_%(a)s', "
                                    "D serialnum '%(c)s_%(d)s_%(e)s_%(f)s'"
-                                   % {'a': subject, 'b': cw_scanner_text, 'c': cw_scanner_text, 'd': cw_scanner_manufacturer, 'e': cw_scanner_model, 'f': psc_center[subject], 'g': series})
+                                   % {'a': subject, 'b': cw_scanner_text,
+                                   'c': cw_scanner_text,
+                                   'd': cw_scanner_manufacturer,
+                                   'e': cw_scanner_model,
+                                   'f': psc_center[subject], 'g': series})
         print 'res = ', res
         res = cnx.cursor().execute("SET A generates S Where A is Assessment, "
                                    "S is Scan, "
@@ -320,7 +349,8 @@ from glob import glob
 
 if __name__ == '__main__':
 
-    cnx = dbapi.connect('zmqpickle-tcp://127.0.0.1:8181', login='admin', password='admin')
+    cnx = dbapi.connect('zmqpickle-tcp://127.0.0.1:8181', login='admin',
+    password='admin')
 
     tarballs = glob('/neurospin/imagen/FU2/processed/dicomtarballs/*/*/*/*.gz')
     for tarball in tarballs:
