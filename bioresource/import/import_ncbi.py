@@ -166,15 +166,30 @@ def find_lt(a, x):
 
 
 def get_sorted_genes_db(session):
+    chroms = session.find_entities("Chromosome")
+    chrom_list = []
+    for chrom in chroms:
+        chrom_list.append(chrom.name)
+
     genes = session.find_entities("Gene")
     gene_list = []
-    for gene in genes:
+    gene_list_bychrom = dict()
+    for kk,gene in enumerate(genes):
+        if len(gene.chromosomes)!=1:
+            print "ERROR: ",kk,gene.name, gene.eid
         data_element = (gene.eid,
                         gene.start_position,
-                        gene.stop_position)
+                        gene.stop_position,
+                        gene.chromosomes[0].name)
         gene_list.append(data_element)
-    gene_list.sort(key=lambda r: r[1])
-    return gene_list
+    for chrom in chrom_list:
+        gene_list_bychrom[chrom] = []
+        tmp = [i[:3] for i in gene_list if i[3]==chrom]
+        if len(tmp):
+            gene_list_bychrom[chrom]= tmp
+            gene_list_bychrom[chrom].sort(key=lambda r: r[1])
+    
+    return gene_list_bychrom
 
 
 def locate_gene_simple(snp_end_pos, gene_list):
@@ -326,13 +341,13 @@ class NcbiSnpMapperConfig:
                  chr_map,
                  platform_eids,
                  platform_snps,
-                 sorted_gene_list,
+                 sorted_gene_list_bychrom,
                  is_mute=False):
         self.snps_data_path = snps_data_path
         self.chr_map = chr_map
         self.platform_eids = platform_eids
         self.platform_snps = platform_snps
-        self.sorted_gene_list = sorted_gene_list
+        self.sorted_gene_list_bychrom = sorted_gene_list_bychrom
         self.is_mute = is_mute
         self.line_num = line_num
 
@@ -387,8 +402,8 @@ def flush_lines_into_db(input_lines,
                         chr_map,
                         platform_eids,
                         platform_snps,
-                        sorted_sep_points,
-                        index_res,
+                        sorted_sep_points_bychrom,
+                        index_res_bychrom,
                         store_flush_num=100000):
     isnp = 0
     start_time = datetime.datetime.now()
@@ -405,8 +420,10 @@ def flush_lines_into_db(input_lines,
             if is_useful_chromosome(ch_name):
                 if ch_name in chr_map:
                     snp['chromosome'] = chr_map[ch_name]
+                    fixed_ch_name = ch_name
                 elif extract_chr_name(ch_name) in chr_map:
-                    snp['chromosome'] = chr_map[extract_chr_name(ch_name)]
+                    snp['chromosome'] = chr_map[extract_chr_name(ch_name)]                    
+                    fixed_ch_name = extract_chr_name(ch_name)
                 else:
                     print "Cannot find %s in %s" % (extract_chr_name(ch_name),
                                                     repr(chr_map))
@@ -423,9 +440,10 @@ def flush_lines_into_db(input_lines,
                                      snp_db=snp_db)
                 start_locate_genes_time = datetime.datetime.now()
                 # Look for all the gens and add relations
-                gene_eids = locate_genes(sorted_sep_points,
-                                         index_res,
+                gene_eids = locate_genes(sorted_sep_points_bychrom[fixed_ch_name],
+                                         index_res_bychrom[fixed_ch_name],
                                          snp['position'])
+                #print "DBG ", gene_eids
                 detal_total_locate_genes_time += datetime.datetime.now() - \
                                                  start_locate_genes_time
                 if gene_eids != []:
@@ -464,9 +482,13 @@ def import_ncbi_snp_mapper(mapper_config):
     chr_map = mapper_config.chr_map
     platform_eids = mapper_config.platform_eids
     platform_snps = mapper_config.platform_snps
-    sorted_gene_list = mapper_config.sorted_gene_list
+    sorted_gene_list_bychrom = mapper_config.sorted_gene_list_bychrom
     print "start to index gene positions"
-    sorted_sep_points, index_res = range_index(sorted_gene_list)
+    sorted_sep_points_bychrom = dict()
+    index_res_bychrom = dict()
+    for cc in sorted_gene_list_bychrom:      
+        sorted_sep_points_bychrom[cc], index_res_bychrom[cc] = \
+                                    range_index(sorted_gene_list_bychrom[cc])
     # sorted_sep_points = None
     # index_res = None
     print "end to index gene positions"
@@ -493,8 +515,8 @@ def import_ncbi_snp_mapper(mapper_config):
                                     chr_map,
                                     platform_eids,
                                     platform_snps,
-                                    sorted_sep_points,
-                                    index_res,
+                                    sorted_sep_points_bychrom,
+                                    index_res_bychrom,
                                     store_flush_num)
                 input_lines = []
                 len_input_lines = 0
@@ -516,8 +538,8 @@ def import_ncbi_snp_mapper(mapper_config):
                         chr_map,
                         platform_eids,
                         platform_snps,
-                        sorted_sep_points,
-                        index_res,
+                        sorted_sep_points_bychrom,
+                        index_res_bychrom,
                         store_flush_num)
     print "end_time = ", datetime.datetime.now()
     return isnp
@@ -545,7 +567,7 @@ if __name__ == '__main__':
             snps_data_path = sys.argv[6]
         else:
             snps_data_path = osp.join(genetics_dir, "snp138Common.txt")
-    g_mes = 'qc_subjects_qc_genetics_all_snps_common.bim'  # 'Localizer94.bim'
+#    g_mes = 'qc_subjects_qc_genetics_all_snps_common.bim'  # 'Localizer94.bim'
     path_chromosomes_json = os.path.join(additional_genetics_dir,
                                          'chromosomes.json')
     path_hg19_ref_gen_mate = os.path.join(genetics_dir,
@@ -569,7 +591,6 @@ if __name__ == '__main__':
                         path_chromosomes_json,
                         path_hg19_ref_gen_mate,
                         chr_map)
-    sorted_gene_list = get_sorted_genes_db(session)
     # Import three Platforms
     print "Processing platforms..."
     platforms = []
@@ -584,17 +605,23 @@ if __name__ == '__main__':
             platform_db = create_entity_safe('GenomicPlatform',
                                                 **platform)
         store.flush()
-    platform_eids = get_name_map_eid(session, "GenomicPlatform", "name")
-    platform_snps = {}
-    affymetrix_6_0_snps = read_snps_rsid_genome_wide_snp_6_na33_annot(
-                                path_genome_wide_snp_6_na33_annot)
-    platform_snps[u'Affymetrix_6.0'] = affymetrix_6_0_snps
-    platform_snps[u'Illumina_660'] = read_snps_human6xxw_quad_v1_h_bed(
-                                    path_human660w_quad_v1_h)
-    platform_snps[u'Illumina_610'] = read_snps_human6xxw_quad_v1_h_bed(
-                                    path_human610_quadv1_h)
     if selected_opt == compute_opt.snps:
-        sys.stdout.write("Processing SNPs...\n")
+        sys.stdout.write("Reading plateform info on SNPs...\n")
+        platform_eids = get_name_map_eid(session, "GenomicPlatform", "name")
+        platform_snps = {}
+        sys.stdout.write("...Affymetrix\n")
+        affymetrix_6_0_snps = read_snps_rsid_genome_wide_snp_6_na33_annot(
+                                    path_genome_wide_snp_6_na33_annot)
+        platform_snps[u'Affymetrix_6.0'] = affymetrix_6_0_snps
+        sys.stdout.write("...Illumina_660\n")
+        platform_snps[u'Illumina_660'] = read_snps_human6xxw_quad_v1_h_bed(
+                                        path_human660w_quad_v1_h)
+        sys.stdout.write("...Illumina_610\n")
+        platform_snps[u'Illumina_610'] = read_snps_human6xxw_quad_v1_h_bed(
+                                        path_human610_quadv1_h)
+        sys.stdout.write("Querying gene position info...\n")
+        sorted_gene_list_bychrom = get_sorted_genes_db(session)
+        sys.stdout.write("Now processing SNPs...\n")
         print "snps_data_path = ", snps_data_path
         line_num = line_numbers(snps_data_path)
         snp_mapper_config = NcbiSnpMapperConfig(
@@ -603,6 +630,6 @@ if __name__ == '__main__':
                                     chr_map=chr_map,
                                     platform_eids=platform_eids,
                                     platform_snps=platform_snps,
-                                    sorted_gene_list=sorted_gene_list,
+                                    sorted_gene_list_bychrom=sorted_gene_list_bychrom,
                                     is_mute=False)
         import_ncbi_snp_mapper(snp_mapper_config)
