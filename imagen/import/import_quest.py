@@ -329,8 +329,8 @@ def insert_questionnaire(filename, cnx):
                                    )
                             res = session.execute(req)
                             #print 'res6 %s' % res
-                            questionnairerun_id = questionnaire + subject[0:12]
-                            + '_' + age + '_' + iteration
+                            questionnairerun_id = questionnaire + subject[
+                            0:12] + '_' + age + '_' + iteration
                             req = ("SET A generates Q Where A is Assessment, "
                                    "Q is QuestionnaireRun, "
                                    "A identifier '%(assessment)s', "
