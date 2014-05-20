@@ -412,8 +412,8 @@ def insert_questionnaire(filename, cnx):
                         QUESTION_POSSIBLE_ANSWERS[
                         question_eid] = possible_answers
                 # Answer
-                questionnaire_id = questionnaire + subject[0:12] + '_'
-                + age + '_' + l[1]
+                questionnaire_id = questionnaire + subject[
+                0:12] + '_' + age + '_' + l[1]
                 req = ("Any A, X Where A is Answer, X is QuestionnaireRun, "
                        "Q is Question, A question Q, "
                        "Q identifier '%(question)s', "
