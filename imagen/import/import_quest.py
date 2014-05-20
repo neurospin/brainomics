@@ -409,8 +409,8 @@ def insert_questionnaire(filename, cnx):
                         #print 'possible_answers = ', possible_answers
                         QUESTIONS[identifier] = question[0][0]
                         question_eid = question[0][0]
-                        QUESTION_POSSIBLE_ANSWERS[question_eid] =
-                        possible_answers
+                        QUESTION_POSSIBLE_ANSWERS[
+                        question_eid] = possible_answers
                 # Answer
                 questionnaire_id = questionnaire + subject[0:12] + '_'
                 + age + '_' + l[1]
