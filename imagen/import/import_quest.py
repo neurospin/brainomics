@@ -380,8 +380,8 @@ def insert_questionnaire(filename, cnx):
                         ).split(US)
                         if possible_answers not in old_possible_answers:
                             old_possible_answers += (possible_answers,)
-                            QUESTION_POSSIBLE_ANSWERS[question_eid] =
-                            US.join(old_possible_answers)
+                            QUESTION_POSSIBLE_ANSWERS[
+                            question_eid] = US.join(old_possible_answers)
                         value = old_possible_answers.index(possible_answers)
                     #print 'value',value
                 else:
