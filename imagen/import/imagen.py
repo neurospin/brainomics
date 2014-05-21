@@ -427,6 +427,7 @@ def build_scan_map(tree, scan, experiment, psc):
     file_format = unicode(_file.get('format'))
     _type = SCAN_TYPES.get(scan_type, 'raw fMRI')
     identifier = file_uri
+    print 'build_scan_map: identifier %s' % identifier
     index = identifier.find(psc)
     identifier = identifier[index:]
     l = len(identifier)
@@ -495,6 +496,10 @@ def build_resource_scan_infos(resource, assessor, psc):
     else:
         label = assessor.get('%stype' % XSI)
     identifier = format_filepath(resource.get('URI'))
+    print 'build_resource_scan_info: identifier %s' % identifier
+    #ugly fix for malformated resource which does not have URI
+    if not identifier:
+        return {'identifier': None}
     index = identifier.find(psc)
     identifier = identifier[index:]
     l = len(identifier)
@@ -523,6 +528,7 @@ def import_neuroimaging_raw_scan(store, tree, experiment, scan,
         center_id)
     scan_infos = build_scan_map(tree, scan, experiment, psc)
     if not scan_infos:
+        print "NO SCAN_INFOS"
         return
     scan_infos['concerns'] = subject_eid
     scan_infos['related_study'] = study_eid
@@ -539,6 +545,7 @@ def import_neuroimaging_raw_scan(store, tree, experiment, scan,
     #TOFIX  pop filepath for now so that the mapping will not raise an error
     #scan_infos.pop('filepath')
     scan_eid = store.create_entity('Scan', **scan_infos).eid
+    #print "scan_eid %s" % scan_eid
     store.relate(assessment_eid, 'generates', scan_eid, subjtype='Assessment')
     # Add external resource
     filepath = scan.findall('%sfile' % XNAT)[0]
@@ -740,15 +747,17 @@ center_eid, center_id, psc):
 #                         filepath=keep_filepath).eid
 #            store.relate(fset_eid, 'file_entries', fent_eid )
 #            store.relate(assessor_scan_eid, 'external_resources', fset_eid)
-            ext_eid = store.create_entity('ExternalResource',
+            #Create ExternalResource entity if assessor_scan_infos is filled
+            if assessor_scan_infos.get('identifier'):
+                ext_eid = store.create_entity('ExternalResource',
                                           name=assessor_scan_infos.get(
                                           'label'),
                                           filepath=assessor_scan_infos[
                                           'filepath'],
                                           related_study=study_eid).eid
-            store.relate(assessor_scan_eid, 'external_resources', ext_eid)
-            store.relate(assessment_eid, 'generates', assessor_scan_eid,
-            subjtype='Assessment')
+                store.relate(assessor_scan_eid, 'external_resources', ext_eid)
+                store.relate(assessment_eid, 'generates', assessor_scan_eid,
+                subjtype='Assessment')
         else:
             # This xml node only contains scores, e.g. badrpData
             scan_eid = seen_scan_types.get(assessor.get(
@@ -1017,10 +1026,9 @@ center_eid):
             questionnaire_run_eid, 'external_resources', extres_eid)
             store.relate(extres_eid, 'related_study', study_eid)
     # Relate to an assessment
-    assessment_eid = create_assessment_for_experiment(store, experiment, age,
-                                                      study_eid, subject_eid,
-                                                      center_eid,
-                                                      questionnaire_run_eid)
+    assessment_eid = create_assessment_for_experiment(
+    store, experiment, age, study_eid, subject_eid, center_eid,
+    questionnaire_run_eid)
     # Files
     for extres_infos in iterate_external_resources(
     store, experiment, study_eid):
@@ -1313,6 +1321,7 @@ def import_demographics(store, tree, subject_eid):
     """
     demographics = tree.getroot().findall('%sdemographics' % XNAT)
     if not demographics:
+        print 'No demographics'
         return
     for child in demographics[0].getchildren():
         if child.tag not in('%sgender' % XNAT, '%shandedness' % XNAT):
@@ -1413,6 +1422,10 @@ def import_imagen_file(store, xml_file, filepath):
     # Import experiments
     path = '/xnat:Subject/xnat:experiments/xnat:experiment'
     find = root.xpath(path, namespaces=nsmap)
+    #159 Subjects have a different path
+    if len(find) < 1:
+        path = '/imagen:Imagen_subject/xnat:experiments/xnat:experiment'
+        find = root.xpath(path, namespaces=nsmap)
     for experiment in find:
         find = experiment.xpath('@xsi:type', namespaces=nsmap)
         experiment_type = find[0]
