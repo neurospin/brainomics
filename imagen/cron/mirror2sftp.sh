@@ -36,11 +36,17 @@ rsync -rlt \
     /neurospin/imagen/RAW/PSC2/psytools/*.csv \
     ${ROOT_TARGET}/BL_FU1/RAW/PSC2/psytools/
 
-# DAWBA
-# had been anonymized by Scito
+# DAWBA - BL/FU1
+# recent exports not in XNAT, anonymized by us
 rsync -rlt \
-    /neurospin/imagen/RAW/PSC2/dawba/*.csv \
+    /neurospin/imagen/RAW/PSC2/dawba/*.txt \
     ${ROOT_TARGET}/BL_FU1/RAW/PSC2/dawba/
+
+# DAWBA - FU2
+# anonymized by us
+rsync -rlt \
+    /neurospin/imagen/FU2/RAW/PSC2/dawba/*.txt \
+    ${ROOT_TARGET}/FU2/RAW/PSC2/dawba/
 
 # statistics for faces task + swea preprocessing
 mkdir -p ${ROOT_TARGET}/BL_FU1/processed/spmstatsintra
