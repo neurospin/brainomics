@@ -48,12 +48,21 @@ rsync -rlt \
     /neurospin/imagen/FU2/RAW/PSC2/dawba/*.txt \
     ${ROOT_TARGET}/FU2/RAW/PSC2/dawba/
 
-# statistics for faces task + swea preprocessing
+# fMRI preprocessing
+mkdir -p ${ROOT_TARGET}/BL_FU1/processed/spmpreproc
+( cd /neurospin/imagen/processed/spmpreproc ; tar cf - \
+    */*/EPI_faces/job_preproc_*.m \
+    */*/EPI_stop_signal/job_preproc_*.m \
+) | ( cd ${ROOT_TARGET}/BL_FU1/processed/spmpreproc ; tar xf - )
+
+# fMRI processing
 mkdir -p ${ROOT_TARGET}/BL_FU1/processed/spmstatsintra
 ( cd /neurospin/imagen/processed/spmstatsintra ; tar cf - \
     */*/EPI_faces/swea/job_spmstatsintra_*.m \
+    */*/EPI_faces/swea/rpL_*.txt \
     */*/EPI_faces/swea/SPM.mat.gz \
     */*/EPI_stop_signal/swea/job_spmstatsintra_*.m \
+    */*/EPI_stop_signal/swea/rpL_*.txt \
     */*/EPI_stop_signal/swea/SPM.mat.gz \
 ) | ( cd ${ROOT_TARGET}/BL_FU1/processed/spmstatsintra ; tar xf - )
 
