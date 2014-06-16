@@ -21,7 +21,7 @@ ROOT_TARGET='/chroot/data'
 # needs no anonymization
 rsync -rlt \
     /neurospin/imagen/FU2/RAW/PSC2_FIXED/QC \
-    ${ROOT_TARGET}/FU2/RAW/PSC2/
+    ${ROOT_TARGET}/FU2/RAW/PSC2_FIXED/
 
 # Psytools - FU2 only!
 # still anonymized by Scito
