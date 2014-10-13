@@ -25,16 +25,18 @@ rsync -rlt \
 
 # Psytools - FU2 only!
 # still anonymized by Scito
-rsync -rlt \
-    /neurospin/imagen/RAW/PSC2/psytools/*FU2*.csv \
-    ${ROOT_TARGET}/FU2/RAW/PSC2/psytools/
+##### FILES ARE NOT COMPLETELY ANONYMIZED (id_check_dob)
+#rsync -rlt \
+#    /neurospin/imagen/RAW/PSC2/psytools/*FU2*.csv \
+#    ${ROOT_TARGET}/FU2/RAW/PSC2/psytools/
 
 # Psytools - except FU2!
 # had been anonymized by Scito
-rsync -rlt \
-    --exclude '*FU2*.csv' \
-    /neurospin/imagen/RAW/PSC2/psytools/*.csv \
-    ${ROOT_TARGET}/BL_FU1/RAW/PSC2/psytools/
+##### FILES ARE NOT COMPLETELY ANONYMIZED (id_check_dob)
+#rsync -rlt \
+#    --exclude '*FU2*.csv' \
+#    /neurospin/imagen/RAW/PSC2/psytools/*.csv \
+#    ${ROOT_TARGET}/BL_FU1/RAW/PSC2/psytools/
 
 # DAWBA - BL/FU1
 # recent exports not in XNAT, anonymized by us
