@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 ROOT_TARGET='/chroot/data'
 
@@ -25,18 +25,37 @@ rsync -rlt \
 
 # Psytools - FU2 only!
 # still anonymized by Scito
-##### FILES ARE NOT COMPLETELY ANONYMIZED (id_check_dob)
-#rsync -rlt \
-#    /neurospin/imagen/RAW/PSC2/psytools/*FU2*.csv \
-#    ${ROOT_TARGET}/FU2/RAW/PSC2/psytools/
+# however Scito anonymization is not complete, we must remove manually
+# id_check_dob and id_check_gender (actually all id_check_* occurrences)
+for f in /neurospin/imagen/RAW/PSC2/psytools/*FU2*.csv
+do
+    grep -vE 'id_check' "$f" \
+        > "${ROOT_TARGET}/FU2/RAW/PSC2/psytools/`basename $f`"
+done
 
+# enable Bash extglob
+shopt -q extglob
+if [ $? -eq 0 ]
+then
+    EXTGLOB=true
+else
+    EXTGLOB=false
+    shopt -s extglob
+fi
 # Psytools - except FU2!
-# had been anonymized by Scito
-##### FILES ARE NOT COMPLETELY ANONYMIZED (id_check_dob)
-#rsync -rlt \
-#    --exclude '*FU2*.csv' \
-#    /neurospin/imagen/RAW/PSC2/psytools/*.csv \
-#    ${ROOT_TARGET}/BL_FU1/RAW/PSC2/psytools/
+# still anonymized by Scito
+# however Scito anonymization is not complete, we must remove manually
+# id_check_dob and id_check_gender (actually all id_check_* occurrences)
+for f in /neurospin/imagen/RAW/PSC2/psytools/!(*FU2*).csv
+do
+    grep -vE 'id_check' "$f" \
+        > "${ROOT_TARGET}/BL_FU1/RAW/PSC2/psytools/`basename $f`"
+done
+# disable Bash extglob
+if [ $EXTGLOB = false ]
+then
+    shopt -u extglob
+fi
 
 # DAWBA - BL/FU1
 # recent exports not in XNAT, anonymized by us
