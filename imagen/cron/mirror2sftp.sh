@@ -27,6 +27,7 @@ rsync -rlt \
 # still anonymized by Scito
 # however Scito anonymization is not complete, we must remove manually
 # id_check_dob and id_check_gender (actually all id_check_* occurrences)
+mkdir -p "${ROOT_TARGET}/FU2/RAW/PSC2/psytools"
 for f in /neurospin/imagen/RAW/PSC2/psytools/*FU2*.csv
 do
     grep -vE 'id_check' "$f" \
@@ -46,6 +47,7 @@ fi
 # still anonymized by Scito
 # however Scito anonymization is not complete, we must remove manually
 # id_check_dob and id_check_gender (actually all id_check_* occurrences)
+mkdir -p "${ROOT_TARGET}/BL_FU1/RAW/PSC2/psytools"
 for f in /neurospin/imagen/RAW/PSC2/psytools/!(*FU2*).csv
 do
     grep -vE 'id_check' "$f" \
