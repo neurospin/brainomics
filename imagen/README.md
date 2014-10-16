@@ -5,9 +5,6 @@ Source code used in the Brainomics/Imagen subproject.
 ### cron
 Imagen V2 server machinery.
 
-### cubes
-CubicWeb cubes specific to this Brainomics/Imagen project.
-
 ### export
 Script to export imaging + questionnaire baseline/FU1 metadata from the
 [XNAT server](https://imagen.cea.fr/) of the
