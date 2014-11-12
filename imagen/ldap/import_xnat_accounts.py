@@ -180,10 +180,7 @@ def sync_ldap(ldapobject, base, accounts):
     people = ldapobject.search_s('ou=People,' + base, ldap.SCOPE_ONELEVEL)
 
     # find existing UID numbers
-    uid_numbers = set()
-    for dn, entry in people:
-        uid_number = entry['uidNumber'][0]
-        uid_numbers.add(uid_number)
+    uid_numbers = set([entry['uidNumber'][0] for dn, entry in people])
 
     # discard LDAP accounts missing a matching XNAT account
     for dn, entry in people:
@@ -231,6 +228,7 @@ def sync_ldap(ldapobject, base, accounts):
             while uid_number in uid_numbers:
                 uid_number += 1
             uid_numbers.add(uid_number)
+            logger.info('Using UID number: ' + str(uid_number))
             # create new account
             logger.info('Adding account: ' + x_login.decode('utf-8'))
             attributes = (
