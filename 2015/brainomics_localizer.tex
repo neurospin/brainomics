@@ -1,0 +1,245 @@
+\documentclass[review]{elsarticle}
+
+%% \usepackage{lineno,hyperref}
+\usepackage{hyperref}
+%% \modulolinenumbers[5]
+\usepackage{graphicx}
+
+\journal{NeuroImage}
+
+%%%%%%%%%%%%%%%%%%%%%%%
+%% Elsevier bibliography styles
+%%%%%%%%%%%%%%%%%%%%%%%
+%% To change the style, put a % in front of the second line of the current style and
+%% remove the % from the second line of the style you would like to use.
+%%%%%%%%%%%%%%%%%%%%%%%
+
+%% Numbered
+%\bibliographystyle{model1-num-names}
+
+%% Numbered without titles
+%\bibliographystyle{model1a-num-names}
+
+%% Harvard
+%\bibliographystyle{model2-names.bst}\biboptions{authoryear}
+
+%% Vancouver numbered
+%\usepackage{numcompress}\bibliographystyle{model3-num-names}
+
+%% Vancouver name/year
+%\usepackage{numcompress}\bibliographystyle{model4-names}\biboptions{authoryear}
+
+%% APA style
+%\bibliographystyle{model5-names}\biboptions{authoryear}
+
+%% AMA style
+%\usepackage{numcompress}\bibliographystyle{model6-num-names}
+
+%% `Elsevier LaTeX' style
+\bibliographystyle{elsarticle-num}
+%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+\begin{frontmatter}
+
+\title{The Brainomics/Localizer database}
+
+\author[neurospin]{Dimitri Papadopoulos Orfanos\corref{mycorrespondingauthor}}
+\ead{dimitri.papadopoulos@cea.fr}
+\cortext[mycorrespondingauthor]{Corresponding author}
+\author[logilab]{Vincent Michel}
+\author[neurospin]{Yannick Schwartz}
+\author[neurospin]{Philippe Pinel}
+\author[neurospin]{Antonio Moreno}
+\author[neurospin]{Vincent Frouin}
+
+\address[neurospin]{I2BM, Neurospin, CEA/Saclay}
+\address[logilab]{Logilab}
+
+\begin{abstract}
+The Brainomics/Localizer database exposes part of the data collected by
+the in house Localizer project, which planned to acquire four types of
+data from volunteer research subjects: anatomical MRI scans, functional MRI
+data, behavioural and demographic data, and DNA sampling. Over the years, the
+local project has been collecting such data from hundreds of subjects. For the
+Brainomics/Localizer public database, we selected 94 of these subjects for their
+complete datasets, including all four types of data.
+
+To publish this set of heterogeneous data, we use dedicated software based on
+the open source CubicWeb semantic web framework.
+\end{abstract}
+
+\end{frontmatter}
+
+
+\section{Introduction}
+
+\paragraph{The Localizer project} The Localizer project initially planned
+to investigate inter-subjects variability \cite{Pinel2007}. They convinced every
+study conducted in their lab to kindly provide behavioural and demographic data,
+anatomical MRI scans, DNA sampling when available, and also to acquire a short
+functional MRI (fMRI) sequence before each functional imaging session. They were
+thus able to collect data from a considerably larger number of volunteer research
+subjects than a single study could afford. 
+
+\paragraph{The Brainomics project} Meanwhile the Brainomics project has been
+working on genetic neuroimaging. We felt the need for a database that could index
+and expose heterogeneous data including MRI images, genetic data or behavioural
+data. We decided to build a Brainomics/Localizer demonstrator based on the Localizer
+dataset. Our software is based on the CubicWeb framework (Logilab, Paris)
+and specific modules have been written to describe and visualize neuroimaging
+and genetic data. The resulting database is now publicly available.
+
+\paragraph{Opening the data} We also viewed the Brainomics/Localizer demonstrator
+as an opportunity  to study the feasibility of opening up medical research data.
+Brainomics/Localizer is one of the rare public databases of individual medical
+data in France.
+
+
+\section{Material and methods}
+
+We worked with the ethics committee we depend of and came up with procedures to
+de-identify data. It was unfortunately decided that genetic data could not
+be made publicly available.
+
+\paragraph{Publishing 94 Localizer datasets} We took the following measures
+to de-identify data before publishing, based on our interaction with the ethics committees
+we depend of:
+\begin{itemize}
+\item All subject identifiers have been re-encoded and the conversion table discarded afterwards.
+\item Anatomical images have been defaced using the \textit{mri\_deface} tool of Freesurfer \cite{Fischl2012}.
+\item As already explained, we eventually had to leave out genetic data. It is unfortunate
+that genetic data cannot be published, but it remains possible to access it in the context of
+a collaboration with our lab.
+\end{itemize}
+
+
+\section{Description of the repository}
+
+\subsection{Purpose of the database}
+
+Our database was designed to publish data from the Localizer project
+\cite{Pinel2007} and more specifically the subset of 94 subjects examined
+in \cite{Pinel2012}, and make it available to the broader
+scientific community. Our intent was to set up a demonstrator for the
+software we have developed in the context of our Brainomics project.
+
+We provide a static set of data. In the short term we have no plans for
+adding data from other subjects of the Localizer study.
+
+\subsection{CubicWeb and brainomics}
+
+\underline{BEGIN TODO} describe CubicWeb + brainomics
+
+Images are made available as NIfTI files. They can be downloaded in ZIP files from
+the Brainomics/Localizer server. Other data can be viewed as tabular form in the Web
+interface and exported to a variety of formats such as CSV.
+
+\underline{END TODO}
+
+\subsection{What is available?}
+
+\paragraph{The Localizer study} The Localizer project has been acquiring data
+from volunteer research subjects taking part in different studies carried
+in our lab. The investigators of these studies agreed to provide behavioural
+and demographic data, anatomical MRI scans and DNA sampling. They also agreed to
+acquire a short fMRI sequence, approximatively 5 minutes long, before their functional
+imaging session, specifically for the Localizer project.
+
+Of the hundreds of subjects acquired in house by the Localizer project, we
+selected a subset of 94 subjects for their complete datasets \cite{Pinel2012}
+including all four aforementioned types of data. Retained subjects were mostly
+young Caucasian highly educated. There are 49 women and 45 men. Most subjects
+considered themselves as normal readers. The exact age of 4 subjects remains
+unknown, the rest were from 18 through 49 years old -- mean age was 24.7
+years old. All subjects were right-handed and native French speakers.
+
+Demographic data displayed by the database include gender, age at the time
+of inclusion, handedness, native language and a family identifier which helps
+identify siblings.
+
+Behavioural data consists of individual cognitive profiles, aimed to create
+a rough cognitive profile of the subject. Each profile contains scores for 126
+questions covering education, developmental disorders, reading difficulties,
+basic numerical knowledge, arithmetical skills, visuo-spatial abilities, and
+visuo-motor abilities.
+
+MRI data was acquired on the two 3~T MRI scanners used successively over
+time for routine acquisitions and processed using SPM5. Raw and processed
+MRI data are available in the NIfTI format. Both raw and normalized T1-weighted
+anatomical MRI scans are provided for each subject. Functional MRI data includes
+raw EPI scans, preprocessed fMRI scans and contrasts. The fMRI experimental design
+as well as data processing are described in more detail in the initial Localizer
+article \cite{Pinel2007}. Let us only cite the challenging constraints taken
+into account when designing the sequence:
+\begin{itemize}
+\item the sequence had to be short, so as to disrupt as little as possible the main protocol. We choose 5 minutes for performing 100 trials.
+\item we aimed to obtain for each subject a description of different levels of functional architecture, from sensorimotor areas (perception and action) to more associative areas involved in reading, language processing and calculation.
+\item we aimed to capture in 5 minutes most of the individual networks related to each task.
+\item individual networks described in 5~min had to be reproducible over sessions and time.
+\end{itemize}
+
+
+\subsection{Quality control and review of the data}
+
+All anatomical MRI scans have been examined by radiologists for possible health issues.
+
+The Localizer team cross-checked demographic data available from different
+sources. They manually reviewed behavioural data for each subject.
+
+Finally fMRI processed images were visually checked. They Localizer team
+generated a ``summary sheet'' (Fig.~\ref{fig:summary}) for every subject and
+used it to visually evaluate the quality of the collected data. All 94 subjects
+were considered good enough.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[scale=0.25]{summary}
+    \caption{We generate a summary sheet for each subject and use it to
+    visually check the normalization of the processed anatomy and fMRI
+    images, the movement curves and some selected contrasts.}
+    \label{fig:summary}
+\end{figure}
+
+
+\subsection{How to access the data?}
+
+Data is available to everyone, without prior authentication, at
+\url{http://brainomics.cea.fr/localizer}. A registration process
+had initially been set up but later removed because it deterred
+users from trying to access the data. The same mechanism is used
+for imaging and phenotypic data. Imaging data can be selected in the
+user interface, it is then packed into a ZIP file and can be downloaded.
+Phenotypic data is directly available in the user interface and can be
+downloaded as a CSV file.
+
+Data is made available under the Creative Commons 3.0 licence (CC BY 3.0).
+We ask those who download the data to acknowledge our work in their publications.
+This requirement is currently not formally enforced by asking a human to
+interact with a user interface, typically clicking on buttons, because we
+wanted automated scripts to be able to query the database.
+
+
+\subsection{Future work}
+
+Since this specific database was designed to serve data from the Localizer
+project, we do not plan on hosting new data. We do run other databases
+running the same software though, used within projects such as
+IMAGEN \cite{Imagen2010} or EU-AIMS \cite{Aims2014}. These databases
+keep receiving and exposing new data.
+
+The long term plans for this resource is to keep it alive as a public
+example instance of the {brainomics} software. The server is currently
+frozen, however we do hope to upgrade the software to more recent versions
+in the near future and fix any remaining glitches in data presentation.
+
+
+\section{Conclusion}
+
+
+\section*{References}
+
+\bibliography{brainomics_localizer}
+
+\end{document}
