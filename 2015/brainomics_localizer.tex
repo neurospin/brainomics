@@ -99,20 +99,27 @@ data in France.
 
 \section{Material and methods}
 
-We worked with the ethics committee we depend of and came up with procedures to
-de-identify data. It was unfortunately decided that genetic data could not
-be made publicly available.
+\subsection{De-identification of the database}
 
-\paragraph{Publishing 94 Localizer datasets} We took the following measures
-to de-identify data before publishing, based on our interaction with the ethics committees
-we depend of:
-\begin{itemize}
-\item All subject identifiers have been re-encoded and the conversion table discarded afterwards.
-\item Anatomical images have been defaced using the \textit{mri\_deface} tool of Freesurfer \cite{Fischl2012}.
-\item As already explained, we eventually had to leave out genetic data. It is unfortunate
-that genetic data cannot be published, but it remains possible to access it in the context of
-a collaboration with our lab.
-\end{itemize}
+Before publishing the data, we worked with the ethics committee on publishing our
+data as support material for a published paper \cite{Pinel2012} to facilitate
+replication of the results. We came up with the following procedure to de-identify data.
+
+Before publishing the data, we anonymize the data in an irreversible way by
+re-encoding all subject identifiers and discarding the conversion table. Data
+is made available to the broader scientific community on an online server as
+a web service. users will be able to access the data with a web browser.
+
+\paragraph{Imaging data} In addition to re-encoding subject identifiers,
+anatomical MRI images were defaced, using the \textit{mri\_deface} tool of
+Freesurfer \cite{Fischl2012}.
+
+\paragraph{Genetic data} The very nature of genotyping data identifies a subject,
+by mere comparison to other genetic data collected elsewhere. Genetic data can
+therfore not be downloaded.
+
+\paragraph{Demographic and behavioural data} Only the data related to \cite{Pinel2007}
+will be uploaded to the server. Such data does not present a risk of identifying the subject.
 
 
 \section{Description of the repository}
