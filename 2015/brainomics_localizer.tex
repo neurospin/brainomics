@@ -83,13 +83,8 @@ functional MRI (fMRI) sequence before each functional imaging session. They were
 thus able to collect data from a considerably larger number of volunteer research
 subjects than a single study could afford. 
 
-\paragraph{The Brainomics project} Meanwhile the Brainomics project has been
-working on genetic neuroimaging. We felt the need for a database that could index
-and expose heterogeneous data including MRI images, genetic data or behavioural
-data. We decided to build a Brainomics/Localizer demonstrator based on the Localizer
-dataset. Our software is based on the CubicWeb framework (Logilab, Paris)
-and specific modules have been written to describe and visualize neuroimaging
-and genetic data. The resulting database is now publicly available.
+\paragraph{The Brainomics project} Meanwhile the Brainomics project has been working on genetic neuroimaging. We felt the need for a database that could index and expose heterogeneous data including MRI images, genetic data or behavioural data. We based our software developments on CubicWeb framework (Logilab, Paris) 
+decided to build a Brainomics/Localizer demonstrator based on the Localizer dataset. Our software is based on the CubicWeb framework (Logilab, Paris) and specific modules have been written to describe and visualize neuroimaging and genetic data. The resulting database is now publicly available.
 
 \paragraph{Opening the data} We also viewed the Brainomics/Localizer demonstrator
 as an opportunity  to study the feasibility of opening up medical research data.
@@ -101,8 +96,8 @@ data in France.
 
 \subsection{De-identification of the database}
 
-We started the Brainomics/Localizer database effort by addressing with the ethics
-committee we depend of the publishing of our data as support material for a published
+Starting the Brainomics/Localizer database effort, we addressed with our ethics
+committee the publication of our data as support material for a published
 paper \cite{Pinel2012}, in order to facilitate replication of the results. We came
 up with the following procedure to de-identify data.
 
@@ -118,21 +113,31 @@ Freesurfer \cite{Fischl2012}.
 
 \paragraph{Genetic data} The very nature of genotyping data identifies a subject,
 by mere comparison to other genetic data collected elsewhere. Genetic data can
-therfore not be downloaded.
+therefore not be downloaded.
 
 \paragraph{Demographic and behavioural data} Only the data related to \cite{Pinel2007}
 will be uploaded to the server. Such data does not present a risk of identifying the subject.
 
 
-\subsection{CubicWeb and brainomics}
+\subsection{Software infrastructure}
 
-\underline{BEGIN TODO} describe CubicWeb + brainomics
+\subsubsection{The Brainomics framework}
 
-Images are made available as NIfTI files. They can be downloaded in ZIP files from
-the Brainomics/Localizer server. Other data can be viewed as tabular form in the Web
-interface and exported to a variety of formats such as CSV.
+No existing framework seems to address the large and complex datasets collected in multicentric population studies. Such studies collect heterogeneous measurements such as genotyping, neuroimaging and demographic data, behaviour scores and neuropsychological scores from thousands of subjects. Those data typically
+follow a workflow that consists in (i) data collection, (ii) data alignment, quality control and possibly further processing and (iii) data indexation and publication. Several frameworks support some of the steps or data types listed above. The XNAT project \cite{XNAT2007} underpins several neuroimaging databases including shared international resources \cite{HBP2012}.
 
+\underline{BEGIN TODO}
+COINS ?
 \underline{END TODO}
+
+
+\subsubsection{The CubicWeb framework} CubicWeb (CW) is a framework developed by Logilab that follows the semantic web approach: data are structured using ontologies for easier sharing, access, and processing. It also enables data federation and enrichment of local information from external resources. In the Brainomics project, we leveraged CW, and defined domain specific modules denoted ``cubes'' easily connected to one another. CW is built upon well established core technologies: SQL, Python, web technologies (HTML5 and Javascript) and is developed under the LGPL license. CW defines its data model with Python classes and generates the underlying SQL tables. The queries are expressed via the RQL language which is similar to W3C’s
+SPARQL. CW implements a mechanism to expose information in several ways called ”views”. Being defined in Python, the views are applied on query results, and can produce HTML pages or trigger external processings. The separation of queries and views holds major advantages: i) the same data selection may have several representations, ii) data can be exported in several other formats (e.g. XCEDE or MAGE-ML) without modifying the underlying data storage. CW has a security system, coupled to the data model definition, that grants a fine-grained access to the data. CW may run as a standalone application or be smoothly integrated in a platform combining Apache and SFTP with LDAP.
+
+
+\subsubsection{Development of domain specific modules}
+
+We developped one cube per data type. Each cube is connected to the others - if needed - in the final database schema. The medicalexp cube contains the definition of general entities like Subject, Center, Assessment; the neuroimaging (resp. genetics) cube defines entities and relations like Scan, Scanner (resp. SnpVariant, Platform, GenotypeMeasurement). Each cubes implements the corresponding views (navigation, download) triggers and access rights. Connected together, those cubes and others are used to build the complete Brainomics/Localizer database.
 
 
 \section{Description of the repository}
@@ -190,6 +195,18 @@ into account when designing the sequence:
 \item we aimed to capture in 5 minutes most of the individual networks related to each task.
 \item individual networks described in 5~min had to be reproducible over sessions and time.
 \end{itemize}
+
+\underline{BEGIN TODO}
+
+\underline{FILE FORMAT!}
+
+Images are made available as NIfTI files. They can be downloaded in ZIP files from
+the Brainomics/Localizer server. Other data can be viewed as tabular form in the Web
+interface and exported to a variety of formats such as CSV.
+
+\underline{doi's or uri's}
+
+\underline{END TODO}
 
 
 \subsection{Quality control and review of the data}
