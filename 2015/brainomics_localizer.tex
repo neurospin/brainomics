@@ -101,14 +101,16 @@ data in France.
 
 \subsection{De-identification of the database}
 
-Before publishing the data, we worked with the ethics committee on publishing our
-data as support material for a published paper \cite{Pinel2012} to facilitate
-replication of the results. We came up with the following procedure to de-identify data.
+We started the Brainomics/Localizer database effort by addressing with the ethics
+committee we depend of the publishing of our data as support material for a published
+paper \cite{Pinel2012}, in order to facilitate replication of the results. We came
+up with the following procedure to de-identify data.
 
 Before publishing the data, we anonymize the data in an irreversible way by
 re-encoding all subject identifiers and discarding the conversion table. Data
-is made available to the broader scientific community on an online server as
-a web service. users will be able to access the data with a web browser.
+is stored on an online server and made available to the broader scientific
+community as a web service. Users will be able to access the data with a web
+browser.
 
 \paragraph{Imaging data} In addition to re-encoding subject identifiers,
 anatomical MRI images were defaced, using the \textit{mri\_deface} tool of
@@ -120,6 +122,17 @@ therfore not be downloaded.
 
 \paragraph{Demographic and behavioural data} Only the data related to \cite{Pinel2007}
 will be uploaded to the server. Such data does not present a risk of identifying the subject.
+
+
+\subsection{CubicWeb and brainomics}
+
+\underline{BEGIN TODO} describe CubicWeb + brainomics
+
+Images are made available as NIfTI files. They can be downloaded in ZIP files from
+the Brainomics/Localizer server. Other data can be viewed as tabular form in the Web
+interface and exported to a variety of formats such as CSV.
+
+\underline{END TODO}
 
 
 \section{Description of the repository}
@@ -135,15 +148,6 @@ software we have developed in the context of our Brainomics project.
 We provide a static set of data. In the short term we have no plans for
 adding data from other subjects of the Localizer study.
 
-\subsection{CubicWeb and brainomics}
-
-\underline{BEGIN TODO} describe CubicWeb + brainomics
-
-Images are made available as NIfTI files. They can be downloaded in ZIP files from
-the Brainomics/Localizer server. Other data can be viewed as tabular form in the Web
-interface and exported to a variety of formats such as CSV.
-
-\underline{END TODO}
 
 \subsection{What is available?}
 
