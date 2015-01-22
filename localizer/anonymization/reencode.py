@@ -1,13 +1,24 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*- 
 
-import random
-from itertools import izip
+# Python 2/3 interoperability
+from __future__ import print_function
+try:
+    from future_builtins import zip  # Python 2.6 or 2.7
+except ImportError:
+    try:
+        from itertools import izip as zip  # Python < 2.6
+    except ImportError:
+        pass  # Python 3
+    
 
-def random_conversion_table(subjects):
+import random
+
+def random_conversion_table(subjects, prefix):
     """Return a random conversion table for re-encoding subject identifiers
 
     Arguments:
+    prefix -- to be added in front of random numbers
     subjects -- list of subject identifiers to re-encode
 
     Returns a subject -> code dictionary"""
@@ -18,7 +29,8 @@ def random_conversion_table(subjects):
     random.shuffle(array)
     # create a unique string identifier based on the above integer identifier
     digits = len(str(n))
-    return { subject: 'S' + str(code).zfill(digits) for subject, code in izip(subjects, array) }
+    return { subject: prefix + str(code).zfill(digits)
+                      for subject, code in zip(subjects, array) }
 
 
 import csv
@@ -46,17 +58,20 @@ def read_conversion_table(infile):
     return { row[0].strip(): row[1].strip() for row in reader }
 
 
-if __name__ == '__main__':
+import getopt
+import sys
+import os.path
+import json
+import re
 
-    import getopt
-    import sys
 
+def main():
     # parse command line arguments
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'hi:o:',
                                    ['help', 'input=', 'output='])
     except getopt.GetoptError as e:
-        print >> sys.stderr, str(e)
+        print(e, file=sys.stderr)
         # TODO: print usage
         sys.exit(2)
     read_conversion_file = None
@@ -74,8 +89,6 @@ if __name__ == '__main__':
         sys.exit(2)
     data_dir = args[0]
 
-    import os.path
-
     # prepare to iterate over subject subdirectories in the subjects directory
     subjects_dir = os.path.join(data_dir, 'subjects')
     subjects = os.listdir(subjects_dir)
@@ -89,10 +102,11 @@ if __name__ == '__main__':
             conversion_set = set(conversion_table.keys())
             for subject in subjects:
                 if subject not in conversion_set:
-                    print >> sys.stderr, 'subject "%s" missing from conversion table' % subject
+                    print('subject "%s" missing from conversion table' % subject,
+                          file=sys.stderr)
                     sys.exit(1)
     else:
-        conversion_table = random_conversion_table(subjects)
+        conversion_table = random_conversion_table(subjects, 'S')
 
     from tempfile import NamedTemporaryFile
     import shutil
@@ -109,9 +123,6 @@ if __name__ == '__main__':
                         line = line.replace(subject, code)
                     tmpfile.write(line)
         shutil.move(tmpfile.name, infile.name)
-
-    import json
-    import re
 
     # re-encode subject data
     for subject in subjects:
@@ -184,3 +195,7 @@ if __name__ == '__main__':
     if write_conversion_file:
         with open(write_conversion_file, 'w') as outfile:
             write_conversion_table(outfile, conversion_table)
+
+
+if __name__ == '__main__':
+    main()
