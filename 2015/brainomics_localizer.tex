@@ -79,7 +79,7 @@ the open source CubicWeb semantic web framework.
 
 \section{Introduction}
 
-\paragraph{The Localizer project} The Localizer project initially planned to investigate inter-subject variability \cite{Pinel2007}. They convinced every study conducted in their lab to kindly provide behavioural and demographic data, anatomical MRI scans, DNA sampling when available, and also to acquire a short functional MRI (fMRI) sequence before each functional imaging session. They were thus able to collect data from a considerably larger number of volunteer research subjects than a single study could afford. 
+\paragraph{The Localizer project} The Localizer project initially planned to investigate inter-subject variability \cite{Pinel2007}. Every study conducted in the lab provided behavioural and demographic data, anatomical MRI scans, DNA sampling when available, and acquired a short functional MRI (fMRI) sequence after each functional imaging session. We were thus able to collect data from a considerably larger number of volunteer research subjects than a single study could afford. 
 
 \paragraph{The Brainomics project} Meanwhile the Brainomics project has been working on genetic neuroimaging. We felt the need for a database that could index and expose heterogeneous data including MRI images, genetic data or behavioural data. We based our software developments on the CubicWeb framework and wrote specific modules to describe and visualize neuroimaging and genetic data. We decided to build a Brainomics/Localizer demonstrator based on the Localizer dataset. The resulting database is now publicly available.
 
@@ -108,7 +108,7 @@ browser.
 anatomical MRI images were defaced, using the \textit{mri\_deface} tool of
 Freesurfer \cite{Fischl2012}.
 
-\paragraph{Genetic data} The very nature of genotyping data identifies a subject, by mere comparison to other genetic data collected elsewhere. Unfortunately genetic data cannot be downloaded.
+\paragraph{Genetic data} The very nature of genotyping data identifies a subject, by mere comparison to other genetic data collected elsewhere. We decided that genetic data cannot be downloaded. \underline{TODO:} Possibility to run calculation on the data and provide answers.
 
 \paragraph{Demographic and behavioural data} Only the data related to \cite{Pinel2007}
 will be uploaded to the server. Such data does not present a risk of identifying the subject.
@@ -214,12 +214,10 @@ generated a ``summary sheet'' (Fig.~\ref{fig:summary}) for every subject and
 used it to visually evaluate the quality of the collected data. All 94 subjects
 were considered good enough.
 
-\begin{figure}[ht]
+\begin{figure}[ht!]
     \centering
-    \includegraphics[scale=0.25]{summary}
-    \caption{We generate a summary sheet for each subject and use it to
-    visually check the normalization of the processed anatomy and fMRI
-    images, the movement curves and some selected contrasts.}
+    \includegraphics[scale=0.45]{summary}
+    \caption{A summary sheet generated for one of the subjects. We use summary sheets to visually check anatomical and processed fMRI data for each subject. We display selected contrasts at the top of the summary sheet, a contrast image and an anatomical image on the right, movement curves at the bottom. Finally processing parameters and a global quality score are displayed in the center.}
     \label{fig:summary}
 \end{figure}
 
@@ -238,11 +236,11 @@ downloaded as a CSV file.
 Data is made available under the Creative Commons 3.0 licence (CC BY 3.0). We ask those who download and use the data to acknowledge our work in their publications. This requirement is currently not formally enforced in the user interface, typically by asking a human to click on buttons, because we wanted automated scripts to be able to query the database.
 
 
-\subsection{Future work}
+\subsection{Future developments}
 
 Since this specific database was designed to serve data from the Localizer
-project, we do not plan on hosting new data. We do run other databases
-running the same software though, used within projects such as
+project, we do not plan on hosting new data. We do operate other databases
+running the same software stack though, they are used within projects such as
 IMAGEN \cite{Imagen2010} or EU-AIMS \cite{Aims2014}. These databases
 keep receiving and exposing new data.
 
