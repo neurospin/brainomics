@@ -45,17 +45,21 @@
 
 \title{The Brainomics/Localizer database}
 
-\author[neurospin]{Dimitri Papadopoulos Orfanos\corref{mycorrespondingauthor}}
+\author[Neurospin]{Dimitri Papadopoulos Orfanos\corref{mycorrespondingauthor}}
 \ead{dimitri.papadopoulos@cea.fr}
 \cortext[mycorrespondingauthor]{Corresponding author}
-\author[logilab]{Vincent Michel}
-\author[neurospin]{Yannick Schwartz}
-\author[neurospin]{Philippe Pinel}
-\author[neurospin]{Antonio Moreno}
-\author[neurospin]{Vincent Frouin}
+\author[Logilab]{Vincent Michel}
+\author[Parietal,Neurospin]{Yannick Schwartz}
+\author[U992,Neurospin,ParisSud]{Philippe Pinel}
+\author[U992,Neurospin,ParisSud]{Antonio Moreno}
+\author[Neurospin]{Denis Le Bihan}
+\author[Neurospin]{Vincent Frouin}
 
-\address[neurospin]{I2BM, Neurospin, CEA/Saclay}
-\address[logilab]{Logilab}
+\address[Neurospin]{CEA, DSV/I2BM, NeuroSpin, 91191 Gif-sur-Yvette, France}
+\address[U992]{INSERM, U992, Cognitive Neuroimaging Unit, 91191 Gif-sur-Yvette, France}
+\address[Parietal]{Parietal team, Institut National de Recherche en Informatique et Automatique, Palaiseau, France}
+\address[ParisSud]{Univ. Paris-Sud, Cognitive Neuroimaging Unit, 91191 Gif-sur-Yvette, France}
+\address[Logilab]{Logilab, 104 boulevard Auguste Blanqui, 75013 Paris, France}
 
 \begin{abstract}
 The Brainomics/Localizer database exposes part of the data collected by
@@ -77,7 +81,7 @@ the open source CubicWeb semantic web framework.
 
 \paragraph{The Localizer project} The Localizer project initially planned to investigate inter-subject variability \cite{Pinel2007}. They convinced every study conducted in their lab to kindly provide behavioural and demographic data, anatomical MRI scans, DNA sampling when available, and also to acquire a short functional MRI (fMRI) sequence before each functional imaging session. They were thus able to collect data from a considerably larger number of volunteer research subjects than a single study could afford. 
 
-\paragraph{The Brainomics project} Meanwhile the Brainomics project has been working on genetic neuroimaging. We felt the need for a database that could index and expose heterogeneous data including MRI images, genetic data or behavioural data. We based our software developments on the CubicWeb framework (Logilab, Paris) and wrote specific modules to describe and visualize neuroimaging and genetic data. We decided to build a Brainomics/Localizer demonstrator based on the Localizer dataset. The resulting database is now publicly available.
+\paragraph{The Brainomics project} Meanwhile the Brainomics project has been working on genetic neuroimaging. We felt the need for a database that could index and expose heterogeneous data including MRI images, genetic data or behavioural data. We based our software developments on the CubicWeb framework and wrote specific modules to describe and visualize neuroimaging and genetic data. We decided to build a Brainomics/Localizer demonstrator based on the Localizer dataset. The resulting database is now publicly available.
 
 \paragraph{Opening the data} We also viewed the Brainomics/Localizer demonstrator
 as an opportunity  to study the feasibility of opening up medical research data.
@@ -114,20 +118,19 @@ will be uploaded to the server. Such data does not present a risk of identifying
 
 \subsubsection{The Brainomics framework}
 
-No existing framework seems to address the large and complex datasets collected in multicentric population studies. Such studies collect heterogeneous measurements such as genotyping, neuroimaging and demographic data, behaviour scores and neuropsychological scores from thousands of subjects. Those data typically
-follow a workflow that consists in (i) data collection, (ii) data alignment, quality control and possibly further processing and (iii) data indexation and publication. Several frameworks support some of the steps or data types listed above. The XNAT project \cite{XNAT2007} underpins several neuroimaging databases including shared international resources \cite{HBP2012}.
+No existing framework seems to address the large and complex datasets collected in multicentric population studies. Such studies collect heterogeneous measurements such as genotyping, neuroimaging and demographic data, behaviour scores and neuropsychological scores from thousands of subjects. Those data typically follow a workflow that consists in (i) data collection, (ii) data alignment, quality control and possibly further processing and (iii) data indexation and publication. Several frameworks support some of the steps or data types listed above. The XNAT project \cite{XNAT2007} underpins several neuroimaging databases including shared international resources \cite{HBP2012}.
 
 \underline{BEGIN TODO}
 COINS ?
 \underline{END TODO}
 
 
-\subsubsection{The CubicWeb framework} CubicWeb (CW) is a framework developed by Logilab that follows the semantic web approach: data are structured using ontologies for easier sharing, access, and processing. It also enables data federation and enrichment of local information from external resources. In the Brainomics project, we leveraged CW, and defined domain specific modules denoted ``cubes'' easily connected to one another. CW is built upon well established core technologies: SQL, Python, web technologies (HTML5 and Javascript) and is developed under the LGPL license. CW defines its data model with Python classes and generates the underlying SQL tables. The queries are expressed via the RQL language which is similar to W3C's SPARQL. CW implements a mechanism to expose information in several ways called ”views”. Being defined in Python, the views are applied on query results, and can produce HTML pages or trigger external processings. The separation of queries and views holds major advantages: i) the same data selection may have several representations, ii) data can be exported in several other formats (e.g. XCEDE or MAGE-ML) without modifying the underlying data storage. CW has a security system, coupled to the data model definition, that grants a fine-grained access to the data. CW may run as a standalone application or be smoothly integrated in a platform combining Apache and SFTP with LDAP.
+\subsubsection{The CubicWeb framework} CubicWeb (CW) is a framework initially developed by Logilab that follows the semantic web approach: data are structured using ontologies for easier sharing, access, and processing. It also enables data federation and enrichment of local information from external resources. In the Brainomics project, we leveraged CW, and defined domain specific modules denoted ``cubes'' easily connected to one another. CW is built upon well established core technologies: SQL, Python, web technologies (HTML5 and Javascript) and is distributed under the LGPL license. CW defines its data model with Python classes and generates the underlying SQL tables. The queries are expressed via the RQL language which is similar to W3C's SPARQL - but predates it. CW implements a mechanism to expose information in several ways called ``views''. Being defined in Python, the views are applied on query results, and can produce HTML pages or trigger external processing. The separation of queries and views holds major advantages: i) the same data selection may have several representations, ii) data can be exported in several other formats (e.g. XCEDE or MAGE-ML) without modifying the underlying data storage. CW has a security system, coupled to the data model definition, that grants a fine-grained access to the data. CW may run as a standalone application or be smoothly integrated in a platform combining Apache and SFTP with LDAP.
 
 
 \subsubsection{Development of domain specific modules}
 
-We developped one cube per data type. Each cube is connected to the others - if needed - in the final database schema. The medicalexp cube contains the definition of general entities like Subject, Center, Assessment; the neuroimaging (resp. genetics) cube defines entities and relations like Scan, Scanner (resp. SnpVariant, Platform, GenotypeMeasurement). Each cubes implements the corresponding views (navigation, download) triggers and access rights. Connected together, those cubes and others are used to build the complete Brainomics/Localizer database.
+We developed one cube per data type. Each cube is connected to the others - if needed - in the final database schema. The \textit{medicalexp} cube contains the definition of general entities like Subject, Center, Assessment; the \textit{neuroimaging} (resp. \textit{genetics}) cube defines entities and relations like Scan, Scanner (resp. SnpVariant, Platform, GenotypeMeasurement). Each cube implements the corresponding views (navigation, download), triggers and access rights. Connected together, those cubes and others are used to build the complete Brainomics/Localizer database. Like the CW framework, these cubes are distributed under the LGPL license and the source code is available from the CW web site \cite{CubicWeb} and GitHub \cite{Localizer}.
 
 
 \section{Description of the repository}
@@ -211,7 +214,7 @@ generated a ``summary sheet'' (Fig.~\ref{fig:summary}) for every subject and
 used it to visually evaluate the quality of the collected data. All 94 subjects
 were considered good enough.
 
-\begin{figure}[h!]
+\begin{figure}[ht]
     \centering
     \includegraphics[scale=0.25]{summary}
     \caption{We generate a summary sheet for each subject and use it to
