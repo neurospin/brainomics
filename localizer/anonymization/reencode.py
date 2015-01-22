@@ -1,17 +1,14 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*- 
 
-# Python 2/3 interoperability
+
+# Python 2.6+ and 3
 from __future__ import print_function
 try:
-    from future_builtins import zip  # Python 2.6 or 2.7
+    from itertools import izip as zip  # Python 2.6+
 except ImportError:
-    try:
-        from itertools import izip as zip  # Python < 2.6
-    except ImportError:
-        pass  # Python 3
+    pass  # Python 3
     
-
 import random
 
 def random_conversion_table(subjects, prefix):
