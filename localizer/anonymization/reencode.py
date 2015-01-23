@@ -121,6 +121,8 @@ def main():
                     tmpfile.write(line)
         shutil.move(tmpfile.name, infile.name)
 
+    family_table = {}
+
     # re-encode subject data
     for subject in subjects:
         subject_dir = os.path.join(subjects_dir, subject)
@@ -133,7 +135,9 @@ def main():
             with open(behavioural_json) as infile:
                 contents = json.load(infile)
                 contents['nip'] = code
-            json.dump(contents, tmpfile, sort_keys=True)
+                if contents['date'] is not None:
+                    contents['date'] = '<sanitized>'
+            json.dump(contents, tmpfile, indent=4, sort_keys=True)
         shutil.move(tmpfile.name, infile.name)
 
         # re-encode contents of spm.json
@@ -149,7 +153,7 @@ def main():
                 contents['raw_data'] = [ '<sanitized>' for x in contents['raw_data'] ]
                 contents['subject'] = code
                 contents['t_maps'] = { key: '<sanitized>' for key in contents['t_maps'].keys() }
-            json.dump(contents, tmpfile, sort_keys=True)
+            json.dump(contents, tmpfile, indent=4, sort_keys=True)
         shutil.move(tmpfile.name, infile.name)
 
         # re-encode contents of subject.json
@@ -169,10 +173,12 @@ def main():
                 # discard exam identifier, always use subject identifier
                 contents['nip'] = contents['exam'] = code
                 family = contents['family']
-                if family not in conversion_table:
-                    conversion_table[family] = code.replace('S', 'F')
-                contents['family'] = conversion_table[family]
-            json.dump(contents, tmpfile, sort_keys=True)
+                if family not in family_table:
+                    family_table[family] = code.replace('S', 'F')
+                contents['family'] = family_table[family]
+                if contents['date'] is not None:
+                    contents['date'] = '<sanitized>'
+            json.dump(contents, tmpfile, indent=4, sort_keys=True)
         shutil.move(tmpfile.name, infile.name)
 
         # re-encode subject subdirectory name
