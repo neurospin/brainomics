@@ -147,7 +147,7 @@ def main():
                 contents['data'] = [ '<sanitized>' for x in contents['data'] ]
                 contents['mask'] = '<sanitized>'
                 contents['raw_data'] = [ '<sanitized>' for x in contents['raw_data'] ]
-                contents['subject'] = contents['subject'].replace(subject, code)
+                contents['subject'] = code
                 contents['t_maps'] = { key: '<sanitized>' for key in contents['t_maps'].keys() }
             json.dump(contents, tmpfile, sort_keys=True)
         shutil.move(tmpfile.name, infile.name)
