@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*- 
 
 
@@ -15,8 +15,8 @@ def random_conversion_table(subjects, prefix):
     """Return a random conversion table for re-encoding subject identifiers
 
     Arguments:
-    prefix -- to be added in front of random numbers
     subjects -- list of subject identifiers to re-encode
+    prefix -- to be added in front of random numbers
 
     Returns a subject -> code dictionary"""
     # number of subjects
@@ -116,9 +116,9 @@ def main():
         with NamedTemporaryFile(delete=False) as tmpfile:
             with open(os.path.join(genetics_dir, plink)) as infile:
                 for line in infile:
-                    for subject, code in conversion_table.iteritems():
+                    for subject, code in conversion_table.items():
                         line = line.replace(subject, code)
-                    tmpfile.write(line)
+                    tmpfile.write(line.encode('ascii'))
         shutil.move(tmpfile.name, infile.name)
 
     # re-encode subject data
@@ -128,17 +128,17 @@ def main():
         encoded_dir = os.path.join(subjects_dir, code)
 
         # re-encode contents of behavioural.json
-        with NamedTemporaryFile(delete=False) as tmpfile:
+        with NamedTemporaryFile(mode='w', delete=False) as tmpfile:
             behavioural_json = os.path.join(subject_dir, 'behavioural.json')
             with open(behavioural_json) as infile:
                 contents = json.load(infile)
-                contents['nip'] = contents['nip'].replace(subject, code)
+                contents['nip'] = code
             json.dump(contents, tmpfile, sort_keys=True)
         shutil.move(tmpfile.name, infile.name)
 
         # re-encode contents of spm.json
         # totally erase paths starting with /neurospin/unicog
-        with NamedTemporaryFile(delete=False) as tmpfile:
+        with NamedTemporaryFile(mode='w', delete=False) as tmpfile:
             spm_json = os.path.join(subject_dir, 'spm.json')
             with open(spm_json) as infile:
                 contents = json.load(infile)
@@ -153,7 +153,7 @@ def main():
         shutil.move(tmpfile.name, infile.name)
 
         # re-encode contents of subject.json
-        with NamedTemporaryFile(delete=False) as tmpfile:
+        with NamedTemporaryFile(mode='w', delete=False) as tmpfile:
             subject_json = os.path.join(subject_dir, 'subject.json')
             with open(subject_json) as infile:
                 contents = json.load(infile)
@@ -161,16 +161,17 @@ def main():
                 if 'comments' in contents:
                     comments = contents['comments']
                     if comments:
-                        for s, c in conversion_table.iteritems():
+                        for s, c in conversion_table.items():
                             comments = comments.replace(s, c)
                         comments = re.sub('(bru\d{4})', '<sanitized>', comments)
                         contents['comments'] = comments
                 # exam identifier may be different from subject identifier
-                # discard it in case it starts with 'bru'
-                contents['exam'] = contents['exam'].replace(subject, code)
-                if contents['exam'].startswith('bru'):
-                    contents['exam'] = '<sanitized>'
-                contents['nip'] = contents['nip'].replace(subject, code)
+                # discard exam identifier, always use subject identifier
+                contents['nip'] = contents['exam'] = code
+                family = contents['family']
+                if family not in conversion_table:
+                    conversion_table[family] = code.replace('S', 'F')
+                contents['family'] = conversion_table[family]
             json.dump(contents, tmpfile, sort_keys=True)
         shutil.move(tmpfile.name, infile.name)
 
