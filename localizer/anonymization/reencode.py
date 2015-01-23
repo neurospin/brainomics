@@ -113,12 +113,12 @@ def main():
         extension = os.path.splitext(plink)[1]
         if extension.upper() != '.FAM':
             continue
-        with NamedTemporaryFile(delete=False) as tmpfile:
+        with NamedTemporaryFile(mode='w', delete=False) as tmpfile:
             with open(os.path.join(genetics_dir, plink)) as infile:
                 for line in infile:
                     for subject, code in conversion_table.items():
                         line = line.replace(subject, code)
-                    tmpfile.write(line.encode('ascii'))
+                    tmpfile.write(line)
         shutil.move(tmpfile.name, infile.name)
 
     # re-encode subject data
