@@ -128,6 +128,14 @@ In the Brainomics project, we leveraged CW, and defined domain specific modules,
 We developed one cube per data type. Each cube is connected to the others - if needed - in the final database schema. The \textit{medicalexp} cube contains the definition of general entities like Subject, Center, Assessment; the \textit{neuroimaging} (resp. \textit{genetics}) cube defines entities and relations like Scan, Scanner (resp. SnpVariant, Platform, GenotypeMeasurement). Each cube implements the corresponding views (navigation, download), triggers and access rights. Connected together, those cubes and others are used to build the complete Brainomics/Localizer database. Like the CW framework, these cubes are distributed under the LGPL license and the source code is available from the CW web site \cite{CubicWeb} and GitHub \cite{Localizer}.
 
 
+\begin{figure}[ht!]
+    \includegraphics[width=\textwidth]{ui1}
+    \caption{Screenshot of Brainomics' web interface, showing the downloading and filtering (facets) menus on the left, and the summary representation of the images in the database.}
+    \label{fig:ui}
+\end{figure}
+
+
+
 \section{Description of the repository}
 
 \subsection{Purpose of the database}
