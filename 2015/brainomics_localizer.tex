@@ -64,8 +64,7 @@
 \begin{abstract}
 The Brainomics/Localizer database exposes part of the data collected by the in house Localizer project, which planned to acquire four types of data from volunteer research subjects: anatomical MRI scans, functional MRI data, behavioural and demographic data, and DNA sampling. Over the years, the local project has been collecting such data from hundreds of subjects. For the Brainomics/Localizer public database, we selected 94 of these subjects for their complete datasets, including all four types of data.
 
-To publish this set of heterogeneous data, we use dedicated software based on the open source CubicWeb semantic web framework.
-By allowing genericity in the data model and a lot of flexibility in the display of data (Web interface, Json, XML), this framework gives us the opportunity to expose these complexe dataset in original and efficient ways.
+To publish this set of heterogeneous data, we use dedicated software based on the open source CubicWeb semantic web framework. By allowing genericity in the data model and a lot of flexibility in the display of data (Web interface, Json, XML), this framework gives us the opportunity to expose these complexe dataset in original and efficient ways.
 \end{abstract}
 
 \end{frontmatter}
@@ -75,7 +74,7 @@ By allowing genericity in the data model and a lot of flexibility in the display
 
 \paragraph{The Localizer project} The Localizer project initially planned to investigate inter-subject variability \cite{Pinel2007}. Every study conducted in the lab provided behavioural and demographic data, anatomical MRI scans, DNA sampling when available, and acquired a short functional MRI (fMRI) sequence after each functional imaging session. We were thus able to collect data from a considerably larger number of volunteer research subjects than a single study could afford. 
 
-\paragraph{The Brainomics project} Meanwhile the Brainomics project has been working on genetic neuroimaging. We felt the need for a database that could index and expose heterogeneous data including MRI images, genetic data or behavioural data. We based our software developments on the CubicWeb framework and wrote specific modules to describe and visualize neuroimaging and genetic data. We decided to build a Brainomics/Localizer demonstrator based on the Localizer dataset. The resulting database is now publicly available.
+\paragraph{The Brainomics project} Meanwhile the Brainomics project has been working on genetic neuroimaging. We felt the need for a database that could index and expose heterogeneous data including MRI images, genetic data or behavioural data. We based our software developments on the CubicWeb framework and wrote specific modules to describe and visualize neuroimaging and genetic data. We decided to build a Brainomics/Localizer demonstrator based on the Localizer dataset. The resulting database is now publicly available \footnote{http://brainomics.cea.fr/localizer} as well as the source code \footnote{https://github.com/neurospin/localizer}.
 
 \paragraph{Opening the data} We also viewed the Brainomics/Localizer demonstrator as an opportunity to study the feasibility of opening up medical research data. Brainomics/Localizer is one of the rare public databases of individual health information in France.
 
@@ -86,8 +85,7 @@ By allowing genericity in the data model and a lot of flexibility in the display
 
 Starting the Brainomics/Localizer database effort, we addressed with our ethics committee the publication of our data as support material for a published paper \cite{Pinel2012}, in order to facilitate replication of the results. We came up with the following procedure to de-identify data.
 
-Before publishing the data, we anonymize the data in an irreversible way by re-encoding all subject identifiers and discarding the conversion table. Data is stored on an online server and made available to the broader scientific community as a web service. Users will be able to access the data with a web
-browser.
+Before publishing the data, we anonymize the data in an irreversible way by re-encoding all subject identifiers and discarding the conversion table. Data is stored on an online server and made available to the broader scientific community as a web service. Users will be able to access the data with a web browser (HTML, JS) as well as HTTP-based API (XML, Json, Xcede).
 
 \paragraph{Imaging data} In addition to re-encoding subject identifiers, anatomical MRI images were defaced, using the \textit{mri\_deface} tool of Freesurfer \cite{Fischl2012}.
 
