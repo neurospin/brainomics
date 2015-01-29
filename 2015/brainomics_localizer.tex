@@ -57,7 +57,7 @@
 
 \address[Neurospin]{CEA, DSV/I2BM, NeuroSpin, 91191 Gif-sur-Yvette, France}
 \address[U992]{INSERM, U992, Cognitive Neuroimaging Unit, 91191 Gif-sur-Yvette, France}
-\address[Parietal]{Parietal team, Inria Saclay Île-de-France, 91120 Palaiseau, France}
+\address[Parietal]{Parietal team, Inria Saclay \^Ile-de-France, 91120 Palaiseau, France}
 \address[ParisSud]{Univ. Paris-Sud, Cognitive Neuroimaging Unit, 91191 Gif-sur-Yvette, France}
 \address[Logilab]{Logilab, 104 boulevard Auguste Blanqui, 75013 Paris, France}
 
@@ -72,7 +72,7 @@ To publish this set of heterogeneous data, we use dedicated software based on th
 
 \section{Introduction}
 
-\paragraph{The Localizer project} The Localizer project initially planned to investigate inter-subject variability \cite{Pinel2007}. Every study conducted in the lab provided behavioural and demographic data, anatomical MRI scans, DNA sampling when available, and acquired a short functional MRI (fMRI) sequence after each functional imaging session. We were thus able to collect data from a considerably larger number of volunteer research subjects than a single study could afford. 
+\paragraph{The Localizer project} The Localizer project initially planned to investigate inter-subject variability \cite{Pinel2007}. We have been collecting data from volunteer research subjects taking part in different studies carried in our lab. The investigators of these studies agreed to provide behavioural and demographic data, anatomical MRI scans and DNA sampling. They also agreed to acquire a short fMRI sequence, approximatively 5 minutes long, after their functional imaging session, specifically for the Localizer project. We were thus able to collect data from a considerably larger number of volunteer research subjects than a single study could afford.
 
 \paragraph{The Brainomics project} Meanwhile the Brainomics project has been working on genetic neuroimaging. We felt the need for a database that could index and expose heterogeneous data including MRI images, genetic data or behavioural data. We based our software developments on the CubicWeb framework and wrote specific modules to describe and visualize neuroimaging and genetic data. We decided to build a Brainomics/Localizer demonstrator based on the Localizer dataset. The resulting database is now publicly available \footnote{http://brainomics.cea.fr/localizer} as well as the source code \cite{Localizer}.
 
@@ -83,7 +83,7 @@ To publish this set of heterogeneous data, we use dedicated software based on th
 
 \subsection{De-identification of the database}
 
-Starting the Brainomics/Localizer database effort, we addressed with our ethics committee the publication of Localizer data as support material for a published paper \cite{Pinel2012}, in order to facilitate replication of the results. We came up with the following procedure to de-identify data.
+The ethics committee had initially approved the Localizer study. Starting the Brainomics/Localizer database effort, we addressed with them the publication of Localizer data as support material for one of the published paper \cite{Pinel2012}, in order to facilitate replication of the results. We came up with the following procedure to de-identify data.
 
 Before publishing the data, we anonymize the data in an irreversible way by re-encoding all subject identifiers and discarding the conversion table. Data is stored on an online server and made available to the broader scientific community as a web service. Users will be able to access the data with a web browser.
 
@@ -142,8 +142,6 @@ We provide a static set of data. In the short term we have no plans for adding d
 
 
 \subsection{Available data}
-
-\paragraph{The Localizer study} The Localizer project has been acquiring data from volunteer research subjects taking part in different studies carried in our lab. The investigators of these studies agreed to provide behavioural and demographic data, anatomical MRI scans and DNA sampling. They also agreed to acquire a short fMRI sequence, approximatively 5 minutes long, after their functional imaging session, specifically for the Localizer project.
 
 Of the hundreds of subjects acquired in house by the Localizer project, we selected a subset of 94 subjects for their complete datasets \cite{Pinel2012} including all four aforementioned types of data. Retained subjects were mostly young Caucasian highly educated, mostly normal readers, 49 women and 45 men. The exact age of 4 subjects remains unknown, the rest were from 18 through 49 years old -- mean age was 24.7 years old. All subjects were right-handed and native French speakers.
 
