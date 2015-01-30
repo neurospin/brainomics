@@ -5,6 +5,10 @@
 %% \modulolinenumbers[5]
 \usepackage{graphicx}
 
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{enumitem}
+
 \journal{NeuroImage}
 
 %%%%%%%%%%%%%%%%%%%%%%%
@@ -64,7 +68,7 @@
 \begin{abstract}
 The Brainomics/Localizer database exposes part of the data collected by the in house Localizer project, which planned to acquire four types of data from volunteer research subjects: anatomical MRI scans, functional MRI data, behavioural and demographic data, and DNA sampling. Over the years, this local project has been collecting such data from hundreds of subjects. For the Brainomics/Localizer public database, we selected 94 of these subjects for their complete datasets, including all four types of data.
 
-To publish this set of heterogeneous data, we use dedicated software based on the open source CubicWeb semantic web framework. Through genericity in the data model and flexibility in the display of data (web pages, JSON, XML), CubicWeb helps us expose these complex datasets in original and efficient ways.
+To publish this set of heterogeneous data, we use dedicated software based on the open-source CubicWeb semantic web framework. Through genericity in the data model and flexibility in the display of data (web pages, JSON, XML), CubicWeb helps us expose these complex datasets in original and efficient ways.
 \end{abstract}
 
 \end{frontmatter}
@@ -83,13 +87,13 @@ To publish this set of heterogeneous data, we use dedicated software based on th
 
 \subsection{De-identification of the database}
 
-The ethics committee had initially approved the Localizer study. Starting the Brainomics/Localizer database effort, we addressed with them the publication of Localizer data as support material for one of the published paper \cite{Pinel2012}, in order to facilitate replication of the results. We came up with the following procedure to de-identify data.
+The ethics committee had initially approved the Localizer study. Starting the Brainomics/Localizer database effort, we addressed with the ethics committee the publication of Localizer data as support material for one of the published paper \cite{Pinel2012}, in order to facilitate replication of the results. Following is what we agreed upon to publish data. Please not that not all described functionality has been implemented: we currently do not provide means to run calculations involving genetic data.
 
 Before publishing the data, we anonymize the data in an irreversible way by re-encoding all subject identifiers and discarding the conversion table. Data is stored on an online server and made available to the broader scientific community as a web service. Users will be able to access the data with a web browser.
 
 \paragraph{Imaging data} In addition to re-encoding subject identifiers, anatomical MRI images are defaced, using the \textit{mri\_deface} tool of Freesurfer \cite{Fischl2012}.
 
-\paragraph{Genetic data} The very nature of genotyping data identifies a subject, by mere comparison to other genotyping data collected elsewhere. As a result genetic data cannot be downloaded from the server. Users of the server can nevertheless start calculations on the server itself from a user interface, using the genetic data of all subjects as a parameter. The results of such calculations are images like those presented in Fig.~1 of \cite{Pinel2012}. These actions should be crafted carefully to forbid retrieval of individual genotypic data.
+\paragraph{Genetic data} The very nature of genotyping data strongly identifies a subject, by mere comparison to other genotyping data collected elsewhere. As a result genetic data cannot be downloaded from the server. Users of the server can nevertheless start calculations on the server itself from a user interface, using the genetic data of all subjects as a parameter. The results of such calculations are images like those presented in Fig.~1 of \cite{Pinel2012}. These actions should be crafted carefully to forbid retrieval of individual genotypic data.
 
 \paragraph{Demographic and behavioural data} Only data related to the publication \cite{Pinel2007} are uploaded to the server. Such data do not present a risk of identifying the subject.
 
@@ -98,38 +102,37 @@ Before publishing the data, we anonymize the data in an irreversible way by re-e
 
 \subsubsection{The Brainomics genetic neuroimaging database}
 
-No existing framework seems to address the large and complex datasets collected in multicentric population studies. Such studies collect heterogeneous measurements such as genotyping, neuroimaging and demographic data, behaviour scores and neuropsychological scores from thousands of subjects. Those data typically follow a workflow that consists in (i) data collection, (ii) data alignment, quality control and possibly further processing and (iii) data indexation and publication. Several frameworks support some of the steps or data types listed above. The XNAT project \cite{XNAT2007} underpins several neuroimaging databases including shared international resources \cite{HBP2012}.
+The need to manage data growing in volume and complexity have led the neuroimaging field to rely increasingly on database infrastructures. These databases typically provide support for multiple data types \textit{e.g.}, brain images, behavioural and demographic data, neuropsychological scores, and genetic data. Popular solutions for storing such data at a large scale are COINS \cite{COINS2011} and XNAT \cite{XNAT2007}.
 
-\underline{BEGIN TODO}
-COINS ?
-\underline{END TODO}
+We chose CubicWeb, which is an alternative open-source framework. We customized it for the requirements of neuroimaging. The resulting Brainomics genetic neuroimaging database permits a deep integration of imaging and genetic data \cite{HBM2013}. We use this system internally to assemble joint data types queries. Currently the publicly available database excludes genetic data, for ethical reasons.
 
 
-\subsubsection[cubicweb]{The CubicWeb framework} We developed the Brainomics genetic neuroimaging database on top of CubicWeb. CubicWeb is an opensource \footnote{http://www.cubicweb.org/} framework initially developed by Logilab that follows the semantic web approach: data are exposed using ontologies for easier sharing, access, and processing, and each item is identified by a unique ID (called URI). CubicWeb is built upon well established core technologies such as SQL, Python and web standards (HTML5 and JavaScript). It has been successfully used in large semantic web and knowledge management projects \cite{Simon2013}.
+\subsubsection{The CubicWeb framework}
+\label{sec:cubicweb}
 
-On major part of a CubicWeb application is the data model, defined by Python classes, from which CubicWeb generates the underlying SQL tables. It is thus possible to query the data via the RQL language which predates but is similar to W3C's SPARQL. This language provides an abstraction over the underlying database, queries being expressed in terms of business logic rather than low-level SQL schema. For example, the query \emph{Query all the scans of male subjects} can be expressed in RQL as \emph{Any X WHERE S is Subject, S gender "male", X is Scan, X concerns S}.
+The CubicWeb framework \cite{CubicWeb} follows the semantic web approach: data are exposed using ontologies for easier sharing, access, and processing, and each item is identified by a unique ID (called URI). CubicWeb is built upon well established core technologies such as SQL, Python and web standards (HTML5 and JavaScript). It has been successfully used in large semantic web and knowledge management projects \cite{Simon2013}.
 
-Moreover, CubicWeb implements a mechanism to expose information in several ways called ``views''. Being defined in Python, the views are applied on query results, and can produce any kind of output (web pages, but also binary data, or even trigger external processing). The separation of queries and views holds major advantages:
-\begin{itemize}
-\item i) The same data selection may have several representations, e.g. the subject \emph{S65}, defined by a single query (\emph{Any X WHERE X is Subject, X identifier "S65"}) can be viewed as HTML \footnote{\url{http://brainomics.cea.fr/localizer/dataset?rql=Any\%20X\%20WHERE\%20X\%20is\%20Subject,\%20X\%20identifier\%20\%22S65\%22}}, CSV \footnote{\url{http://brainomics.cea.fr/localizer/dataset?rql=Any\%20X\%20WHERE\%20X\%20is\%20Subject,\%20X\%20identifier\%20\%22S65\%22&vid=csvexport}} or XML \footnote{\url{http://brainomics.cea.fr/localizer/dataset?rql=Any\%20X\%20WHERE\%20X\%20is\%20Subject,\%20X\%20identifier\%20\%22S65\%22&vid=xcede}}. Each couple \emph{(query, view)} is identified by an unique URL.
-\item ii) Data can be exported in several other formats (e.g. XCEDE or MAGE-ML) without modifying the underlying data storage. The data model can be performance-oriented, adding a new ontology for sharing the data being simply a new view to define.
-\end{itemize}
-Finally, CubicWeb has a security system, coupled to the data model definition, that grants fine-grained access rights to the data. CubicWeb may run as a standalone application or be smoothly integrated in a platform combining Apache and SFTP with LDAP. It is distributed under the LGPL license.
+One major part of a CubicWeb application is the data model, defined by Python classes, from which CubicWeb generates the underlying SQL tables. It is thus possible to query the data via the RQL language which predates but is similar to W3C's SPARQL. This language provides an abstraction over the underlying database, queries being expressed in terms of business logic rather than low-level SQL schema. For example, \emph{Query all the scans of male subjects} can be expressed in RQL as \emph{Any X WHERE S is Subject, S gender "male", X is Scan, X concerns S}.
 
-In the Brainomics project, we leveraged CubicWeb and defined domain specific modules, denoted ``cubes'' in the terminology of CubicWeb, that easily connected each another.
+Moreover, CubicWeb implements a mechanism to expose information in several ways called ``views''. Being defined in Python, the views are applied on query results, and can produce any kind of output, such as web pages, but also binary data or even trigger external processing. The separation of queries and views holds major advantages:
+\begin{enumerate}[label=\roman*)]
+\item The same data selection may have several representations, e.g. the subject \emph{S65}, defined by a single query (\emph{Any X WHERE X is Subject, X identifier "S65"}) can be viewed as HTML \footnote{\url{http://brainomics.cea.fr/localizer/dataset?rql=Any\%20X\%20WHERE\%20X\%20is\%20Subject,\%20X\%20identifier\%20\%22S65\%22}}, CSV \footnote{\url{http://brainomics.cea.fr/localizer/dataset?rql=Any\%20X\%20WHERE\%20X\%20is\%20Subject,\%20X\%20identifier\%20\%22S65\%22&vid=csvexport}} or XML \footnote{\url{http://brainomics.cea.fr/localizer/dataset?rql=Any\%20X\%20WHERE\%20X\%20is\%20Subject,\%20X\%20identifier\%20\%22S65\%22&vid=xcede}}. Each couple \emph{(query, view)} is identified by a unique URL.
+\item Data can be exported in several other formats (e.g. XCEDE or MAGE-ML) without modifying the underlying data storage. The data model can be performance-oriented, adding a new ontology for sharing the data being simply a new view to define.
+\end{enumerate}
+Finally, CubicWeb has a security system, coupled to the data model definition, that grants fine-grained data access rights. CubicWeb may run as a standalone application or be smoothly integrated in a platform combining Apache and SFTP with LDAP. It is distributed under the LGPL license.
+
+In the Brainomics project, we leveraged CubicWeb and defined domain specific modules, denoted ``cubes'' in the terminology of CubicWeb, that easily connect each another.
 
 
 \subsubsection{Development of domain specific modules}
 
-We developed one cube per data type. Each cube is connected to the others - if needed - in the final database schema. The \textit{medicalexp} cube contains the definition of general entities like Subject, Center, Assessment; the \textit{neuroimaging} (resp. \textit{genetics}) cube defines entities and relations like Scan, Scanner (resp. SnpVariant, Platform, GenotypeMeasurement). Each cube implements the corresponding views (navigation, download), triggers and access rights. Connected together, those cubes and others are used to build the complete Brainomics/Localizer database. Like the CubicWeb framework, these cubes are distributed under the LGPL license and the source code is available from the CubicWeb web site \cite{CubicWeb} and GitHub \cite{Localizer}.
-
+We developed one cube per data type. Each cube is connected to the others - if needed - in the final database schema. The \textit{medicalexp} cube contains the definition of general entities like Subject, Center, Assessment; the \textit{neuroimaging} (resp. \textit{genetics}) cube defines entities and relations like Scan, Scanner (resp. SnpVariant, Platform, GenotypeMeasurement). Each cube implements the corresponding views (navigation, download), triggers and access rights. Connected together, those cubes and others are used to build the complete Brainomics/Localizer database (Fig.~\ref{fig:ui}). Like the CubicWeb framework, these cubes are distributed under the LGPL license and the source code is available from the CubicWeb web site \cite{CubicWeb} and GitHub \cite{Localizer}.
 
 \begin{figure}[ht!]
     \includegraphics[width=\textwidth]{ui1}
-    \caption{Screenshot of Brainomics' web interface, showing the downloading and filtering (facets) menus on the left, and the summary representation of the images in the database.}
+    \caption{Screenshot of the Brainomics web interface, showing the downloading and filtering ``facets'' (menus) on the left, and the summary representation of the images stored in the database.}
     \label{fig:ui}
 \end{figure}
-
 
 
 \section{Description of the repository}
@@ -140,6 +143,8 @@ Our database was designed to publish data from the Localizer project \cite{Pinel
 
 We provide a static set of data. In the short term we have no plans for adding data from other subjects of the Localizer study.
 
+The fMRI data can be downloaded into the NiLearn environment and used as an example neuroimaging dataset \cite{NiLearn_Localizer}.
+
 
 \subsection{Available data}
 
@@ -149,8 +154,7 @@ Demographic data displayed by the database include gender, age at the time of in
 
 Behavioural data aimed to create a rough cognitive profile of each subject. Each profile contains scores for 126 questions covering education, developmental disorders, reading difficulties, basic numerical knowledge, arithmetical skills, visuo-spatial abilities, and visuo-motor abilities.
 
-MRI data were acquired on the two 3~T MRI scanners used successively over time for routine acquisitions. They were then processed using SPM5. Raw and processed MRI data are available in the NIfTI format. Both raw and normalized T1-weighted anatomical MRI scans are provided for each subject. Functional MRI data includes raw EPI scans, preprocessed fMRI scans and statistical parametric maps. The fMRI experimental design as well as data processing are described in more detail in the initial Localizer article \cite{Pinel2007}. Let us only cite the challenging constraints taken
-into account when designing the sequence:
+MRI data were acquired on the two 3~T MRI scanners used successively over time for routine acquisitions. They were then processed using SPM5. Raw and processed MRI data are available in the NIfTI format. Both raw and normalized T1-weighted anatomical MRI scans are provided for each subject. Functional MRI data includes raw EPI scans, preprocessed fMRI scans and statistical parametric maps. The fMRI experimental design as well as data processing are described in more detail in the initial Localizer article \cite{Pinel2007}. Let us only cite the challenging constraints taken into account when designing the sequence:
 \begin{itemize}
 \item the sequence had to be short, so as to disrupt as little as possible the main protocol. We choose 5 minutes for performing 100 trials.
 \item we aimed to obtain for each subject a description of different levels of functional architecture, from sensorimotor areas (perception and action) to more associative areas involved in reading, language processing and calculation.
@@ -158,15 +162,11 @@ into account when designing the sequence:
 \item individual networks described in 5~min had to be reproducible over sessions and time.
 \end{itemize}
 
-\underline{BEGIN TODO}
+Images are made available as NIfTI files. They can be downloaded as ZIP files from the Brainomics/Localizer server. Other data can be viewed in tabular form in the Web interface and exported to a variety of formats such as CSV or JSON, as described in paragraph~\ref{sec:cubicweb}.
 
-\underline{FILE FORMAT!}
+A URI is associated to every entity stored in the database. Furthermore, as already explained in paragraph~\ref{sec:cubicweb}, a URI is also associated to every \emph{(query, view)} couple used to select and display or download data. Such URIs can be kept as a permanent link to sets of data made of individual entities.
 
-Images are made available as NIfTI files. They can be downloaded in ZIP files from the Brainomics/Localizer server. Other data can be viewed as tabular form in the Web interface and exported to a variety of formats such as CSV, as described in paragraph~\ref{cubicweb}.
-
-\underline{doi's or uri's}
-
-\underline{END TODO}
+\underline{TODO: add Python code}
 
 
 \subsection{Quality control and review of the data}
@@ -181,19 +181,18 @@ All anatomical MRI scans have been examined by radiologists for possible health 
 \end{figure}
 
 
-\subsection{How to access the data?}
+\subsection{How to access the data}
 
-Data are available to everyone, without prior authentication, at \url{http://brainomics.cea.fr/localizer}. A registration process had initially been set up but later removed because it deterred users from trying to access the data. The same mechanism is used for imaging and phenotypic data. Imaging data can be selected in the user interface, they are then packed into a ZIP file and can be downloaded. Phenotypic data are directly available in the user interface and can be
-downloaded as a CSV file.
+Data are available to everyone, without prior authentication, at \url{http://brainomics.cea.fr/localizer}. A registration process had initially been set up but later removed because it deterred users from trying to access the data. The same mechanism is used for imaging and phenotypic data. Imaging data can be selected in the web user interface, and then packed into a ZIP file that can be downloaded. Phenotypic data are directly available in tabular form in the web user interface and can be downloaded as a CSV file among other formats.
 
-Data are made available under the Creative Commons 3.0 licence (CC BY 3.0). We ask our work is acknowledged in publications that use data made available in the Brainomics/Localizer database.
+Data are made available under the Creative Commons 3.0 licence (CC BY 3.0). We ask our work is acknowledged in publications that use data from the Brainomics/Localizer database.
 
 
 \subsection{Future developments}
 
 Since this specific database was designed to serve data from the Localizer project, we do not plan on hosting new data. We do operate other databases running the same software stack though, within projects such as IMAGEN \cite{Imagen2010} or EU-AIMS \cite{Aims2014} which keep collecting and exposing new data.
 
-The long term plans for this resource is to keep it alive as a public example instance of the {Brainomics} software. The server is currently frozen, however we do hope to upgrade the software to more recent versions in the near future and fix any remaining glitches in data presentation.
+The long term plans for this resource is to keep it alive as a public example instance of the {Brainomics} software. The server application software is currently frozen, however we do hope to upgrade the software to more recent versions in the near future and fix any remaining glitches in data presentation.
 
 
 \section{Conclusion}
