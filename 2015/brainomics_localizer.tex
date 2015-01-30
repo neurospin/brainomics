@@ -5,9 +5,20 @@
 %% \modulolinenumbers[5]
 \usepackage{graphicx}
 
+\usepackage{enumitem}
+
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-\usepackage{enumitem}
+\usepackage{listings}
+\usepackage{color}
+
+\lstset{
+	showstringspaces=false,
+	formfeed=newpage,
+	tabsize=4,
+	commentstyle=itshape,
+	morekeywords={models, lambda, forms}
+} 
 
 \journal{NeuroImage}
 
@@ -116,12 +127,19 @@ One major part of a CubicWeb application is the data model, defined by Python cl
 
 Moreover, CubicWeb implements a mechanism to expose information in several ways called ``views''. Being defined in Python, the views are applied on query results, and can produce any kind of output, such as web pages, but also binary data or even trigger external processing. The separation of queries and views holds major advantages:
 \begin{enumerate}[label=\roman*)]
-\item The same data selection may have several representations, e.g. the subject \emph{S65}, defined by a single query (\emph{Any X WHERE X is Subject, X identifier "S65"}) can be viewed as HTML \footnote{\url{http://brainomics.cea.fr/localizer/dataset?rql=Any\%20X\%20WHERE\%20X\%20is\%20Subject,\%20X\%20identifier\%20\%22S65\%22}}, CSV \footnote{\url{http://brainomics.cea.fr/localizer/dataset?rql=Any\%20X\%20WHERE\%20X\%20is\%20Subject,\%20X\%20identifier\%20\%22S65\%22&vid=csvexport}} or XML \footnote{\url{http://brainomics.cea.fr/localizer/dataset?rql=Any\%20X\%20WHERE\%20X\%20is\%20Subject,\%20X\%20identifier\%20\%22S65\%22&vid=xcede}}. Each couple \emph{(query, view)} is identified by a unique URL.
-\item Data can be exported in several other formats (e.g. XCEDE or MAGE-ML) without modifying the underlying data storage. The data model can be performance-oriented, adding a new ontology for sharing the data being simply a new view to define.
+\item The same data selection may have several representations, \textit{e.g.} the subject \emph{S65}, defined by a single query (\textit{Any X WHERE X is Subject, X identifier "S65"}) can be viewed as HTML, CSV or XML. Each couple \textit{(query, view)} is identified by a unique URL.
+\item Data can be exported in several other formats (\textit{e.g.} XCEDE or MAGE-ML) without modifying the underlying data storage. The data model can be performance-oriented, adding a new ontology for sharing the data being simply a new view to define.
 \end{enumerate}
-Finally, CubicWeb has a security system, coupled to the data model definition, that grants fine-grained data access rights. CubicWeb may run as a standalone application or be smoothly integrated in a platform combining Apache and SFTP with LDAP. It is distributed under the LGPL license.
 
-In the Brainomics project, we leveraged CubicWeb and defined domain specific modules, denoted ``cubes'' in the terminology of CubicWeb, that easily connect each another.
+\begin{footnotesize}
+\begin{lstlisting}
+http://brainomics.cea.fr/localizer/dataset?rql=Any X WHERE X is Subject, X identifier "S65"
+http://brainomics.cea.fr/localizer/dataset?rql=Any X WHERE X is Subject, X identifier "S65"&vid=csvexport
+http://brainomics.cea.fr/localizer/dataset?rql=Any X WHERE X is Subject, X identifier "S65"&vid=xcede
+\end{lstlisting}
+\end{footnotesize}
+
+Finally, CubicWeb has a security system, coupled to the data model definition, that grants fine-grained data access rights. CubicWeb may run as a standalone application or be smoothly integrated in a platform combining Apache and SFTP with LDAP. It is distributed under the LGPL license.
 
 
 \subsubsection{Development of domain specific modules}
@@ -164,9 +182,11 @@ MRI data were acquired on the two 3~T MRI scanners used successively over time f
 
 Images are made available as NIfTI files. They can be downloaded as ZIP files from the Brainomics/Localizer server. Other data can be viewed in tabular form in the Web interface and exported to a variety of formats such as CSV or JSON, as described in paragraph~\ref{sec:cubicweb}.
 
-A URI is associated to every entity stored in the database. Furthermore, as already explained in paragraph~\ref{sec:cubicweb}, a URI is also associated to every \emph{(query, view)} couple used to select and display or download data. Such URIs can be kept as a permanent link to sets of data made of individual entities.
+A URI is associated to every entity stored in the database. Furthermore, a URI is also associated to every \emph{(query, view)} couple used to select and display or download data. Such URIs can be kept as a permanent link to sets of data made of individual entities.
 
-\underline{TODO: add Python code}
+\begin{footnotesize}
+\lstinputlisting[language=Python]{example.py}\label{code:nilearn}
+\end{footnotesize}
 
 
 \subsection{Quality control and review of the data}
@@ -185,7 +205,7 @@ All anatomical MRI scans have been examined by radiologists for possible health 
 
 Data are available to everyone, without prior authentication, at \url{http://brainomics.cea.fr/localizer}. A registration process had initially been set up but later removed because it deterred users from trying to access the data. The same mechanism is used for imaging and phenotypic data. Imaging data can be selected in the web user interface, and then packed into a ZIP file that can be downloaded. Phenotypic data are directly available in tabular form in the web user interface and can be downloaded as a CSV file among other formats.
 
-Data are made available under the Creative Commons 3.0 licence (CC BY 3.0). We ask our work is acknowledged in publications that use data from the Brainomics/Localizer database.
+Data are made available under the Creative Commons 3.0 licence (CC BY 3.0). We ask our work is acknowledged in publications that use data from the Brainomics/Localizer database. Thanks to the permissive license, the statistical parametric maps are also downloadable from NeuroVault \cite{NeuroVault2014}, as we aim to make the Localizer data available to a broader audience.
 
 
 \subsection{Future developments}
@@ -196,6 +216,11 @@ The long term plans for this resource is to keep it alive as a public example in
 
 
 \section{Conclusion}
+
+We opened up heterogeneous data from 94 subjects of the Localizer project, selected for the completeness of available data including anatomical MRI scans, functional MRI data, behavioural and demographic data, and DNA sampling. The 94 datasets can be downloaded under a permissive license. As a result the data can be disseminated and used by new projects: the statistical parametric maps are available from the NeuroVault public repository, and they are also routinely downloaded and used as example data and test bed for NiLearn.
+
+The data are made available on a dedicated server hosting the Brainomics/Localizer database.
+
 
 \section{Acknowledgements}
 
