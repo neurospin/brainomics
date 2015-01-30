@@ -87,13 +87,13 @@ To publish this set of heterogeneous data, we use dedicated software based on th
 
 \subsection{De-identification of the database}
 
-The ethics committee had initially approved the Localizer study. Starting the Brainomics/Localizer database effort, we addressed with the ethics committee the publication of Localizer data as support material for one of the published paper \cite{Pinel2012}, in order to facilitate replication of the results. We came up with the following procedure to de-identify data.
+The ethics committee had initially approved the Localizer study. Starting the Brainomics/Localizer database effort, we addressed with the ethics committee the publication of Localizer data as support material for one of the published paper \cite{Pinel2012}, in order to facilitate replication of the results. Following is what we agreed upon to publish data. Please not that not all described functionality has been implemented: we currently do not provide means to run calculations involving genetic data.
 
 Before publishing the data, we anonymize the data in an irreversible way by re-encoding all subject identifiers and discarding the conversion table. Data is stored on an online server and made available to the broader scientific community as a web service. Users will be able to access the data with a web browser.
 
 \paragraph{Imaging data} In addition to re-encoding subject identifiers, anatomical MRI images are defaced, using the \textit{mri\_deface} tool of Freesurfer \cite{Fischl2012}.
 
-\paragraph{Genetic data} The very nature of genotyping data identifies a subject, by mere comparison to other genotyping data collected elsewhere. As a result genetic data cannot be downloaded from the server. Users of the server can nevertheless start calculations on the server itself from a user interface, using the genetic data of all subjects as a parameter. The results of such calculations are images like those presented in Fig.~1 of \cite{Pinel2012}. These actions should be crafted carefully to forbid retrieval of individual genotypic data.
+\paragraph{Genetic data} The very nature of genotyping data strongly identifies a subject, by mere comparison to other genotyping data collected elsewhere. As a result genetic data cannot be downloaded from the server. Users of the server can nevertheless start calculations on the server itself from a user interface, using the genetic data of all subjects as a parameter. The results of such calculations are images like those presented in Fig.~1 of \cite{Pinel2012}. These actions should be crafted carefully to forbid retrieval of individual genotypic data.
 
 \paragraph{Demographic and behavioural data} Only data related to the publication \cite{Pinel2007} are uploaded to the server. Such data do not present a risk of identifying the subject.
 
@@ -126,15 +126,13 @@ In the Brainomics project, we leveraged CubicWeb and defined domain specific mod
 
 \subsubsection{Development of domain specific modules}
 
-We developed one cube per data type. Each cube is connected to the others - if needed - in the final database schema. The \textit{medicalexp} cube contains the definition of general entities like Subject, Center, Assessment; the \textit{neuroimaging} (resp. \textit{genetics}) cube defines entities and relations like Scan, Scanner (resp. SnpVariant, Platform, GenotypeMeasurement). Each cube implements the corresponding views (navigation, download), triggers and access rights. Connected together, those cubes and others are used to build the complete Brainomics/Localizer database. Like the CubicWeb framework, these cubes are distributed under the LGPL license and the source code is available from the CubicWeb web site \cite{CubicWeb} and GitHub \cite{Localizer}.
-
+We developed one cube per data type. Each cube is connected to the others - if needed - in the final database schema. The \textit{medicalexp} cube contains the definition of general entities like Subject, Center, Assessment; the \textit{neuroimaging} (resp. \textit{genetics}) cube defines entities and relations like Scan, Scanner (resp. SnpVariant, Platform, GenotypeMeasurement). Each cube implements the corresponding views (navigation, download), triggers and access rights. Connected together, those cubes and others are used to build the complete Brainomics/Localizer database (Fig.~\ref{fig:ui}). Like the CubicWeb framework, these cubes are distributed under the LGPL license and the source code is available from the CubicWeb web site \cite{CubicWeb} and GitHub \cite{Localizer}.
 
 \begin{figure}[ht!]
     \includegraphics[width=\textwidth]{ui1}
-    \caption{Screenshot of Brainomics' web interface, showing the downloading and filtering (facets) menus on the left, and the summary representation of the images in the database.}
+    \caption{Screenshot of the Brainomics web interface, showing the downloading and filtering ``facets'' (menus) on the left, and the summary representation of the images stored in the database.}
     \label{fig:ui}
 \end{figure}
-
 
 
 \section{Description of the repository}
@@ -144,6 +142,8 @@ We developed one cube per data type. Each cube is connected to the others - if n
 Our database was designed to publish data from the Localizer project \cite{Pinel2007} and more specifically the subset of 94 subjects examined in \cite{Pinel2012}, and make it available to the broader scientific community. Our intent was to set up a demonstrator for the software we have developed in the context of our Brainomics project.
 
 We provide a static set of data. In the short term we have no plans for adding data from other subjects of the Localizer study.
+
+The fMRI data can be downloaded into the NiLearn environment and used as an example neuroimaging dataset \cite{NiLearn_Localizer}.
 
 
 \subsection{Available data}
@@ -162,15 +162,11 @@ MRI data were acquired on the two 3~T MRI scanners used successively over time f
 \item individual networks described in 5~min had to be reproducible over sessions and time.
 \end{itemize}
 
-\underline{BEGIN TODO}
+Images are made available as NIfTI files. They can be downloaded as ZIP files from the Brainomics/Localizer server. Other data can be viewed in tabular form in the Web interface and exported to a variety of formats such as CSV or JSON, as described in paragraph~\ref{sec:cubicweb}.
 
-\underline{FILE FORMAT!}
+A URI is associated to every entity stored in the database. Furthermore, as already explained in paragraph~\ref{sec:cubicweb}, a URI is also associated to every \emph{(query, view)} couple used to select and display or download data. Such URIs can be kept as a permanent link to sets of data made of individual entities.
 
-Images are made available as NIfTI files. They can be downloaded in ZIP files from the Brainomics/Localizer server. Other data can be viewed as tabular form in the Web interface and exported to a variety of formats such as CSV, as described in paragraph~\ref{sec:cubicweb}.
-
-\underline{doi's or uri's}
-
-\underline{END TODO}
+\underline{TODO: add Python code}
 
 
 \subsection{Quality control and review of the data}
@@ -187,9 +183,9 @@ All anatomical MRI scans have been examined by radiologists for possible health 
 
 \subsection{How to access the data}
 
-Data are available to everyone, without prior authentication, at \url{http://brainomics.cea.fr/localizer}. A registration process had initially been set up but later removed because it deterred users from trying to access the data. The same mechanism is used for imaging and phenotypic data. Imaging data can be selected in the user interface, they are then packed into a ZIP file and can be downloaded. Phenotypic data are directly available in the user interface and can be downloaded as a CSV file.
+Data are available to everyone, without prior authentication, at \url{http://brainomics.cea.fr/localizer}. A registration process had initially been set up but later removed because it deterred users from trying to access the data. The same mechanism is used for imaging and phenotypic data. Imaging data can be selected in the web user interface, and then packed into a ZIP file that can be downloaded. Phenotypic data are directly available in tabular form in the web user interface and can be downloaded as a CSV file among other formats.
 
-Data are made available under the Creative Commons 3.0 licence (CC BY 3.0). We ask our work is acknowledged in publications that use data made available in the Brainomics/Localizer database.
+Data are made available under the Creative Commons 3.0 licence (CC BY 3.0). We ask our work is acknowledged in publications that use data from the Brainomics/Localizer database.
 
 
 \subsection{Future developments}
