@@ -68,7 +68,7 @@
 \begin{abstract}
 The Brainomics/Localizer database exposes part of the data collected by the in house Localizer project, which planned to acquire four types of data from volunteer research subjects: anatomical MRI scans, functional MRI data, behavioural and demographic data, and DNA sampling. Over the years, this local project has been collecting such data from hundreds of subjects. For the Brainomics/Localizer public database, we selected 94 of these subjects for their complete datasets, including all four types of data.
 
-To publish this set of heterogeneous data, we use dedicated software based on the open source CubicWeb semantic web framework. Through genericity in the data model and flexibility in the display of data (web pages, JSON, XML), CubicWeb helps us expose these complex datasets in original and efficient ways.
+To publish this set of heterogeneous data, we use dedicated software based on the open-source CubicWeb semantic web framework. Through genericity in the data model and flexibility in the display of data (web pages, JSON, XML), CubicWeb helps us expose these complex datasets in original and efficient ways.
 \end{abstract}
 
 \end{frontmatter}
@@ -87,7 +87,7 @@ To publish this set of heterogeneous data, we use dedicated software based on th
 
 \subsection{De-identification of the database}
 
-The ethics committee had initially approved the Localizer study. Starting the Brainomics/Localizer database effort, we addressed with them the publication of Localizer data as support material for one of the published paper \cite{Pinel2012}, in order to facilitate replication of the results. We came up with the following procedure to de-identify data.
+The ethics committee had initially approved the Localizer study. Starting the Brainomics/Localizer database effort, we addressed with the ethics committee the publication of Localizer data as support material for one of the published paper \cite{Pinel2012}, in order to facilitate replication of the results. We came up with the following procedure to de-identify data.
 
 Before publishing the data, we anonymize the data in an irreversible way by re-encoding all subject identifiers and discarding the conversion table. Data is stored on an online server and made available to the broader scientific community as a web service. Users will be able to access the data with a web browser.
 
@@ -102,17 +102,15 @@ Before publishing the data, we anonymize the data in an irreversible way by re-e
 
 \subsubsection{The Brainomics genetic neuroimaging database}
 
-No existing framework seems to address the large and complex datasets collected in multicentric population studies. Such studies collect heterogeneous measurements such as genotyping, neuroimaging and demographic data, behaviour scores and neuropsychological scores from thousands of subjects. Those data typically follow a workflow that consists in (i) data collection, (ii) data alignment, quality control and possibly further processing and (iii) data indexation and publication. Several frameworks support some of the steps or data types listed above. The XNAT project \cite{XNAT2007} underpins several neuroimaging databases including shared international resources \cite{HBP2012}.
+The need to manage data growing in volume and complexity have led the neuroimaging field to rely increasingly on database infrastructures. These databases typically provide support for multiple data types \textit{e.g.}, brain images, behavioural and demographic data, neuropsychological scores, and genetic data. Popular solutions for storing such data at a large scale are COINS \cite{COINS2011} and XNAT \cite{XNAT2007}.
 
-\underline{BEGIN TODO}
-COINS ?
-\underline{END TODO}
+We chose CubicWeb, which is an alternative open-source framework. We customized it for the requirements of neuroimaging. The resulting Brainomics genetic neuroimaging database permits a deep integration of imaging and genetic data \cite{HBM2013}. We use this system internally to assemble joint data types queries. Currently the publicly available database excludes genetic data, for ethical reasons.
 
 
 \subsubsection{The CubicWeb framework}
 \label{sec:cubicweb}
 
-We developed the Brainomics genetic neuroimaging database on top of CubicWeb. CubicWeb is an opensource \cite{CubicWeb} framework initially developed by Logilab that follows the semantic web approach: data are exposed using ontologies for easier sharing, access, and processing, and each item is identified by a unique ID (called URI). CubicWeb is built upon well established core technologies such as SQL, Python and web standards (HTML5 and JavaScript). It has been successfully used in large semantic web and knowledge management projects \cite{Simon2013}.
+The CubicWeb framework \cite{CubicWeb} follows the semantic web approach: data are exposed using ontologies for easier sharing, access, and processing, and each item is identified by a unique ID (called URI). CubicWeb is built upon well established core technologies such as SQL, Python and web standards (HTML5 and JavaScript). It has been successfully used in large semantic web and knowledge management projects \cite{Simon2013}.
 
 One major part of a CubicWeb application is the data model, defined by Python classes, from which CubicWeb generates the underlying SQL tables. It is thus possible to query the data via the RQL language which predates but is similar to W3C's SPARQL. This language provides an abstraction over the underlying database, queries being expressed in terms of business logic rather than low-level SQL schema. For example, \emph{Query all the scans of male subjects} can be expressed in RQL as \emph{Any X WHERE S is Subject, S gender "male", X is Scan, X concerns S}.
 
