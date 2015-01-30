@@ -21,7 +21,6 @@ tasks = [
 ]
 
 localizer_data = fetch_localizer_contrasts(tasks, get_tmaps=True)
-ext_vars = pd.DataFrame(localizer_data['ext_vars'])
 images = np.array(localizer_data['tmaps'])
 
 # we denote the statistical maps as X, and the target to predict as y
