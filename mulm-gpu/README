@@ -1,0 +1,12 @@
+module mulm gpu
+
+Pour compiler sur Curie :
+
+make
+
+Le module est cree dans le repertoire "build"
+
+Utilisation sous python :
+
+import mulm.mu_corr_cuda_mapper as mu_corr
+n_values , beta, n_z, threshold = mu_corr.mapper(X, Y, Z, n_perm)
