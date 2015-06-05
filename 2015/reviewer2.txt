@@ -1,4 +1,6 @@
-Reviewer #2:
+> Reviewer #2: The authors describe a database which stores behavioural, demographic and MRI data of 94 French subjects (from 4 of which the age is not known), which are publicly available to the community. They describe the construction of the database and briefly mention the types of data available.
+> I do not think that this very short and technical description of such a small number of datasets is suitable for publication in "NeuroImage". It might be better suited for a more specialized journal. Having said this, I would like to have the authors consider that there are freely available datasets which are much larger (Functional Connectomes, Human Connectome Project) with at least as much additional information as provided here.
+
 We are aware of the existence of larger shared databases and we agree
 our paper is the technical description of a smaller database.
 
