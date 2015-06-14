@@ -1,0 +1,215 @@
+> Reviewer #1: This manuscript describes the Brainomics/Localizer database, a collection of datasets from 94 subjects with imaging (anatomical and functional MRI), behavioral and demographics and genetics data.  
+> 
+> The resource described seems suitable for the "Sharing the wealth: Brain Imaging Repositories in 2015" special issue. Overall the paper provides a good description of the resource. The paper is however quite short and would benefit from some expansion and re-organization.
+
+Thank you for your thorough and extensive review of the manuscript.
+
+
+> --- General comments ---
+> 
+> 1. It was unclear from the manuscript whether genetics data was currently available or not in the Brainomics/Localizer data repository. The abstract and introduction mention DNA sampling as being part of the Brainomics/Localizer release. While in the section entitled "The Brainomics genetic neuroimaging database" the authors state that "Currently the publicly available database excludes genetic data, for ethical reasons". Does this sentence mean that genetic data are not part of the data repository described in this paper (i.e. Brainomics/Localizer)? If so, this should be stated more explicitly in the abstract and introduction.
+
+That's indeed one of the fine points of the manuscript. Genetic data are available to the Brainomics/Localizer server, but they are not made publicly available. Our intent was to let users run statistical calculations involving genetic data. Calculations would have to be constrained so that individual data cannot be inferred from the results of such calculations. This has unfortunately not been implemented - possible future work.
+
+We have clarified this point in the abstract, the first paragraph of the introduction and in paragraph 2.1.
+
+
+> 2. In order to clarify what is the Brainomics/Localizer database with respect to other efforts described in this manuscript (Brainomics, Localizer), it would probably be best to start the introduction with a brief description of the Brainomics/Localizer project (i.e. a data repository including datasets from 94 subjects with anatomical MRI scans, functional MRI data, behavioural and demographic data, and DNA sampling) and *then* provide more details about other efforts and how the Brainomics/Localizer relates to them (data exposed in Brainomics/Localizer are a subset of the data acquired as part of the Localizer project and Brainomics/Localizer re-uses software developed as part of the Brainomics project).
+
+We have reworked the introduction as suggested. Thank you for helping with this important part of the manuscript.
+
+
+> 3. With respect to the guidelines provided for this special edition (http://www.journals.elsevier.com/neuroimage/call-for-papers/call-for-papers-for-neuroimage-special-issue-sharing-the-wea/), I could not find information related to the following aspects:
+> o does all the data come from *one center* or scanner?
+
+Data were acquired by a single lab (same group of persons involved), in the two centers that successively hosted the lab, on the MRI machine available in either center. The initial sentence in paragraph 3.2 was: "MRI data were acquired on the two 3T MRI scanners used successively over time for routine acquisitions". We have expanded it, hopefully clarifying this point.
+
+
+> o Is imaging or other data quality controlled or reviewed? *If so, by whom?*
+> The second question (by whom?) was not addressed for all data types. Furthermore additional details are needed to describe the quality control performed (cf. specific comments).
+
+Demographic and imaging data were reviewed by the scientists who managed the Localizer database by checking one by one the summary sheets (example shown in figure).
+
+Genetics data were roughly controlled by us too, but just in order to include them in the good format.
+
+Paragraph 3.3 has been updated, including answers to these questions.
+
+
+> o Is there a system for updating users if data is withdrawn/revised/added to?
+> In particular, could you provide more details on what happens if one of the 94 subjects withdraw his/her consent to share his/her data? Given that there is no authentication system, I understand you cannot contact directly the users. Is your plan to add a message on the website, stating that data for a given subject is no longer available?
+
+There is no such system:
+* Primary reason is that we do not expect updates. See paragraph 3.1: "We provide a static set of data. In the short term we have no plans for adding data from other subjects of the Localizer study."
+* Conversion tables were discarded after re-encoding subject identifiers so there is no straightforward way to update the data, by construct.
+
+In the event a subject withdraws consent, in theory we would have to get back to the source data, remove the subject's data, and finally re-encode the data to new random identifiers before publishing it again. This is actually a major issue also faced by colleagues handling ~20 cohorts in non-public databases. We are currently discussing this rule with the body regulating privacy in France. Fluctuating subject identifiers will certainly not help communicating efficiently in case a subject is modified/removed. We have added a paragraph on the subject in section 2.1.
+
+We have added a section "3.5 Data updates".
+
+
+> o What is the design architecture/system for handling large data request downloads, interrupted connections, etc.?
+
+The current file download architecture is copied on XNAT: a ZIP file is created containing the files associated to a specific query and can then be downloaded. We already have a faster and more robust process available. We are preparing a manuscript on this subject for submission.
+
+
+> --- Specific comments ---
+> 
+> * Introduction
+> 
+> The authors claim that "Brainomics/Localizer is one of the rare public databases of individual health information in France". Could you include pointers or cite examples of other similar resources (in and out of France/Europe)?
+
+Our point is that we know of no such resources in France in particular, and very few in Europe in general. I believe most of the resources you would like me to cite are hosted in the US: OpenFMRI, Human Connectome Project, etc. French law is quite protective of privacy and tends to prevent from creating public databases of individual medical research data. This might be one of the reasons why there are so few public databases in France. On the other hand other European teams have contributed to large databases such as ABIDE and some databases are hosted in the UK. Regulatory rules differ from country to country, but in general opening up individual medical data is more difficult in Europe than in the US.
+
+We do not wish to start a polemic on the balance between privacy and research needs. We do not necessarily have strong opinions on that matter. Nevertheless we believe the subject is worth mentioning. We fear mentioning resources hosted only in the US might blur the message.
+
+We have found no examples of public neuroimaging or more generally medical imaging databases created for research in France, but we cannot guarantee they do not exist. I have asked colleagues around me, they are not aware of any. I have also searched the web without results, see for example:
+* http://en.wikipedia.org/wiki/Neuroscience_Information_Framework
+* http://en.wikipedia.org/wiki/List_of_neuroscience_databases
+We are aware of a few publicly available databases in other European countries, especially in the UK:
+* MIRIAD: http://miriad.drc.ion.ucl.ac.uk - https://www.ucl.ac.uk/drc/research/miriad-scan-database
+In France, a couple public databases I know of were created for educational purposes:
+* NeuroPeda: http://acces.ens-lyon.fr/acces/ressources/neurosciences/Banquedonnees_logicielneuroimagerie
+* CERF: http://www.med.univ-rennes1.fr/cerf/iconocerf/
+Public access to the latter seems to have been revoked.
+
+We have reworded the last paragraph of the introduction and tried to convey the above message, without entering into details though.
+
+
+> Given that the authors provide a link to the resulting database, could they also include a link to the publicly available source code in the introduction (instead of providing this link only in section 2.2.3)?
+
+We have added a footnote in the introduction, with a link to the repository of the localizer "cube" on GitHub.
+We have also added links in the REAMDE file of the localizer "cube". They point to the additional CubicWeb components that were developed as part of the effort to publish this database: the brainomics, medicalexp, neuroimaging, questionnaire and genomics "cubes" hosted on the CubicWeb forge.
+A footnote with a link to the brainomics cube (which in turn links to the rest of the cubes) has also been added in paragraph 2.2.3 of the manuscript.
+These changes will hopefully clarify both the location and structure of the source code.
+
+
+> * Material and methods
+> 
+> Could you specify to which "subject identifiers" exactly you are referring to in "re-encoding subject identifiers"? Are these pre-defined DICOM fields?
+
+The text you are referring to is the text agreed upon with the ethics committee, translated from French. We kept the original text, but also added explanations to clarify its meaning.
+Any mention of name, social security number or other similar data are prohibited in all the data acquired for research purposes in our lab. Instead we use a subject identifier; the correspondence between this local identifier and the subject name is  kept securely. Conversion methods from this identifier back to more sensitive data such as names are restricted to a specific network accessible only by medical staff.
+The above local identifier is converted to a new random identifier before publishing the data. The conversion table is then discarded.
+This process is not specific to DICOM files. All types of data are re-encoded.
+
+Paragraph 2.1 has been reorganized to convey the above ideas.
+
+
+> "Please note that not all described functionality has been implemented: we currently do not provide means to run calculations involving genetic data". Related to the second general comment, could you focus first on what is currently available in the database? If calculations on genetics data are not available yet, could you outline this in a separate paragraph describing potential extensions.
+
+You're absolutely right: we need to clarify what is currently shared. We have modified the abstract and the introduction, along with many other changes prompted by other of your comments.
+
+
+> Demographics and behavioural data: "Such data do not present a risk of identifying the subject". Why is it so?
+
+There is a risk associated with every piece of data published. It was felt that it would be hard to identify an individual by comparing the demographics and behavioral data available from the database to similar data collected elsewhere. Contrarily DNA samples collected elsewhere could easily be compared and matched with DNA data from the database.
+That said we do not provide a thorough study of subject de-identification in this manuscript. We describe the process of opening up the data, as it is.
+
+We changed "Such data do not present a risk of identifying the subject" to "It was felt such data do not present a risk of identifying the subject in a  straightforward way". We hope this will convey the above message.
+
+
+> The authors mention alternative databasing solution used in the neuroimaging community (XNAT, COINS). Could you state more clearly why the CubicWeb solution was preferred over those?
+
+We tried to avoid comparison on purpose. Indeed our initial choice of CubicWeb was not based solely on technical merits. We also had to take into account: software used by different in house projects, local political issues and funding opportunities.
+
+That said we are very happy with CubicWeb and are actually moving another project (Imagen) from XNAT to CubicWeb. The complexity of the XNAT software and the capacity of our CubicWeb software to handle and query genetic data were the main reasons behind this change.
+
+XNAT and COINS not only expose data, they also collect and even process data. In contrast we are interested in exposing and offering different views on already collected data, including web pages for human consumption, mechanisms for download, and semantic-web queries run from processing software.
+
+The latter paragraph has been added to section 2.2.1.
+
+
+> Could you clarify what is meant by "joint data types queries". Is this to outline that the Brainomics system is used internally to query jointly genetic and neuroimaging data?
+
+Exactly. A demo with synthetic genetic data would probably help, but such a demo is not available right now. We have reworded paragraph 2.2.1.
+
+
+> "CubicWeb may run as a standalone application or be smoothly integrated in a platform combining Apache and SFTP with LDAP." What is the difference between those two options? In which cases would one be preferred over the other? Why is it interesting to enable both?
+
+Apache can be added as a front-end to any web service, for the purpose of logging, monitoring, filtering, authenticating or other similar services.
+
+LDAP is a standard when it comes to sharing a directory for authentication purposes between different applications.
+
+We use SFTP in other projects alongside CubicWeb, for collecting or exchanging data informally. Nothing really special about SFTP, except FTP/SFTP clients are designed to view and download entire directories, while web clients are usually designed to view and download a single file/page. We use LDAP to share identifiers between CubicWeb and SFTP.
+
+Section 2.2.2 has been slightly modified. We hope that by removing the reference to SFTP and keeping the reference to Apache and LDAP, it has been made clearer.
+
+
+> I understand that the Brainomics/Localizer data repository is built on semantic web principles. Are the concepts used by the data model (e.g. Scan, Scanner, SnpVariant, Subject, Center, Assessment...) part of a shared ontology or controlled vocabulary? If so, is this ontology publicly available? If not, how were the terms and data model defined, is there a plan to integrate with other existing effort in the neuroimaging community?
+
+The concepts we use are modeled as much as possible upon the XCEDE schema. The initial idea was to be able to easily share data using XCEDE.
+
+A document exists that describes the concepts we use. However that document has been written in French and slightly lags behind the current schema. It is also the property of one of the partners of the project and cannot be made publicly available at such short notice. Point taken though. We will try to make the document publicly available, as opening data and sources was the whole point of the Brainomics/Localizer database.
+
+The best public source of information is currently the source code itself, specifically schema.py in each cube. We are aware these files are insufficiently documented.
+
+In paragraph 2.2.3, we acknowledge the concepts are modeled upon XCEDE.
+
+
+> Looking at the code at https://github.com/neurospin/localizer, I could not find the definition of the cubes (while these are available on the cubicweb website). Is there some source code missing in the github repository or was this intended? If the source code for the cubes is only available on the cubicweb website, could you also include a direct link to your cubes on cubicweb?
+
+In paragraph 2.2.3, we have added a link to the "brainomics" cube, which in turn links to the rest of the cubes.
+
+As mentioned above, we have also expanded the README of the "localizer" cube to clarify the dependency on the "brainomics" series of cubes and provide the location of their source code.
+
+
+> * Description of the repository
+
+> Given that this section is the main description of the repository, for clarity could you state explicitly what are the "four aforementioned types of data"?
+
+Section 3.2 has been changed accordingly.
+
+
+> "The two 3T MRI scanners". Which scanners are you referring to? Could you give more information about the type of scanner (constructor…), and provide the reader with more information about the difference between the two scanners, if applicable.
+
+Two scanners were successively used by our lab for routine acquisitions:
+* Bruker 3 T
+* Siemens Trio Tim 3 T
+We have added this information to section 3.2.
+
+
+> Could you specify which reference space was used for the "normalized T1-weighted anatomical MRI scans"?
+
+The avg152 T1-weighted template. Paragraph 3.2 has been updated.
+
+
+> "Other data can be viewed in tabular form in the Web interface and exported to a variety of formats such as CSV or JSON, as described in paragraph 2.2.2.". For clarity and to facilitate comparison with other publications within this special issue, could you list explicitly which formats are available (even if you still link to 2.2.2 to provide further details).
+
+The result of a CubicWeb query can downloaded in JSON, RDF and CSV formats. The brainomics cubes adds the capacity to export in XCEDE format. We have clarified this both in sections 2.2.2, 2.2.3 and 3.2.
+
+
+> Could you clarify (for instance provide examples) what is meant by "entity" in "A URI is associated to every entity stored in the database."?
+
+An entity is a class. From the "Core concepts of CubicWeb" (https://docs.cubicweb.org/intro/concepts.html):
+The data model of a cube is described as an entity-relationship schema using a comprehensive language made of Python classes imported from the yams library.
+An entity type defines a sequence of attributes. 
+
+We have updated 2.2.2 and 2.2.3 to introduce the terms "entity" and "relation" used subsequently in the manuscript. We provide examples of "entities" again in section 3.2, hopefully helping readers grasp the concept.
+
+
+> More details are needed to describe quality control:
+> - "We cross-checked demographic data available from different sources, and manually reviewed behavioural data for each subject.". What are the "different sources" of demographics data? What does the "manual review" of behavioural data covered exactly?
+> - "Finally fMRI processed images were visually checked." Was there a particular protocol used to visually check the fMRI images? Who was involved in this checking and what type of anomalies were they aiming at?
+> - "All 94 subjects were considered good enough.". Could you provide more precision on what you meant by "good enough"?. Was this in comparison to the rest of the data observed in the Localizer project?
+
+- Sources for demographic data include different questionnaires filled in by the nurses or the experimenters. We merged these different sources, double-checking for inconsistencies and suspect data. In the same manner, for behavioral data we checked that the data on the tables and the ones of the paper questionnaires from which they were extracted, matched correctly. Section 3.3 has been updated accordingly.
+- Scientists including two of the authors were involved in checking the summary sheets in Fig. 2. The quality control protocol relies on these summary sheets. Prior visual inspection was also performed while preparing the automatic generation of summary sheets, but not following a formal protocol. It is therefore probably not worth mentioning here and we have reworked section 3.3 accordingly.
+- "Good enough" meant a score of 5/6 or 6/6, as defined in Fig. 2. We have updated section 3.3 accordingly. The selected 94 subjects were not necessarily better than the rest of the Localizer subjects, they were selected mainly on their complete set of data types.
+
+
+> "The long term plans for this resource is to keep it alive as a public example instance of the Brainomics software." What are the plans in terms of funding? How will this resource be kept "alive"?
+
+The Brainomics/Localizer base is frozen as far as the data itself is concerned. It can be viewed as a "technical object" that can be given over to the engineers and IT team who manage the rest of the servers based on the same CubicWeb/Brainomics software stack. 
+
+
+
+> Reviewer #2: The authors describe a database which stores behavioural, demographic and MRI data of 94 French subjects (from 4 of which the age is not known), which are publicly available to the community. They describe the construction of the database and briefly mention the types of data available.
+> I do not think that this very short and technical description of such a small number of datasets is suitable for publication in "NeuroImage". It might be better suited for a more specialized journal. Having said this, I would like to have the authors consider that there are freely available datasets which are much larger (Functional Connectomes, Human Connectome Project) with at least as much additional information as provided here.
+
+The data we share is associated to published scientific papers. As such it should not lack scientific interest. The process of opening and publishing the data is separate from the initial effort and we believe it deserves a short publication of its own, possibly more technical in nature than our initial publications or a standalone publication describing entirely new data. As a side note, we have pushed the relevant part of the newly opened Localizer data to NeuroVault, thus contributing to a large online database. We felt the description of the data itself, and of the process of opening and publishing the data, does fall in the scope of the "Data Sharing" special issue of NeuroImage.
+
+We are aware of the existence of larger shared databases, but feel that small databases like this one also have a role to play. Data from different origins and following different experimental paradigms are of great value to the community, especially when it comes to meta-analyses. For this reason we think it is important to consider and aggregate small databases, instead of solely relying on large databases.
+
+This public dataset is a subset of a much larger database (around 2000 subjects). We do not share the remaining images because of regulatory rules, but the full database might still be used in the context of scientific collaborations. We have updated and clarified these points in the paper.
+
+Finally as stated in the paper, the data are available through Nilearn, a Python library for statistical learning in neuroimaging. We think it is important to promote small - i.e. easily downloadable - datasets that serve as examples and benchmarks for methods in processing libraries.
