@@ -12,7 +12,7 @@ assignees: ''
 - Teasing:  A 300 character long (spaces included) sentences for an appealing introduction
 - Contact: she.name@cea.fr, he.name@cea.fr
 
-See examples from the site https://github.com/baobablab/brainomicsteam
+See examples from the site https://github.com/neurospin/brainomics
 
 **Enter a description**
 - Please enter a description of your research with possible extra resources 1500 to 2000 characters or so. This story should ideally refers a work documented as abstract/poster/paper.  Please submit your work on the HAL-CEA and then add the convenient reference (either HAL or IEEE or conference site or bibtex). Do not forget to cite external references if necessay (one or two).
