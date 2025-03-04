@@ -4,7 +4,7 @@ name: Cathy Philippe - PhD
 title: Cathy Philippe
 position: pi
 avatar:
-joined: 2015
+joined: 2016
 ---
 
 
@@ -14,6 +14,8 @@ joined: 2015
 -->
  
 <a href="https://joliot.cea.fr/drf/joliot/Pages/Entites_de_recherche/neurospin/BAOBAB/GAIA.aspx" class="image" target="_blank"><img src="{{site.url}}/{{site.baseurl}}/assets/images/cea.png" width="64" height="64" alt="image-title-here" /></a><br>
+<a href="https://orcid.org/0000-0002-3262-4390" class="image" target="_blank"><img src="{{site.url}}/{{site.baseurl}}/assets/images/orcid.jpg" width="64" height="64" a
+lt="image-title-here" /></a>
 
 
 
