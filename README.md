@@ -1,9 +1,9 @@
-![Build Static Pages](https://github.com/baobablab/brainomicsteam/workflows/Build%20Static%20Pages/badge.svg)
+![Build Static Pages](https://github.com/neurospin/brainomics/workflows/Build%20Static%20Pages/badge.svg)
 
 # Team member contributions - How To
 
 Any contribution from all team members is welcome! Please follow click 
-the "Issue" tab (or follow https://github.com/baobablab/brainomicsteam/issues).
+the "Issue" tab (or follow https://github.com/neurospin/brainomics/issues).
 The click the "New issue" button and follow the instructions.
 
 The posted issues will be processed.
