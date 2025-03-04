@@ -6,4 +6,3 @@ position: alumni
 avatar:
 joined: 2020
 ---
-

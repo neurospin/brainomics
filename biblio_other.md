@@ -44,4 +44,3 @@ permalink: /bibliography/other
 <hr>
 
 {% endfor %}
-

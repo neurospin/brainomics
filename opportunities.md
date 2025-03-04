@@ -56,4 +56,3 @@ Intership, PhD, PostDoc or engineer positions are offered in the project. Do not
 <hr>
 
 {% endfor %}
-

@@ -43,4 +43,3 @@ permalink: /research/application/
 {% endfor %}
 
 <hr>
-

@@ -22,4 +22,3 @@ layout: default
     {% endfor %}
     </div>
 </section>
-

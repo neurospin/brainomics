@@ -7,4 +7,3 @@ contact: vincent.frouin@cea.fr
 pdf: intern_RareVariantGWAS_feb25.pdf
 date: 2025-02-15
 ---
-

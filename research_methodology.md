@@ -43,4 +43,3 @@ permalink: /research/methodology/
 {% endfor %}
 
 <hr>
-
