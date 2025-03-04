@@ -15,7 +15,7 @@ The posted issues will be processed.
 You have to customize the following parameters in `_config.yml`:
 
 - title: the name of your team.
-- subtitle: the runing title.
+- subtitle: the running title.
 - email: the contact email.
 - short_desc: the title of the banner in the index page.
 - long_desc: the content of the banner in the index page.
@@ -42,7 +42,7 @@ or read up on just the basics of [front matter](https://jekyllrb.com/docs/frontm
 and [creating pages](https://jekyllrb.com/docs/pages/).
 
 - **GitLab**: Simply fork this repository and start editing the `_config.yml` file!
-- **GitHub**: Fork this reposity and create a branch named `gh-pages`, then start editing the `_config.yml` file! The `.gitlab-ci.yml` file is only needed for GitLab Pages, so feel free to delete this if you are using GitHub instead.
+- **GitHub**: Fork this repository and create a branch named `gh-pages`, then start editing the `_config.yml` file! The `.gitlab-ci.yml` file is only needed for GitLab Pages, so feel free to delete this if you are using GitHub instead.
 
 ## Install local
 

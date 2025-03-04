@@ -4,7 +4,7 @@ title:
 permalink: /collaborators/
 ---
 
-The {{site.title}} team has developped numerous collaborations with colleagues
+The {{site.title}} team has developed numerous collaborations with colleagues
 in different institutions & companies.
 
 

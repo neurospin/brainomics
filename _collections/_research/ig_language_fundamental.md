@@ -15,12 +15,12 @@ added: 2020
 
 ![image-title-here]({{site.url}}/{{site.baseurl}}/images/research/{{page.icon}}){:class="image"}
 
-&#169; NeuroSpin/CEA. (up) Seven ROIs implicated in langage computed from task fMRI [1]. (down) Mean functional connectivity calculated using partial correlation metric over all UKB rs fMRI subjects.
+&#169; NeuroSpin/CEA. (up) Seven ROIs implicated in language computed from task fMRI [1]. (down) Mean functional connectivity calculated using partial correlation metric over all UKB rs fMRI subjects.
 
 
 Language is a singularity of the human species. Its complexity suggests that it is supplemented by an innate language capacity. Using the UK Biobank resource, we try to understand how the brain supports natural language by unveiling the genetic factors that might contribute to it.
 
-Neural activity measured during task performance is the standard approach to study the language processing. However, resting-state functional connectivity identified during free task remains a valid alternative to study langage.
+Neural activity measured during task performance is the standard approach to study the language processing. However, resting-state functional connectivity identified during free task remains a valid alternative to study language.
 
 Using regions of interest from [1], an heritability study on resting state fMRI functional connectivity related to language processing suggest some genetic influence on the phenotype chosen which indicates that the human language brain organization is under relatively strong genetic control, strong enough to consider association studies with genotyping data. See Mekki Y., et al. "Heritability of the language network using resting state fMRI 
 data". COGNOMICS Conference 2019: Bridging Gaps, Sep 2019, Nijmegen, Netherlands.  <a class="external" target="_blank" href="https://hal.archives-ouvertes.fr/cea-02289470v1">https://hal.archives-ouvertes.fr/cea-02289470v1</a>.
