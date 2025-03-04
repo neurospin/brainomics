@@ -1,5 +1,5 @@
 ---
-name: Centrale Supélec
+name: CentraleSupélec
 subcat: academic
 contact: cathy.philippe@cea.fr or vincent.frouin@cea.fr
 avatar: centrale-supelec.png
