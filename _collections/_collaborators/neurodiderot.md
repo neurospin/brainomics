@@ -6,4 +6,3 @@ avatar: neurodiderot.jpg
 ext_url: https://neurodiderot.u-paris.fr/en/research-teams/neurodev/integrative-genomics/
 joined: 2023
 ---
-
