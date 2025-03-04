@@ -20,7 +20,7 @@ of gestation onwards and is far less pronounced in the chimpanzee brain.
 
 This asymmetry is associated with more frequent sulcal interruptions,
 named plis de passage (PPs), leading to the irregular morphology of the
-left sulcus. Y Le Guen (PhD 2015-2018) and colleagues 
+left sulcus. Y Le Guen (PhD 2015-2018) and colleagues
 (NeuroSpin/Brainomics) worked to characterize the variability, asymmetry,
 and heritability of these interruptions in the STS in comparison with the
 other main sulci. We developed an automated method to extract PPs across

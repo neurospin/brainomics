@@ -18,5 +18,5 @@ In this work, we demonstrate the interest GN-CCA, a method for imaging-genetics 
 
 
 
-Guigui, N., Philippe, C., Gloaguen, A., Karkar, S., Guillemot, V., Löfstedt, T., & Frouin, V. (2009). Network regularization in imaging genetics improves prediction performances and model interpretability on Alzheimers’s disease. In ISBI 2019 - Proceedings of the IEEE International Symposium on Biomedical Imaging. Venice, Italy. Retrieved from 
+Guigui, N., Philippe, C., Gloaguen, A., Karkar, S., Guillemot, V., Löfstedt, T., & Frouin, V. (2009). Network regularization in imaging genetics improves prediction performances and model interpretability on Alzheimers’s disease. In ISBI 2019 - Proceedings of the IEEE International Symposium on Biomedical Imaging. Venice, Italy. Retrieved from
 <a class="external" target="_blank"  href="https://hal-cea.archives-ouvertes.fr/cea-02016625">https://hal-cea.archives-ouvertes.fr/cea-02016625</a>

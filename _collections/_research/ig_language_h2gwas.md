@@ -30,7 +30,7 @@ Functional connectivities (FC) represent correlations between the average fMRI s
 
 Contact chercheur : cathy.philippe@cea.fr, yasmina.mekki@cea.fr
 
-Collaborations 
+Collaborations
 - Département de Biologie Computationnelle, Institut Pasteur ;
 - Groupe d'Imagerie Neurofonctionnelle, Institut des Maladies Neurodégénératives, UMR 5293, CEA - CNRS - Université de Bordeaux ;
 - Basque Center on Cognition, Brain and Language, San Sebastian, Spain

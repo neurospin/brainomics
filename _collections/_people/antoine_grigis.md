@@ -26,4 +26,3 @@ France
 <!-- Section
 [Antoine](http://brainomics.org/) Researches.
 -->
-

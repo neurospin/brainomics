@@ -45,4 +45,3 @@ Crossroad between neuroinformatics and bioinformatics.
 {% endfor %}
 
 <hr>
-

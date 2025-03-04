@@ -20,5 +20,5 @@ In a study published in Cerebral Cortex, Y le Guen, and colleagues from Neurospi
 
 
 
-Le Guen, Y., Auzias, G., Leroy, F., Noulhiane, M., Dehaene-Lambertz, G., Duchesnay, Mangin, J-F., Coulon, O., Frouin, V. (2018). Genetic Influence on the Sulcal Pits: On the Origin of the First Cortical Folds. Cerebral Cortex, 28(6), 1922–1933. 
+Le Guen, Y., Auzias, G., Leroy, F., Noulhiane, M., Dehaene-Lambertz, G., Duchesnay, Mangin, J-F., Coulon, O., Frouin, V. (2018). Genetic Influence on the Sulcal Pits: On the Origin of the First Cortical Folds. Cerebral Cortex, 28(6), 1922–1933.
 <a class="external" target="_blank" href="http://doi.org/10.1093/cercor/bhx098">http://doi.org/10.1093/cercor/bhx098</a>

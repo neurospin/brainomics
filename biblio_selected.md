@@ -35,5 +35,3 @@ permalink: /bibliography/selected
   {% endfor %}
 </div>
 <hr>
-
-

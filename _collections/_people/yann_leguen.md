@@ -5,4 +5,3 @@ position: alumni
 avatar:
 joined: 2015
 ---
-

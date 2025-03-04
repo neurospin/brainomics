@@ -13,5 +13,5 @@ permalink: /tools/
 
 **Large population imaging** studies are ones of the tools that are setup, to address these public health issues which remain essentially not understood. International **reference** or **disease-focused** cohorts are being built, including demographics, eCRF, medical images and in some cases high throughput molecular data (genotyping, gene expression, methylation). Because of their size and  multi-level content, they are expected to provide biomarkers, clues to the molecular processes involved, an understanding of causal pathways, pharmaceuticals target candidates and ways to identify risks groups.
 
-The comprehension of impaired biological mechanisms requires a better understanding of how they work in control conditions and the reference imaging-cohort also bring the opportunity to 
+The comprehension of impaired biological mechanisms requires a better understanding of how they work in control conditions and the reference imaging-cohort also bring the opportunity to
 better understand fundamental neurosciences.
