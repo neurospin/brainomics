@@ -20,7 +20,7 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
     - name: Checkout source branch
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Make build destination directory
       run: mkdir $PWD/_site
@@ -35,7 +35,7 @@ jobs:
         COMPOSE_INTERACTIVE_NO_CLI: 1
 
     - name: Upload built pages
-      uses: actions/upload-artifact@v4.0.0
+      uses: actions/upload-artifact@v4
       with:
         name: brainomics-site
         path: _site
